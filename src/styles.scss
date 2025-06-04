@@ -1,1 +1,35 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'primeflex/primeflex.css';
+@import "primeicons/primeicons.css";
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+
+    // font-family: 'Poppins', sans-serif;
+    // font-family: 'Inter', sans-serif;
+    font-family: 'Open Sans', sans-serif;
+    // font-family: 'Lato', sans-serif;
+    // font-family: 'Roboto', sans-serif;
+
+    // background-color: #f9f9f9;
+}
+
+h1,
+h2,
+h3 {
+    // font-family: 'Playfair Display', serif;
+    // font-family: 'Montserrat', sans-serif;
+    font-family: 'Raleway', sans-serif;
+    // font-family: 'Oswald', sans-serif;
+    // font-family: 'Nunito', sans-serif;
+    // color: black;
+}
+
+p {
+    // color: #1d3557;
+}

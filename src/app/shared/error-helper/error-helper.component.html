@@ -1,0 +1,14 @@
+<ng-container *ngIf="control?.touched && control?.invalid">
+    <div *ngFor="let error of control?.errors | keyvalue" class="mt-1 mb-0 ml-2 flex align-items-center gap-2 text-red-600 text-sm">
+        <i class="pi pi-exclamation-circle" style="font-size: 1.5rem"></i>
+        <span [ngSwitch]="error.key">
+            <small class="text-sm" *ngSwitchCase="'required'">Este campo es <strong>requerido</strong>.</small>
+            <small class="text-lg" *ngSwitchCase="'minlength'">Debe tener mínimo <strong>{{ error.value.requiredLength }}</strong> caracteres.</small>
+            <small class="text-lg" *ngSwitchCase="'maxlength'">Debe tener máximo <strong>{{ error.value.requiredLength }}</strong> caracteres.</small>
+            <small class="text-lg" *ngSwitchCase="'pattern'">Has introducido caracteres incorrectos.</small>
+            <small class="text-lg" *ngSwitchCase="'email'">Email inválido.</small>
+            <small class="text-lg" *ngSwitchCase="'matDatepickerParse'">Fecha inválida.</small>
+            <small class="text-lg" *ngSwitchDefault>Validación desconocida.</small>
+        </span>
+    </div>
+</ng-container>

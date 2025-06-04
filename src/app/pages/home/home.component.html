@@ -1,0 +1,67 @@
+<main class="min-h-screen">
+
+    <div class="text-center">
+        <!-- <h1 class="titulo text-center text-primary">
+            BorDados
+        </h1> -->
+        <p-image src="logos/logo5.png" alt="BorDados" />
+    </div>
+
+    <section class="text-center p-4 bg-surface-100 rounded shadow">
+        <h1 class="text-4xl font-bold mb-4">Convertí tus fotos en arte bordado</h1>
+        <p class="text-lg text-muted mb-6">Elegí una prenda, subí una imagen, seleccioná el color del hilo… ¡y listo!</p>
+        <p-button label="Crear mi diseño" icon="pi pi-pencil" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar"></p-button>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <p-card *ngFor="let producto of productos" header="{{ producto.titulo }}" class="shadow-md border-1 border-round p-4 bg-surface-50">
+            <p-image [preview]="true" [src]="'productos/' + producto.imagen + '.png'" alt="{{ producto.titulo }}" class="w-full h-40 object-cover rounded mb-2" />
+            <p>{{ producto.descripcion }}</p>
+        </p-card>
+    </section>
+
+    <section class="mt-12 text-center">
+        <h2 class="text-2xl font-semibold mb-6">¿Cómo funciona?</h2>
+        <div class="grid">
+            <div class="col">
+                <i class="pi pi-upload text-4xl mb-2 text-primary"></i>
+                <h3 class="font-semibold">1. Subí tu imagen</h3>
+            </div>
+            <div class="col">
+                <i class="pi pi-palette text-4xl mb-2 text-primary"></i>
+                <h3 class="font-semibold">2. Elegí color e indumentaria</h3>
+            </div>
+            <div class="col">
+                <i class="pi pi-check-circle text-4xl mb-2 text-primary"></i>
+                <h3 class="font-semibold">3. Recibí tu prenda única</h3>
+            </div>
+        </div>
+        <p-image src="productos/pasos.png" alt="Pasos" width="1920" />
+    </section>
+
+    <p-carousel [value]="testimonios" [numVisible]="3" [numScroll]="3" [circular]="true" autoplayInterval="3000">
+        <ng-template let-testimonio #item>
+            <div class="border border-surface-200 dark:border-surface-700 rounded m-2 p-4">
+                <div class="mb-4">
+                    <div class="relative mx-auto">
+                        <img src="https://primefaces.org/cdn/primeng/images/demo/product/{{ testimonio.image }}" [alt]="testimonio.name" class="w-full rounded-border" />
+                        <p-tag [value]="testimonio.inventoryStatus" [severity]="getSeverity(testimonio.inventoryStatus)" class="absolute" styleClass="dark:!bg-surface-900"
+                            [ngStyle]="{ 'left.px': 5, 'top.px': 5 }" />
+                    </div>
+                </div>
+                <div class="mb-4 font-medium">{{ testimonio.nombre }}</div>
+                <div class="flex justify-between items-center">
+                    <div class="mt-0 font-semibold text-xl">{{ testimonio.comentario }}</div>
+                    <span>
+                        <p-button icon="pi pi-heart" severity="secondary" [outlined]="true" />
+                        <p-button icon="pi pi-shopping-cart" styleClass="ml-2" />
+                    </span>
+                </div>
+            </div>
+        </ng-template>
+    </p-carousel>
+
+    <section class="text-center my-10">
+        <p-button label="Diseñá tu prenda ahora" icon="pi pi-magic" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar" />
+    </section>
+</main>
