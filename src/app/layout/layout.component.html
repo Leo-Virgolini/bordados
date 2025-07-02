@@ -1,15 +1,16 @@
-<div class="grid">
-    <div class="col-12">
+<div class="flex flex-column min-h-screen gap-3">
+    <!-- Header -->
+    <header class="sticky top-0 z-5">
         <app-header></app-header>
-    </div>
-</div>
-<div class="grid">
-    <div class="col-12">
+    </header>
+
+    <!-- Main -->
+    <main class="flex-auto">
         <router-outlet></router-outlet>
-    </div>
-</div>
-<div class="grid">
-    <div class="col-12 p-0">
+    </main>
+
+    <!-- Footer -->
+    <footer>
         <app-footer></app-footer>
-    </div>
+    </footer>
 </div>

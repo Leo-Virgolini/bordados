@@ -76,7 +76,7 @@ export const MyPreset = definePreset(Aura,
                     },
                     dark: {
                         root: {
-                            checkedBackground: '{sky.400}',
+                            checkedBackground: '{sky.100}',
                             // borderColor: '{sky.500}',
                             // checkedColor: '{sky.500}',
                             // checkedBorderColor: '{sky.500}',
@@ -90,6 +90,20 @@ export const MyPreset = definePreset(Aura,
                             // color: '{sky.500}',
                             // hoverColor: '{sky.700}',
                             // checkedColor: '{sky.900}'
+                        }
+                    }
+                }
+            },
+            panel: {
+                colorScheme: {
+                    light: {
+                        root: {
+                            background: '{sky.50}'
+                        }
+                    },
+                    dark: {
+                        root: {
+                            background: '{sky.950}'
                         }
                     }
                 }

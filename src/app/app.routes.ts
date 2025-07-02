@@ -4,13 +4,13 @@ import { HomeComponent } from './pages/home/home.component';
 
 export const routes: Routes = [
     {
-        path: '',
-        component: LayoutComponent,
+        path: '', component: LayoutComponent,
         children: [
             { path: '', component: HomeComponent },
             { path: 'productos', loadComponent: () => import('./pages/products/products.component').then(m => m.ProductsComponent) },
             { path: 'personalizar', loadComponent: () => import('./pages/customize/customize.component').then(m => m.CustomizeComponent) },
-            { path: 'carrito', loadComponent: () => import('./pages/checkout/checkout.component').then(m => m.CheckoutComponent) }
+            { path: 'carrito', loadComponent: () => import('./pages/carrito/carrito.component').then(m => m.CarritoComponent) },
+            { path: 'checkout', loadComponent: () => import('./pages/checkout/checkout.component').then(m => m.CheckoutComponent) }
         ]
     },
     {

@@ -1,0 +1,160 @@
+<p-toast position="bottom-center">
+</p-toast>
+<p-confirmdialog>
+    <ng-template #message let-message>
+        <div class="flex flex-col items-center w-full gap-4 border-b border-surface-200 dark:border-surface-700">
+            <i [ngClass]="message.icon" class="text-6xl text-primary-500"></i>
+            <p [innerHTML]="message.message"></p>
+        </div>
+    </ng-template>
+</p-confirmdialog>
+
+<main class="surface-ground p-4">
+    <section>
+        <p-panel class="container mx-auto">
+            <!-- Header -->
+            <div class="mb-3 flex flex-column align-items-center justify-center">
+                <h1 class="text-4xl font-bold text-900 mb-2 flex flex-row align-items-center justify-center">
+                    <i class="pi pi-shopping-cart text-primary mr-3" style="font-size: 2rem"></i>
+                    Tu Carrito de Compras
+                </h1>
+                <p class="text-600 text-lg">Revisá y finalizá tu pedido</p>
+            </div>
+
+            <div class="grid">
+                <!-- Items List -->
+                <div class="col-12 lg:col-8">
+                    <p-card styleClass="shadow-2">
+                        <ng-container *ngIf="items.length > 0; else vacio">
+                            <form [formGroup]="form">
+                                <div class="flex flex-column gap-4">
+                                    <div *ngFor="let item of items; let i = index"
+                                        class="surface-card border-round border-1 border-200 p-4 hover:shadow-2 transition-all transition-duration-300">
+
+                                        <div class="flex flex-column md:flex-row gap-4">
+                                            <!-- Product Image -->
+                                            <div class="flex flex-column align-items-center flex-shrink-0">
+                                                <img [src]="item.imagen" [alt]="item.tipo" class="w-8rem h-8rem object-cover border-round border-1 border-200" />
+                                                <p-button icon="pi pi-trash" (onClick)="eliminar(item.id)" severity="danger" class="mt-3" size="large" />
+                                            </div>
+                                            <!-- Product Details -->
+                                            <div class="flex-1">
+                                                <div class="flex flex-column gap-3">
+                                                    <!-- Product Title -->
+                                                    <div>
+                                                        <h3 class="text-xl font-semibold text-900 mb-2">{{ item.tipo }}</h3>
+                                                    </div>
+
+                                                    <!-- Product Specifications -->
+                                                    <div class="grid">
+                                                        <div class="col-12 md:col-6">
+                                                            <div class="flex flex-column gap-2">
+                                                                <div class="flex align-items-center gap-2">
+                                                                    <i class="pi pi-tag text-primary"></i>
+                                                                    <span class="text-600">Talle: <span class="font-semibold text-900">{{ item.talle }}</span></span>
+                                                                </div>
+                                                                <div class="flex align-items-center gap-2">
+                                                                    <i class="pi pi-palette text-primary"></i>
+                                                                    <span class="text-600">Color de prenda: <span class="font-semibold text-900">{{ item.colorPrenda }}</span></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 md:col-6">
+                                                            <div class="flex flex-column gap-2">
+                                                                <div class="flex align-items-center gap-2">
+                                                                    <i class="pi pi-circle-fill text-primary"></i>
+                                                                    <span class="text-600">Hilado: <span class="font-semibold text-900">{{ item.colorHilado1 }}</span></span>
+                                                                </div>
+                                                                <div *ngIf="item.colorHilado2" class="flex align-items-center gap-2">
+                                                                    <i class="pi pi-circle-fill text-primary"></i>
+                                                                    <span class="text-600">2° Hilado: <span class="font-semibold text-900">{{ item.colorHilado2 }}</span></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Price and Quantity -->
+                                                    <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-4">
+                                                        <div class="flex align-items-center gap-4">
+                                                            <div class="text-center">
+                                                                <div class="text-600 text-sm">Precio Unitario</div>
+                                                                <div class="text-xl font-bold text-primary">{{ item.precioUnitario | currency:'ARS':'symbol':'1.0-0'}}</div>
+                                                            </div>
+
+                                                            <div class="flex align-items-center gap-2">
+                                                                <span class="text-600 font-medium">Cantidad:</span>
+                                                                <p-inputnumber #quantityInput [formControl]="getCantidadControl(i)" [showButtons]="true" buttonLayout="horizontal"
+                                                                    [inputId]="'quantity-' + i" spinnerMode="horizontal" [min]="1" [max]="100" [step]="1"
+                                                                    (onInput)="actualizarCantidad(item, $event.value || 1, quantityInput)" allowEmpty="false"
+                                                                    inputStyleClass="w-4rem text-center">
+                                                                    <ng-template #incrementbuttonicon>
+                                                                        <span class="pi pi-plus"></span>
+                                                                    </ng-template>
+                                                                    <ng-template #decrementbuttonicon>
+                                                                        <span class="pi pi-minus"></span>
+                                                                    </ng-template>
+                                                                </p-inputnumber>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="flex align-items-center gap-3">
+                                                            <div class="text-right">
+                                                                <div class="text-600 text-sm">Subtotal</div>
+                                                                <div class="text-2xl font-bold text-green-600">{{ item.subtotal | currency:'ARS':'symbol':'1.0-0'}}</div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </ng-container>
+
+                        <ng-template #vacio>
+                            <div class="text-center py-8">
+                                <i class="pi pi-shopping-cart text-8xl text-300 mb-4"></i>
+                                <h3 class="text-2xl font-semibold text-600 mb-2">Tu carrito está vacío</h3>
+                                <p class="text-500 mb-4">Agrega algunos productos para comenzar</p>
+                                <p-button label="Ir a Productos" icon="pi pi-arrow-right" styleClass="p-button-outlined" routerLink="/" />
+                            </div>
+                        </ng-template>
+                    </p-card>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-12 lg:col-4">
+                    <div class="sticky" style="top: 7rem;">
+                        <p-card header="Resumen del Pedido" styleClass="shadow-2">
+                            <div class="flex flex-column gap-3">
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-600">Subtotal ({{ items.length }} items)</span>
+                                    <span class="font-semibold">{{ calcularTotal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-600">Envío</span>
+                                    <span class="text-green-500 font-semibold">Gratis</span>
+                                </div>
+
+                                <p-divider></p-divider>
+
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-xl font-bold">Total</span>
+                                    <span class="text-2xl text-primary font-bold">{{ calcularTotal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-column gap-2 mt-4">
+                                <p-button label="Finalizar Compra" icon="pi pi-credit-card" (onClick)="pagar()" styleClass="w-full" [disabled]="items.length === 0" routerLink="/" />
+                                <p-button label="Continuar Comprando" icon="pi pi-arrow-left" styleClass="p-button-outlined p-button-secondary w-full" routerLink="/" />
+                            </div>
+                        </p-card>
+                    </div>
+                </div>
+            </div>
+        </p-panel>
+    </section>
+</main>

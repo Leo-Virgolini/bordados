@@ -7,14 +7,18 @@ import { Badge } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Menubar } from 'primeng/menubar';
+import { OverlayBadge } from 'primeng/overlaybadge';
+import { CarritoService } from '../../services/carrito.service';
 
 @Component({
   selector: 'app-header',
-  imports: [ButtonModule, Menubar, Badge, CommonModule, Avatar, InputText, RouterLink],
+  imports: [ButtonModule, Menubar, Badge, CommonModule, Avatar, InputText, RouterLink, OverlayBadge],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
+
+  constructor(private carritoService: CarritoService) { }
 
   isDark = false;
 
@@ -35,6 +39,10 @@ export class HeaderComponent {
     const element = document.querySelector('html');
     if (element !== null)
       element.classList.toggle('my-app-dark');
+  }
+
+  getCarritoSize(): string {
+    return this.carritoService.getCarrito()?.length?.toString() || '0';
   }
 
 }

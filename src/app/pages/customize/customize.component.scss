@@ -15,3 +15,13 @@
     border: 1px solid #ccc;
     border-radius: 20px;
 }
+
+// Hide PrimeNG's default file preview
+::ng-deep .p-fileupload .p-fileupload-content .p-fileupload-files {
+    display: none !important;
+}
+
+// Hide PrimeNG's default file list
+::ng-deep .p-fileupload .p-fileupload-content ul {
+    display: none !important;
+}

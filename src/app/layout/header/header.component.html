@@ -1,26 +1,53 @@
-<header>
-    <p-menubar [model]="items">
-        <ng-template #start class="flex align-items-center justify-content-center">
-            <a [routerLink]="'/'">
-                <img src="logos/logo2.png" alt="Logo" width="50" height="50">
-            </a>
+<header class="bg-surface-0 border-bottom-1 border-surface-200 shadow-2">
+    <p-menubar [model]="items" styleClass="border-none p-3">
+        <ng-template #start>
+            <div class="flex align-items-center gap-3">
+                <a [routerLink]="'/'" class="flex align-items-center no-underline hover:scale-105 transition-transform transition-duration-200">
+                    <img src="logos/logo2.png" alt="Logo" class="w-3rem h-3rem border-round shadow-1">
+                </a>
+                <span class="text-xl font-bold text-primary hidden md:inline-block">BorDados</span>
+            </div>
         </ng-template>
 
         <ng-template #item let-item let-root="root">
-            <a pRipple [routerLink]="item.routerLink" class="flex align-items-center p-menubar-item-link">
-                <i *ngIf="item.icon" [class]="item.icon"></i>
-                <span>{{ item.label }}</span>
-                <p-badge *ngIf="item.badge" [ngClass]="{ 'ml-auto': !root, 'ml-2': root }" [value]="item.badge" />
-                <span *ngIf="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
+            <a pRipple [routerLink]="item.routerLink"
+                class="flex align-items-center p-menubar-item-link hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200 border-round">
+                <i *ngIf="item.icon" [class]="item.icon" class="mr-2"></i>
+                <span class="font-medium">{{ item.label }}</span>
+                <p-badge *ngIf="item.badge" [ngClass]="{ 'ml-auto': !root, 'ml-2': root }" [value]="item.badge" severity="danger" />
+                <span *ngIf="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
+                    {{ item.shortcut }}
+                </span>
                 <i *ngIf="item.items" [ngClass]="['ml-auto pi', root ? 'pi-angle-down' : 'pi-angle-right']"></i>
             </a>
         </ng-template>
 
-        <ng-template #end class="flex align-items-center justify-content-center">
-            <input type="text" pInputText placeholder="Buscar" class="w-40" />
-            <p-button icon="pi pi-user" [text]="true" [rounded]="true" />
-            <p-button icon="pi pi-shopping-cart" [text]="true" [rounded]="true" />
-            <p-button [raised]="true" [rounded]="true" [outlined]="true" severity="secondary" [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'" (click)="toggleDarkMode()" />
+        <ng-template #end>
+            <div class="flex align-items-center gap-3">
+                <!-- Enhanced Search Bar -->
+                <div class="relative hidden md:block">
+                    <span class="p-input-icon-left">
+                        <input type="text" pInputText placeholder="Buscar productos..."
+                            class="w-20rem border-round-xl bg-surface-100 border-none pl-4 pr-4 py-2 focus:bg-surface-0 focus:shadow-2 transition-all transition-duration-200" />
+                        <i class="pi pi-search text-400 ml-2"></i>
+                    </span>
+                </div>
+
+                <!-- User Profile Button -->
+                <p-button icon="pi pi-user" size="large" [text]="true" [rounded]="true" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />
+
+                <!-- Shopping Cart Button with Enhanced Badge -->
+                <div class="relative">
+                    <p-button routerLink="/carrito" icon="pi pi-shopping-cart" size="large" [text]="true" [rounded]="true"
+                        styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />
+                    <p-badge *ngIf="getCarritoSize()" [value]="getCarritoSize()" severity="danger"
+                        styleClass="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 scale-75" />
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <p-button [raised]="true" [rounded]="true" [outlined]="true" severity="primary" [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'" (click)="toggleDarkMode()"
+                    styleClass="hover:shadow-3 transition-shadow transition-duration-200" />
+            </div>
         </ng-template>
     </p-menubar>
 </header>
