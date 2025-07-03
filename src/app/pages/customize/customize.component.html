@@ -14,10 +14,8 @@
     <!-- Form Section -->
     <section class="flex-1">
         <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
-            <ng-template #header>
-                <div class="flex justify-content-center align-items-center">
-                    <h1 class="text-3xl font-bold mt-0 text-center">Personalizá tu prenda</h1>
-                </div>
+            <ng-template #header class="flex align-items-center justify-center text-center">
+                <h1 class="text-3xl font-bold mt-0"><i class="pi pi-pencil" style="font-size: 1.5rem"></i> Personalizá tu prenda</h1>
             </ng-template>
 
             <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto">
@@ -142,53 +140,55 @@
 
     <!-- Panel Resumen -->
     <aside class="flex-1">
-        <p-panel styleClass="border-round p-3 shadow-3">
-            <ng-template #header>
-                <div class="flex justify-center align-items-center">
-                    <h1 class="text-2xl font-bold mt-0 text-center">Resumen del pedido</h1>
+        <div class="sticky" style="top: 7rem;">
+            <p-panel styleClass="border-round p-3 shadow-3">
+                <ng-template #header>
+                    <div class="flex justify-center align-items-center">
+                        <h1 class="text-2xl font-bold mt-0 text-center"><i class="pi pi-receipt" style="font-size: 1.5rem"></i> Resumen del pedido</h1>
+                    </div>
+                </ng-template>
+                <div class="flex flex-column gap-3">
+                    <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-ticket text-primary"></i>
+                        Prenda: <strong>{{ getLabel('tipo', tiposPrenda) }}</strong> <span class="text-sm text-green-500">({{ getPrecio('tipo', tiposPrenda) |
+                            currency:'ARS':'symbol':'1.0-0' }})</span>
+                    </div>
+                    <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-tag text-primary"></i>
+                        Talle:<strong>{{ getLabel('talle', talles) }}</strong>
+                    </div>
+                    <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-palette text-primary"></i>
+                        Color de prenda: <strong>{{ getLabel('colorPrenda', coloresPrendas) }}</strong>
+                    </div>
+                    <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-palette text-primary"></i>
+                        Color del hilado: <strong>{{ getLabel('colorHilado1', coloresPrendas) }}</strong>
+                    </div>
+                    <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-palette text-primary"></i>
+                        2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresPrendas) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
+                            currency:'ARS':'symbol':'1.0-0' }})</span>
+                    </div>
+                    <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
+                        <i class="pi pi-box text-primary"></i>
+                        Cantidad: <strong>{{ formulario.get('cantidad')?.value }}</strong>
+                    </div>
+                    <div *ngIf="formulario.valid">
+                        <span class="text-lg text-green-500">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }} x {{ formulario.get('cantidad')?.value}}</span>
+                    </div>
+                    <div *ngIf="formulario.valid" class="border-top-1 border-300 pt-2 mt-2">
+                        <p>
+                            <strong class="text-xl">Total estimado:</strong>
+                            <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
+                        </p>
+                    </div>
+                    <p-button [disabled]="!formulario.valid || isSubmitting" icon="pi pi-cart-plus" [raised]="true" size="large" (click)="confirmar()"
+                        [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'primary' : 'danger'" class="w-full mt-2" />
                 </div>
-            </ng-template>
-            <div class="flex flex-column gap-3">
-                <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-circle-fill text-primary"></i>
-                    Prenda: <strong>{{ getLabel('tipo', tiposPrenda) }}</strong> <span class="text-sm text-green-500">({{ getPrecio('tipo', tiposPrenda) |
-                        currency:'ARS':'symbol':'1.0-0' }})</span>
-                </div>
-                <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-tag text-primary"></i>
-                    Talle:<strong>{{ getLabel('talle', talles) }}</strong>
-                </div>
-                <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-palette text-primary"></i>
-                    Color de prenda: <strong>{{ getLabel('colorPrenda', coloresPrendas) }}</strong>
-                </div>
-                <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-circle-fill text-primary"></i>
-                    Color del hilado: <strong>{{ getLabel('colorHilado1', coloresPrendas) }}</strong>
-                </div>
-                <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-circle-fill text-primary"></i>
-                    2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresPrendas) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
-                        currency:'ARS':'symbol':'1.0-0' }})</span>
-                </div>
-                <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
-                    <i class="pi pi-circle-fill text-primary"></i>
-                    Cantidad: <strong>{{ formulario.get('cantidad')?.value }}</strong>
-                </div>
-                <div *ngIf="formulario.valid">
-                    <span class="text-lg text-green-500">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }} x {{ formulario.get('cantidad')?.value}}</span>
-                </div>
-                <div *ngIf="formulario.valid" class="border-top-1 border-300 pt-2 mt-2">
-                    <p>
-                        <strong class="text-xl">Total estimado:</strong>
-                        <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
-                    </p>
-                </div>
-                <p-button [disabled]="!formulario.valid || isSubmitting" icon="pi pi-cart-plus" [raised]="true" size="large" (click)="confirmar()"
-                    [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'primary' : 'danger'" class="w-full mt-2" />
-            </div>
 
-        </p-panel>
+            </p-panel>
+        </div>
     </aside>
 
 </main>

@@ -12,11 +12,12 @@ import { Toast } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { RouterLink } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-carrito',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink,
-    Panel, Button, InputNumber, Card, Divider, Toast, ConfirmDialog],
+    Panel, Button, InputNumber, Card, Divider, Toast, ConfirmDialog, Tag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './carrito.component.html',
   styleUrl: './carrito.component.scss'

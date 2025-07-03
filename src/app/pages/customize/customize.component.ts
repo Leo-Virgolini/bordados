@@ -22,11 +22,12 @@ import { CarritoService } from '../../services/carrito.service';
 import { CarritoItem } from '../../model/carrito-item';
 import { Router } from '@angular/router';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-customize',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent,
-    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, ErrorHelperComponent
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent,
+    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './customize.component.html',

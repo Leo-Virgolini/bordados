@@ -38,10 +38,11 @@
 
                 <!-- Shopping Cart Button with Enhanced Badge -->
                 <div class="relative">
-                    <p-button routerLink="/carrito" icon="pi pi-shopping-cart" size="large" [text]="true" [rounded]="true"
-                        styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />
-                    <p-badge *ngIf="getCarritoSize()" [value]="getCarritoSize()" severity="danger"
-                        styleClass="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 scale-75" />
+                    <p-overlaybadge *ngIf="getCarritoSize()" [value]="getCarritoSize()" severity="danger" badgeSize="small">
+                        <p-button routerLink="/carrito" [rounded]="true" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200">
+                            <i class="pi pi-shopping-cart" style="font-size: 1.2rem"></i>
+                        </p-button>
+                    </p-overlaybadge>
                 </div>
 
                 <!-- Dark Mode Toggle -->
