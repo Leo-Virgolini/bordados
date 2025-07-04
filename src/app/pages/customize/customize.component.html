@@ -21,7 +21,7 @@
             <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto">
                 <!-- Tipo de prenda -->
                 <div>
-                    <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda:</label>
+                    <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
                     <p-selectbutton id="tipoPrenda" formControlName="tipo" class="ml-2" size="large" [options]="tiposPrenda" optionLabel="label" optionValue="value" aria-labelledby="basic"
                         [ngClass]="{'ng-invalid ng-dirty': formulario.get('tipo')?.invalid && formulario.get('tipo')?.dirty}" required>
                         <ng-template #item let-prenda>
@@ -34,14 +34,14 @@
 
                 <!-- Talle -->
                 <div>
-                    <label for="talle" class="block mb-2 text-lg font-semibold">Talle:</label>
+                    <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
                     <p-selectbutton [options]="talles" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required />
                     <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
                 </div>
 
                 <!-- Color de prenda -->
                 <div>
-                    <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda:</label>
+                    <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda: *</label>
                     <p-selectbutton [options]="coloresPrendas" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required>
                         <ng-template #item let-color>
                             <div class="color-prenda border-circle border-1 border-300" [pTooltip]="color.label" tooltipPosition="top"
@@ -53,7 +53,7 @@
 
                 <!-- 1° Color del hilado -->
                 <div>
-                    <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado:</label>
+                    <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado: *</label>
                     <p-selectbutton [options]="coloresHilado" formControlName="colorHilado1" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required>
                         <ng-template #item let-color>
                             <div class="color-prenda border-circle border-1 border-300" [pTooltip]="color.label" tooltipPosition="top"
@@ -74,7 +74,7 @@
 
                 <!-- 2° Color del hilado -->
                 <div *ngIf="formulario.get('usarSegundoColor')?.value">
-                    <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado:</label>
+                    <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
                     <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
                         [required]="formulario.get('usarSegundoColor')?.value">
                         <ng-template #item let-color>
@@ -87,7 +87,7 @@
 
                 <!-- Imagen -->
                 <div>
-                    <label for="imagen" class="block mb-2 text-lg font-semibold">Imagen:</label>
+                    <label for="imagen" class="block mb-2 text-lg font-semibold">Imagen: *</label>
                     <p-fileupload name="imagen" mode="advanced" accept="image/*" [maxFileSize]="maxImageSize" (onSelect)="onSelect($event)" [multiple]="false" [auto]="false"
                         [invalidFileSizeMessageSummary]="invalidFileSizeMessageSummary" [invalidFileSizeMessageDetail]="invalidFileSizeMessageDetail" required>
                         <ng-template #header let-chooseCallback="chooseCallback">
@@ -129,7 +129,7 @@
 
                 <!-- Cantidad -->
                 <div>
-                    <label for="cantidad" class="block mb-2 text-lg font-semibold">Cantidad:</label>
+                    <label for="cantidad" class="block mb-2 text-lg font-semibold">Cantidad: *</label>
                     <p-selectbutton [options]="cantidades" formControlName="cantidad" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required />
                     <app-error-helper [control]="formulario.get('cantidad')"></app-error-helper>
                 </div>
@@ -183,8 +183,9 @@
                             <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
                         </p>
                     </div>
-                    <p-button [disabled]="!formulario.valid || isSubmitting" icon="pi pi-cart-plus" [raised]="true" size="large" (click)="confirmar()"
-                        [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'primary' : 'danger'" class="w-full mt-2" />
+                    <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
+                        [loading]="isLoading" [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'danger'"
+                        class="w-full" />
                 </div>
 
             </p-panel>

@@ -143,7 +143,7 @@
 
                                 <div class="flex justify-content-between align-items-center">
                                     <span class="text-600"><i class="pi pi-truck text-primary"></i> Envío</span>
-                                    <p-tag value="Gratis" icon="pi pi-check" severity="success" badgeSize="xlarge" class="text-green-600 font-semibold" [rounded]="true" />
+                                    <p-tag value="Gratis" icon="pi pi-check" severity="success" badgeSize="xlarge" class="text-green-500 font-semibold" [rounded]="true" />
                                 </div>
 
                                 <p-divider></p-divider>
@@ -155,8 +155,8 @@
                             </div>
 
                             <div class="flex flex-column gap-2 mt-4">
-                                <p-button label="Finalizar Compra" icon="pi pi-credit-card" (onClick)="pagar()" styleClass="w-full" [disabled]="items.length === 0" routerLink="/" />
-                                <p-button label="Continuar Comprando" icon="pi pi-arrow-left" styleClass="p-button-outlined p-button-secondary w-full" routerLink="/" />
+                                <p-button label="Finalizar Compra" icon="pi pi-credit-card" styleClass="w-full" [disabled]="items.length === 0" routerLink="/checkout" />
+                                <p-button label="Continuar Comprando" icon="pi pi-arrow-left" styleClass="p-button-outlined p-button-secondary w-full" routerLink="/personalizar" />
                             </div>
                         </p-card>
                     </div>

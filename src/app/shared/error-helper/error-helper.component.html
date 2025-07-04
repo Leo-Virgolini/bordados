@@ -1,7 +1,7 @@
 <ng-container *ngIf="control?.touched && control?.invalid">
-    <div role="alert" *ngFor="let error of control?.errors | keyvalue" class="mt-1 mb-0 ml-2 flex align-items-center gap-2 text-red-600 text-sm">
-        <i class="pi pi-exclamation-circle" style="font-size: 1.5rem"></i>
-        <span [ngSwitch]="error.key" class="text-lg">
+    <div role="alert" *ngFor="let error of control?.errors | keyvalue" class="mt-1 flex align-items-center gap-1 text-red-500 ">
+        <i class="pi pi-exclamation-circle" style="font-size: 1.2rem"></i>
+        <span [ngSwitch]="error.key">
             <small *ngSwitchCase="'required'">Este campo es <strong>requerido</strong>.</small>
             <small *ngSwitchCase="'minlength'">Debe tener mínimo <strong>{{ error.value.requiredLength }}</strong> caracteres.</small>
             <small *ngSwitchCase="'maxlength'">Debe tener máximo <strong>{{ error.value.requiredLength }}</strong> caracteres.</small>

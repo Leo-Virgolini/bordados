@@ -6,10 +6,12 @@ import { Card } from 'primeng/card';
 import { Carousel } from 'primeng/carousel';
 import { Image } from 'primeng/image';
 import { Tag } from 'primeng/tag';
+import { AnimateOnScrollModule } from 'primeng/animateonscroll';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, Card, Button, Carousel, Image, Tag],
+  imports: [CommonModule, RouterLink,
+    Card, Button, Carousel, Image, Tag, AnimateOnScrollModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

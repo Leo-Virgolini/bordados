@@ -35,12 +35,11 @@ import { Tag } from 'primeng/tag';
 })
 export class CustomizeComponent {
 
-  formulario: FormGroup;
+  formulario!: FormGroup;
   imageURL: string | undefined;
   imageFile: File | undefined;
   invalidFileSizeMessageSummary: string = es.invalidFileSizeMessageSummary
   invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
-  isSubmitting: boolean = false;
   isLoading: boolean = false;
 
   maxImageSize: number = 10485760; // 10 MB
@@ -99,6 +98,10 @@ export class CustomizeComponent {
   constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder, private confirmationService: ConfirmationService,
     private carritoService: CarritoService, private router: Router
   ) {
+    this.initForm();
+  }
+
+  private initForm(): void {
     this.formulario = this.fb.group({
       tipo: [undefined, Validators.required],
       talle: [undefined, Validators.required],
@@ -167,7 +170,7 @@ export class CustomizeComponent {
     const colorHilado2 = this.formulario.get('colorHilado2');
 
     if (usarSegundoColor) {
-      colorHilado2!.setValidators(Validators.required);
+      colorHilado2?.setValidators(Validators.required);
       colorHilado2?.markAsDirty();
     } else {
       colorHilado2?.clearValidators();
