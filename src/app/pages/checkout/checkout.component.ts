@@ -17,6 +17,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Divider } from 'primeng/divider';
 import { Toast } from 'primeng/toast';
 import { Tag } from 'primeng/tag';
+import { Card } from 'primeng/card';
 
 @Component({
   selector: 'app-checkout',
@@ -32,6 +33,7 @@ import { Tag } from 'primeng/tag';
     InputMask,
     Button,
     RadioButton,
+    Card,
     Checkbox,
     Divider,
     Toast,
@@ -47,8 +49,14 @@ export class CheckoutComponent implements OnInit {
   isProcessing: boolean = false;
   orderItems: CarritoItem[] = [];
   subtotal: number = 0;
+  discountPercentage: number = 0.10;
+  discount: number = 0;
+  ivaPercentage: number = 0.21;
   iva: number = 0;
   total: number = 0;
+  transferData: string = 'CBU: 00000000000000000000000000000000\n' +
+    'Alias: alias.alias.alias\n' +
+    'Banco: Banco Galicia';
 
   constructor(
     private fb: FormBuilder,
@@ -57,15 +65,17 @@ export class CheckoutComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private router: Router
   ) {
-    this.initForm();
-    this.loadOrderItems();
-    this.calculateTotals();
   }
 
   ngOnInit() {
-    // this.initForm();
-    // this.loadOrderItems();
-    // this.calculateTotals();
+    this.initForm();
+    this.loadOrderItems();
+    this.calculateTotals();
+    
+    // Listen to payment method changes
+    this.checkoutForm.get('selectedPaymentMethod')?.valueChanges.subscribe(value => {
+      this.onChange();
+    });
   }
 
   private initForm(): void {
@@ -92,8 +102,19 @@ export class CheckoutComponent implements OnInit {
 
   private calculateTotals(): void {
     this.subtotal = this.orderItems.reduce((sum, item) => sum + item.subtotal, 0);
-    this.iva = this.subtotal * 0.21; // 21% IVA
-    this.total = this.subtotal + this.iva;
+    this.iva = this.subtotal * this.ivaPercentage; // 21% IVA
+
+    // Calculate discount based on payment method
+    const selectedPaymentMethod: string = this.checkoutForm.get('selectedPaymentMethod')?.value;
+    if (selectedPaymentMethod === 'transfer') {
+      console.log('transfer');
+      this.discount = (this.subtotal + this.iva) * this.discountPercentage; // discount on subtotal + IVA
+    } else {
+      console.log('credit card');
+      this.discount = 0; // no discount for credit card
+    }
+
+    this.total = this.subtotal + this.iva - this.discount;
   }
 
   onChange(): void {
@@ -127,6 +148,9 @@ export class CheckoutComponent implements OnInit {
     expiryDate?.updateValueAndValidity();
     cvv?.updateValueAndValidity();
     cardholderName?.updateValueAndValidity();
+
+    // Recalculate totals when payment method changes
+    this.calculateTotals();
   }
 
   processPayment(): void {
