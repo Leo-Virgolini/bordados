@@ -1,71 +1,129 @@
-<main class="flex flex-column gap-6 p-4 md:p-6">
+<main class="p-3">
     <!-- Hero Section -->
-    <section class="flex flex-column align-items-center justify-content-center gap-4 py-8 bg-gradient-to-r from-primary-100 to-primary-50 border-round shadow-2">
-        <p-image src="logos/logo5.png" alt="BorDados" class="w-8rem md:w-30rem" imageClass="w-full" />
-        <h1 class="text-5xl font-bold text-primary-900 mb-2">Convertí tus fotos en arte bordado</h1>
-        <p class="text-xl text-primary-700 mb-4">Elegí una prenda, subí una imagen, seleccioná el color del hilo… ¡y listo!</p>
-        <p-button label="Crear mi diseño" icon="pi pi-pencil" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar"></p-button>
+    <section
+        class="flex flex-column align-items-center justify-content-center gap-6 py-12 bg-gradient-to-br from-primary-100 via-primary-50 to-blue-50 border-round-2xl shadow-3 relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-20rem h-20rem bg-primary-200 opacity-10 border-round-full -translate-x-10 -translate-y-10"></div>
+        <div class="absolute bottom-0 left-0 w-16rem h-16rem bg-blue-200 opacity-10 border-round-full translate-x-10 translate-y-10"></div>
+
+        <div class="flex flex-column align-items-center gap-6 z-1 p-5">
+            <p-image src="logos/logo5.png" alt="BorDados" imageClass="w-full hover:scale-105 transition-transform duration-300 border-round-2xl" />
+            <div class="text-center">
+                <h1 class="text-6xl md:text-7xl font-bold text-primary-900 mb-4 leading-tight">Convertí tus fotos en <span class="text-primary">arte bordado</span></h1>
+                <p class="text-xl md:text-2xl text-primary-700 mb-6 max-w-3xl">Elegí una prenda, subí una imagen, seleccioná el color del hilo… ¡y listo!</p>
+                <div class="flex flex-column md:flex-row gap-4 justify-content-center">
+                    <p-button label="Crear mi diseño" icon="pi pi-pencil" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar"
+                        styleClass="p-button-primary text-lg px-6"></p-button>
+                    <p-button label="Ver productos" icon="pi pi-shopping-bag" [outlined]="true" [rounded]="true" size="large" routerLink="/productos" styleClass="text-lg px-6"></p-button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- Product Highlights -->
     <section>
-        <h2 class="text-3xl font-semibold text-center mb-6">Productos Destacados</h2>
+        <div class="text-center mb-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Productos <span class="text-primary">Destacados</span></h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Descubrí nuestras prendas más populares con diseños únicos y bordados de alta calidad</p>
+        </div>
         <div class="grid">
-            <div *ngFor="let producto of productos" class="col-12 md:col-4 flex justify-content-center mb-4">
-                <p-card [header]="producto.titulo" class="w-full max-w-20rem shadow-3 border-round-lg hover:shadow-6 transition-shadow duration-200">
-                    <ng-template pTemplate="header">
-                        <p-image [preview]="true" [src]="'productos/' + producto.imagen + '.png'" alt="{{ producto.titulo }}" class="w-full h-12rem object-cover border-round-top mb-2" />
+            <div *ngFor="let producto of productos" class="col-12 md:col-4 flex justify-content-center mb-6">
+                <p-card class="w-full max-w-25rem shadow-3 border-round-xl hover:shadow-6 hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+                    <ng-template #header>
+                        <div class="relative">
+                            <p-image [preview]="true" [src]="'productos/' + producto.imagen + '.png'" alt="{{ producto.titulo }}" imageClass="w-full"
+                                class="w-full object-cover border-round-top-xl" />
+                            <div class="absolute top-0 right-0 m-3">
+                                <p-tag value="DESTACADO" severity="warning" [rounded]="true" />
+                            </div>
+                        </div>
                     </ng-template>
-                    <p class="text-base text-color-secondary">{{ producto.descripcion }}</p>
+                    <div class="p-2">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">{{ producto.titulo }}</h3>
+                        <p class="text-base text-gray-600 mb-4 line-height-1-6">{{ producto.descripcion }}</p>
+                        <p-button label="Ver más" icon="pi pi-arrow-right" [outlined]="true" [rounded]="true" routerLink="/productos" styleClass="w-full" />
+                    </div>
                 </p-card>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="mt-8">
-        <h2 class="text-2xl font-semibold text-center mb-6">¿Cómo funciona?</h2>
-        <div class="flex flex-wrap justify-content-center gap-6 mb-6">
-            <div class="flex flex-column align-items-center gap-2">
-                <i class="pi pi-upload text-4xl mb-2 text-primary"></i>
-                <h3 class="font-semibold">1. Subí tu imagen</h3>
+    <section>
+        <div class="text-center mb-10">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">¿Cómo <span class="text-primary">funciona</span>?</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">En solo 3 simples pasos tendrás tu prenda personalizada</p>
+        </div>
+
+        <div class="grid">
+            <div class="col-4 flex flex-column align-items-center text-center">
+                <div class="bg-primary text-white p-4 border-round-full w-6rem h-6rem flex align-items-center justify-content-center mb-4 shadow-3">
+                    <i class="pi pi-upload text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">1. Subí tu imagen</h3>
+                <p class="text-gray-600 line-height-1-6">Seleccioná la foto que querés bordar en tu prenda</p>
             </div>
-            <div class="flex flex-column align-items-center  gap-2">
-                <i class="pi pi-palette text-4xl mb-2 text-primary"></i>
-                <h3 class="font-semibold">2. Elegí color e indumentaria</h3>
+            <div class="col-4 flex flex-column align-items-center text-center">
+                <div class="bg-primary text-white p-4 border-round-full w-6rem h-6rem flex align-items-center justify-content-center mb-4 shadow-3">
+                    <i class="pi pi-palette text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">2. Elegí color e indumentaria</h3>
+                <p class="text-gray-600 line-height-1-6">Personalizá el color del hilo y el tipo de prenda</p>
             </div>
-            <div class="flex flex-column align-items-center gap-2">
-                <i class="pi pi-check-circle text-4xl mb-2 text-primary"></i>
-                <h3 class="font-semibold">3. Recibí tu prenda única</h3>
+            <div class="col-4 flex flex-column align-items-center text-center">
+                <div class="bg-primary text-white p-4 border-round-full w-6rem h-6rem flex align-items-center justify-content-center mb-4 shadow-3">
+                    <i class="pi pi-check-circle text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">3. Recibí tu prenda única</h3>
+                <p class="text-gray-600 line-height-1-6">¡Listo! Tu prenda bordada llegará a tu puerta</p>
             </div>
         </div>
+
         <div class="flex justify-content-center">
-            <p-image src="productos/pasos.png" alt="Pasos" class="w-full md:w-12 md:max-w-3xl border-round shadow-2" imageClass="w-full" />
+            <p-image src="productos/pasos.png" alt="Pasos" class="w-full md:w-10 md:max-w-4xl border-round-xl shadow-3" imageClass="w-full" />
         </div>
     </section>
 
     <!-- Testimonials Carousel -->
-    <section class="mt-10">
-        <h2 class="text-2xl font-semibold text-center mb-6">Testimonios</h2>
-        <p-carousel [value]="testimonios" [numVisible]="1" [numScroll]="1" [circular]="true" [autoplayInterval]="4000" styleClass="w-full md:w-8 mx-auto">
-            <ng-template let-testimonio pTemplate="item">
-                <div class="flex flex-column align-items-center gap-4 border-1 border-round-lg shadow-2 p-4 bg-surface-0">
-                    <img src="https://primefaces.org/cdn/primeng/images/demo/product/{{ testimonio.image }}" [alt]="testimonio.name"
-                        class="w-6rem h-6rem border-circle mb-2 object-cover" />
-                    <div class="font-bold text-lg">{{ testimonio.nombre }}</div>
-                    <div class="text-md text-color-secondary text-center">{{ testimonio.comentario }}</div>
+    <section>
+        <div class="text-center mb-5">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Lo que dicen nuestros <span class="text-primary">clientes</span></h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Descubrí las experiencias de quienes ya probaron nuestros bordados personalizados</p>
+        </div>
+        <p-carousel [value]="testimonios" [numVisible]="1" [numScroll]="1" [circular]="true" [autoplayInterval]="5000" styleClass="w-full md:w-8 mx-auto">
+            <ng-template let-testimonio #item>
+                <div class="flex flex-column align-items-center gap-3">
+                    <div class="relative">
+                        <p-image [src]="testimonio.imagen" [alt]="testimonio.nombre" imageClass="w-full border-circle object-cover shadow-3" />
+                        <!-- <div class="absolute -bottom-2 -right-2 bg-primary text-white p-2 border-round-full">
+                            <i class="pi pi-star-fill text-sm"></i>
+                        </div> -->
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-xl text-gray-800 mb-2">{{ testimonio.nombre }}</div>
+                        <div class="flex justify-content-center gap-1 mb-3">
+                            <i *ngFor="let star of [1,2,3,4,5]" class="pi" [class]="star <= testimonio.rating ? 'pi-star-fill text-yellow-500' : 'pi-star text-gray-300'"></i>
+                        </div>
+                        <div class="text-lg text-gray-600 text-center line-height-1-6 italic">"{{ testimonio.comentario }}"</div>
+                    </div>
                 </div>
             </ng-template>
         </p-carousel>
     </section>
 
     <!-- Final CTA with wave background -->
-    <section class="relative text-center my-10 py-8 px-3 bg-primary-50 border-round-3xl overflow-hidden">
-        <!-- Decorative SVG wave could go here in the future -->
-        <div class="flex flex-column align-items-center gap-4">
-            <h2 class="text-3xl font-bold text-primary-900">¿Listo para diseñar tu prenda?</h2>
-            <p class="text-lg text-primary-700 mb-2">¡Animate a crear algo único y personal!</p>
-            <p-button label="Diseñá tu prenda ahora" icon="pi pi-magic" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar" />
+    <section class="relative text-center py-16 px-6 bg-gradient-to-br from-primary-100 via-primary-50 to-blue-50 border-round-3xl overflow-hidden">
+        <div class="flex flex-column align-items-center gap-3 z-1">
+            <div class="bg-primary text-white p-4 border-round-2xl w-8rem h-8rem flex align-items-center justify-content-center shadow-3">
+                <i class="pi pi-pencil text-4xl"></i>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold text-primary-900">¿Listo para diseñar tu <span class="text-primary">prenda</span>?</h2>
+            <p class="text-xl text-primary-700 max-w-2xl">¡Animate a crear algo único y personal! Nuestros bordados transformarán tus ideas en realidad</p>
+            <div class="flex flex-column md:flex-row gap-4">
+                <p-button label="Diseñá tu prenda ahora" icon="pi pi-magic" [raised]="true" [rounded]="true" size="large" routerLink="/personalizar"
+                    styleClass="p-button-primary text-lg px-8" />
+                <p-button label="Ver productos listos" icon="pi pi-shopping-bag" [outlined]="true" [rounded]="true" size="large" routerLink="/productos" styleClass="text-lg px-8" />
+            </div>
         </div>
     </section>
 </main>

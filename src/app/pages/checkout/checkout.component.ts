@@ -11,6 +11,8 @@ import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.com
 import { Panel } from 'primeng/panel';
 import { InputText } from 'primeng/inputtext';
 import { InputMask } from 'primeng/inputmask';
+import { InputGroup } from 'primeng/inputgroup';
+import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { Button } from 'primeng/button';
 import { RadioButton } from 'primeng/radiobutton';
 import { Checkbox } from 'primeng/checkbox';
@@ -18,6 +20,8 @@ import { Divider } from 'primeng/divider';
 import { Toast } from 'primeng/toast';
 import { Tag } from 'primeng/tag';
 import { Card } from 'primeng/card';
+import { Select } from 'primeng/select';
+import { Dialog } from 'primeng/dialog';
 
 @Component({
   selector: 'app-checkout',
@@ -31,13 +35,17 @@ import { Card } from 'primeng/card';
     Panel,
     InputText,
     InputMask,
+    InputGroup,
+    InputGroupAddon,
     Button,
     RadioButton,
     Card,
     Checkbox,
     Divider,
     Toast,
-    Tag
+    Tag,
+    Select,
+    Dialog
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './checkout.component.html',
@@ -47,6 +55,8 @@ export class CheckoutComponent implements OnInit {
 
   checkoutForm!: FormGroup;
   isProcessing: boolean = false;
+  showTermsDialog: boolean = false;
+  showPrivacyDialog: boolean = false;
   orderItems: CarritoItem[] = [];
   subtotal: number = 0;
   discountPercentage: number = 0.10;
@@ -57,6 +67,145 @@ export class CheckoutComponent implements OnInit {
   transferData: string = 'CBU: 00000000000000000000000000000000\n' +
     'Alias: alias.alias.alias\n' +
     'Banco: Banco Galicia';
+
+  provinces = [
+    { label: 'Buenos Aires', value: 'Buenos Aires' },
+    { label: 'C.A.B.A. (Ciudad Autónoma de Buenos Aires)', value: 'CABA' },
+    { label: 'Catamarca', value: 'Catamarca' },
+    { label: 'Chaco', value: 'Chaco' },
+    { label: 'Chubut', value: 'Chubut' },
+    { label: 'Córdoba', value: 'Córdoba' },
+    { label: 'Corrientes', value: 'Corrientes' },
+    { label: 'Entre Ríos', value: 'Entre Ríos' },
+    { label: 'Formosa', value: 'Formosa' },
+    { label: 'Jujuy', value: 'Jujuy' },
+    { label: 'La Pampa', value: 'La Pampa' },
+    { label: 'La Rioja', value: 'La Rioja' },
+    { label: 'Mendoza', value: 'Mendoza' },
+    { label: 'Misiones', value: 'Misiones' },
+    { label: 'Neuquén', value: 'Neuquén' },
+    { label: 'Río Negro', value: 'Río Negro' },
+    { label: 'Salta', value: 'Salta' },
+    { label: 'San Juan', value: 'San Juan' },
+    { label: 'San Luis', value: 'San Luis' },
+    { label: 'Santa Cruz', value: 'Santa Cruz' },
+    { label: 'Santa Fe', value: 'Santa Fe' },
+    { label: 'Santiago del Estero', value: 'Santiago del Estero' },
+    { label: 'Tierra del Fuego', value: 'Tierra del Fuego' },
+    { label: 'Tucumán', value: 'Tucumán' }
+  ];
+
+  mercadopagoData = 'Para pagar con MercadoPago:\n\n' +
+    '1. Serás redirigido a MercadoPago\n' +
+    '2. Podrás pagar con tarjeta, efectivo o transferencia\n' +
+    '3. Recibirás confirmación por email\n' +
+    '4. Tu pedido se procesará automáticamente';
+
+  termsAndConditions = `
+    <h2 class="text-xl font-bold mb-4">Términos y Condiciones</h2>
+    
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">1. Aceptación de los Términos</h3>
+      <p class="text-sm line-height-2">Al realizar una compra en nuestro sitio web, aceptás estos términos y condiciones en su totalidad. Si no estás de acuerdo con alguna parte de estos términos, no debés realizar una compra.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">2. Productos y Servicios</h3>
+      <p class="text-sm line-height-2">Todos nuestros productos son bordados a mano con materiales de alta calidad. Los tiempos de entrega pueden variar según la complejidad del diseño y la disponibilidad de materiales.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">3. Precios y Pagos</h3>
+      <p class="text-sm line-height-2">Todos los precios están expresados en pesos argentinos e incluyen IVA. Los pagos se procesan de forma segura a través de nuestros proveedores autorizados. Ofrecemos descuentos especiales para pagos por transferencia bancaria.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">4. Envíos y Entregas</h3>
+      <p class="text-sm line-height-2">Realizamos envíos a todo el país a través de servicios de correo certificado. Los tiempos de entrega estimados son de 3-7 días hábiles para el interior del país y 1-3 días hábiles para CABA y GBA.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">5. Cambios y Devoluciones</h3>
+      <p class="text-sm line-height-2">Aceptamos cambios y devoluciones dentro de los 30 días posteriores a la recepción del producto, siempre que el artículo esté en su estado original y sin usar. Los gastos de envío de devolución corren por cuenta del cliente.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">6. Garantía</h3>
+      <p class="text-sm line-height-2">Todos nuestros productos tienen garantía de 6 meses por defectos de fabricación. La garantía no cubre el desgaste normal del uso ni daños causados por el cliente.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">7. Privacidad</h3>
+      <p class="text-sm line-height-2">Tu información personal será tratada de acuerdo con nuestra política de privacidad. No compartimos tus datos con terceros sin tu consentimiento explícito.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">8. Contacto</h3>
+      <p class="text-sm line-height-2">Para cualquier consulta sobre estos términos, podés contactarnos a través de nuestro formulario de contacto o por email a info@bordados.com.ar</p>
+    </div>
+
+    <div class="text-xs text-color-secondary mt-4">
+      <p>Última actualización: ${new Date().toLocaleDateString('es-AR')}</p>
+    </div>
+  `;
+
+  privacyPolicy = `
+    <h2 class="text-xl font-bold mb-4">Política de Privacidad</h2>
+    
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">1. Información que Recopilamos</h3>
+      <p class="text-sm line-height-2">Recopilamos información que nos proporcionás directamente, como tu nombre, dirección de email, dirección postal, número de teléfono e información de pago cuando realizás una compra o te registrás en nuestro sitio web.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">2. Uso de la Información</h3>
+      <p class="text-sm line-height-2">Utilizamos tu información personal para procesar pedidos, enviar confirmaciones, responder consultas, mejorar nuestros servicios y comunicarnos contigo sobre productos y ofertas que puedan interesarte.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">3. Compartir Información</h3>
+      <p class="text-sm line-height-2">No vendemos, alquilamos ni compartimos tu información personal con terceros, excepto cuando es necesario para procesar tu pedido (proveedores de pago, servicios de envío) o cuando la ley lo requiera.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">4. Seguridad de Datos</h3>
+      <p class="text-sm line-height-2">Implementamos medidas de seguridad técnicas y organizativas para proteger tu información personal contra acceso no autorizado, alteración, divulgación o destrucción. Utilizamos encriptación SSL para proteger los datos durante la transmisión.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">5. Cookies y Tecnologías Similares</h3>
+      <p class="text-sm line-height-2">Utilizamos cookies y tecnologías similares para mejorar tu experiencia en nuestro sitio web, recordar tus preferencias y analizar el tráfico del sitio. Podés controlar el uso de cookies a través de la configuración de tu navegador.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">6. Tus Derechos</h3>
+      <p class="text-sm line-height-2">Tenés derecho a acceder, corregir, actualizar o eliminar tu información personal. También podés optar por no recibir comunicaciones promocionales. Para ejercer estos derechos, contactanos a través de nuestro formulario de contacto.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">7. Retención de Datos</h3>
+      <p class="text-sm line-height-2">Conservamos tu información personal durante el tiempo necesario para cumplir con los propósitos descritos en esta política, a menos que la ley requiera un período de retención más largo.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">8. Menores de Edad</h3>
+      <p class="text-sm line-height-2">Nuestro sitio web no está dirigido a menores de 18 años. No recopilamos intencionalmente información personal de menores de edad. Si sos menor de edad, no debés proporcionarnos información personal sin el consentimiento de tus padres o tutores.</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">9. Cambios en la Política</h3>
+      <p class="text-sm line-height-2">Podemos actualizar esta política de privacidad ocasionalmente. Te notificaremos sobre cualquier cambio significativo publicando la nueva política en nuestro sitio web y actualizando la fecha de "Última actualización".</p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-2">10. Contacto</h3>
+      <p class="text-sm line-height-2">Si tenés preguntas sobre esta política de privacidad o sobre cómo manejamos tu información personal, contactanos a través de nuestro formulario de contacto o por email a privacidad@bordados.com.ar</p>
+    </div>
+
+    <div class="text-xs text-color-secondary mt-4">
+      <p>Última actualización: ${new Date().toLocaleDateString('es-AR')}</p>
+    </div>
+  `;
 
   constructor(
     private fb: FormBuilder,
@@ -71,7 +220,7 @@ export class CheckoutComponent implements OnInit {
     this.initForm();
     this.loadOrderItems();
     this.calculateTotals();
-    
+
     // Listen to payment method changes
     this.checkoutForm.get('selectedPaymentMethod')?.valueChanges.subscribe(value => {
       this.onChange();
@@ -84,9 +233,12 @@ export class CheckoutComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required]],
-      address: ['', [Validators.required, Validators.minLength(5)]],
-      city: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
+      dni: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(8), Validators.pattern(/^\d*$/)]],
+      provincia: ['', [Validators.required]],
+      localidad: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
       postalCode: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[\dA-Za-z]*$/)]],
+      address: ['', [Validators.required, Validators.minLength(5)]],
+      pisoDepto: ['', [Validators.pattern(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ°\s]*$/)]],
       selectedPaymentMethod: ['creditCard', [Validators.required]],
       cardNumber: ['', [Validators.required, Validators.minLength(16), Validators.pattern(/^[\d\s]*$/)]],
       expiryDate: ['', [Validators.required, Validators.minLength(5), Validators.pattern(/^\d{2}\/\d{2}$/)]],
@@ -101,7 +253,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   private calculateTotals(): void {
-    this.subtotal = this.orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+    this.subtotal = this.orderItems.reduce((sum, item) => sum + item.total, 0);
     this.iva = this.subtotal * this.ivaPercentage; // 21% IVA
 
     // Calculate discount based on payment method
@@ -109,12 +261,31 @@ export class CheckoutComponent implements OnInit {
     if (selectedPaymentMethod === 'transfer') {
       console.log('transfer');
       this.discount = (this.subtotal + this.iva) * this.discountPercentage; // discount on subtotal + IVA
+    } else if (selectedPaymentMethod === 'mercadopago') {
+      console.log('mercadopago');
+      this.discount = 0; // no discount for MercadoPago
     } else {
       console.log('credit card');
       this.discount = 0; // no discount for credit card
     }
 
     this.total = this.subtotal + this.iva - this.discount;
+  }
+
+  isShippingFree(): boolean {
+    return this.total >= 100000;
+  }
+
+  getShippingText(): string {
+    return this.isShippingFree() ? 'Gratis' : 'A calcular';
+  }
+
+  getShippingIcon(): string {
+    return this.isShippingFree() ? 'pi pi-check' : 'pi pi-calculator';
+  }
+
+  getShippingSeverity(): string {
+    return this.isShippingFree() ? 'success' : 'info';
   }
 
   onChange(): void {
@@ -126,16 +297,27 @@ export class CheckoutComponent implements OnInit {
 
     if (selectedPaymentMethod === 'creditCard') {
       cardNumber?.setValidators([Validators.required, Validators.minLength(16), Validators.pattern(/^[\d\s]*$/)]);
-      cardNumber?.markAsDirty();
+      // cardNumber?.markAsDirty();
       expiryDate?.setValidators([Validators.required, Validators.minLength(5), Validators.pattern(/^\d{2}\/\d{2}$/)]);
-      expiryDate?.markAsDirty();
+      // expiryDate?.markAsDirty();
       cvv?.setValidators([Validators.required, Validators.minLength(3), Validators.maxLength(4), Validators.pattern(/^\d*$/)]);
-      cvv?.markAsDirty();
+      // cvv?.markAsDirty();
       cardholderName?.setValidators([Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]);
-      cardholderName?.markAsDirty();
-    } else {
+      // cardholderName?.markAsDirty();
+    } else if (selectedPaymentMethod === 'mercadopago') {
+      // MercadoPago doesn't need card details in our form
       cardNumber?.clearValidators();
-      cardNumber?.reset(); // Esto deselecciona el selectbutton
+      cardNumber?.reset();
+      expiryDate?.clearValidators();
+      expiryDate?.reset();
+      cvv?.clearValidators();
+      cvv?.reset();
+      cardholderName?.clearValidators();
+      cardholderName?.reset();
+    } else {
+      // Transfer method
+      cardNumber?.clearValidators();
+      cardNumber?.reset();
       expiryDate?.clearValidators();
       expiryDate?.reset();
       cvv?.clearValidators();
@@ -151,6 +333,22 @@ export class CheckoutComponent implements OnInit {
 
     // Recalculate totals when payment method changes
     this.calculateTotals();
+  }
+
+  openTermsDialog(): void {
+    this.showTermsDialog = true;
+  }
+
+  closeTermsDialog(): void {
+    this.showTermsDialog = false;
+  }
+
+  openPrivacyDialog(): void {
+    this.showPrivacyDialog = true;
+  }
+
+  closePrivacyDialog(): void {
+    this.showPrivacyDialog = false;
   }
 
   processPayment(): void {

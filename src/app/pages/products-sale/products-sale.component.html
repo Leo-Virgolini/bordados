@@ -1,0 +1,205 @@
+<main>
+    <!-- Toast for notifications -->
+    <p-toast position="bottom-center" />
+
+    <!-- Confirm Popup -->
+    <p-confirmpopup />
+
+    <!-- Header -->
+    <section class="text-center">
+        <h1 class="flex align-items-center justify-content-center text-4xl font-bold text-primary-900 mb-2">
+            <i class="pi pi-tag text-primary mr-3 text-4xl"></i>Productos Bordados Listos
+        </h1>
+        <p class="text-lg text-color-secondary">Descubrí nuestras prendas con bordados únicos y diseños exclusivos</p>
+    </section>
+    <form [formGroup]="filtersForm" class="flex flex-column md:p-3 bg-surface-50">
+        <!-- Search and Filters Section -->
+        <section class="mb-3">
+            <p-card styleClass="border-round-xl p-3 shadow-3 bg-surface-0">
+                <ng-template #header>
+                    <div class="flex align-items-center justify-content-between">
+                        <h2 class="text-xl font-bold m-0">
+                            <i class="pi pi-filter mr-2"></i>Filtros y Búsqueda
+                        </h2>
+                        <p-button label="Limpiar Filtros" icon="pi pi-eraser" [outlined]="true" [rounded]="true" severity="secondary" (onClick)="clearFilters()" />
+                    </div>
+                </ng-template>
+
+                <div class="flex flex-column gap-3">
+                    <!-- Search Bar -->
+                    <div class="flex align-items-center gap-3">
+                        <p-inputgroup>
+                            <input pInputText formControlName="searchTerm" placeholder="Buscar productos..." class="w-full" />
+                            <p-button icon="pi pi-search" [outlined]="true" (onClick)="onSearch()" />
+                        </p-inputgroup>
+                        <p-select formControlName="selectedSort" [options]="sortOptions" optionLabel="label" optionValue="value" placeholder="Ordenar por" class="w-12rem" />
+                    </div>
+
+                    <!-- Filters Grid -->
+                    <div class="grid">
+                        <!-- Categories -->
+                        <div class="col-12 md:col-3">
+                            <label class="block mb-2 font-semibold">Categorías</label>
+                            <p-multiselect formControlName="selectedCategories" [options]="categories" optionLabel="label" optionValue="value" placeholder="Seleccionar categorías"
+                                class="w-full" />
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="col-12 md:col-3">
+                            <label class="block mb-2 font-semibold">Etiquetas</label>
+                            <p-multiselect formControlName="selectedTags" [options]="tags" optionLabel="label" optionValue="value" placeholder="Seleccionar etiquetas" class="w-full" />
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="col-12 md:col-3">
+                            <label class="block mb-2 font-semibold">Rango de Precios</label>
+                            <p-slider formControlName="priceRange" [range]="true" [min]="0" [max]="50000" [step]="1000" />
+                            <div class="flex justify-content-between text-xs text-color-secondary mt-2">
+                                <span>${{ filtersForm.get('priceRange')?.value[0] | number }}</span>
+                                <span>${{ filtersForm.get('priceRange')?.value[1] | number }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filters -->
+                        <div class="col-12 md:col-3">
+                            <label class="block mb-2 font-semibold">Filtros Rápidos</label>
+                            <div class="flex flex-column gap-2">
+                                <div class="flex align-items-center">
+                                    <p-checkbox formControlName="showOnlyNew" [binary]="true" [inputId]="'new'" />
+                                    <label for="new" class="ml-2 cursor-pointer">Solo Nuevos</label>
+                                </div>
+                                <div class="flex align-items-center">
+                                    <p-checkbox formControlName="showOnlyFeatured" [binary]="true" [inputId]="'featured'" />
+                                    <label for="featured" class="ml-2 cursor-pointer">Solo Destacados</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div class="flex justify-content-between align-items-center bg-surface-50 border-round text-sm">
+                        <span class="font-semibold">
+                            {{ totalRecords }} producto{{ totalRecords !== 1 ? 's' : '' }} encontrado{{ totalRecords !== 1 ? 's' : '' }}
+                        </span>
+                        <span class="text-color-secondary">
+                            Página {{ getActualPage() }} de {{ getTotalPages() }}
+                        </span>
+                    </div>
+                </div>
+            </p-card>
+        </section>
+
+        <!-- Products Grid -->
+        <section id="products-section" class="mb-6">
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="flex justify-content-center align-items-center py-8">
+                <div class="flex flex-column align-items-center gap-4">
+                    <p-progressSpinner strokeWidth="4" animationDuration=".5s" />
+                    <h3 class="text-xl font-semibold text-color-secondary">Cargando productos...</h3>
+                    <!-- <p class="text-color-secondary">Esperá un momento mientras cargamos los productos bordados</p> -->
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div *ngIf="!isLoading" class="grid">
+                <div *ngFor="let product of displayedProducts" class="col-12 sm:col-6 lg:col-4 xl:col-3 mb-4">
+                    <p-card styleClass="border-round-xl shadow-3 bg-surface-0 h-full transition-all transition-duration-300 hover:shadow-6 hover:-translate-y-1">
+
+                        <!-- Product Image -->
+                        <ng-template #header>
+                            <div class="relative">
+                                <p-image [src]="product.imagen" [alt]="product.nombre" imageClass="w-full border-round-top-xl" [preview]="true" />
+
+                                <!-- Discount Badge -->
+                                <p-tag *ngIf="product.descuento > 0" [value]="'-' + product.descuento + '%'" [severity]="getDiscountColor(product.descuento)"
+                                    class="absolute top-0 right-0 m-2" [rounded]="true" />
+
+                                <!-- New Badge -->
+                                <p-tag *ngIf="product.esNuevo" value="NUEVO" severity="info" class="absolute top-0 left-0 m-2" [rounded]="true" />
+
+                                <!-- Featured Badge -->
+                                <p-tag *ngIf="product.esDestacado" value="DESTACADO" severity="warning" class="absolute top-0 left-0 m-2" [rounded]="true" style="margin-left: 4.5rem;" />
+
+                                <!-- All products are pre-embroidered, no need for type badge -->
+                            </div>
+                        </ng-template>
+
+                        <!-- Product Info -->
+                        <div class="flex flex-column gap-3">
+                            <!-- Title and Rating -->
+                            <div>
+                                <h3 class="text-lg font-bold mb-2 line-height-1-2">{{ product.nombre }}</h3>
+                                <div class="flex align-items-center gap-2 mb-2">
+                                    <i class="pi pi-star-fill text-yellow-500"></i>
+                                    <span class="font-semibold">{{ product.rating }}</span>
+                                    <span class="text-color-secondary">({{ getRandomReviews(product.rating) }} reviews)</span>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="text-color-secondary text-sm line-height-1-4">{{ product.descripcion }}</p>
+
+                            <!-- Product Specifications -->
+                            <div class="flex flex-column gap-2 mb-3">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-tag text-primary text-sm"></i>
+                                    <span class="text-600 text-sm">Talle: <span class="font-semibold text-900">{{ product.talle }}</span></span>
+                                </div>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-palette text-primary text-sm"></i>
+                                    <span class="text-600 text-sm">Color: <span class="font-semibold text-900">{{ product.colorPrenda }}</span></span>
+                                </div>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-box text-primary text-sm"></i>
+                                    <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.tipoPrenda | titlecase }}</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="flex flex-wrap gap-1">
+                                <p-tag *ngFor="let tag of product.tags.slice(0, 3)" [value]="tag" severity="secondary" [rounded]="true" styleClass="text-xs" />
+                            </div>
+
+                            <!-- Stock Status -->
+                            <div class="flex align-items-center gap-2">
+                                <p-tag [value]="getStockStatus(product.stock).value" [severity]="getStockStatus(product.stock).severity" [rounded]="true" />
+                                <span class="text-xs text-color-secondary">Stock: {{ product.stock }}</span>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="flex align-items-center gap-2">
+                                <!-- Show original price crossed out and discounted price when there's a discount -->
+                                <div *ngIf="product.descuento > 0" class="flex flex-row gap-1 align-items-center">
+                                    <span class="text-2xl font-bold text-teal-500">${{ getDiscountedPrice(product) | number }}</span>
+                                    <span class="line-through text-color-secondary">${{ product.precio | number }}</span>
+                                </div>
+                                <!-- Show only original price when there's no discount -->
+                                <span *ngIf="product.descuento === 0" class="text-2xl font-bold text-teal-500">${{ product.precio | number }}</span>
+                            </div>
+
+                            <!-- Add to Cart Button -->
+                            <p-button [label]="isProductLoading(product.id) ? 'Agregando...' : 'Agregar al Carrito'"
+                                [icon]="isProductLoading(product.id) ? 'pi pi-spin pi-spinner' : 'pi pi-cart-plus'" [raised]="true" [rounded]="true"
+                                [disabled]="product.stock === 0 || isProductLoading(product.id)" [loading]="isProductLoading(product.id)" (onClick)="addToCart($event, product)"
+                                styleClass="p-button-primary" class="w-full" />
+                        </div>
+                    </p-card>
+                </div>
+            </div>
+
+            <!-- No Results -->
+            <div *ngIf="displayedProducts.length === 0 && !isLoading" class="text-center py-8 px-4">
+                <i class="pi pi-search text-6xl text-color-secondary mb-4 block"></i>
+                <h3 class="text-xl font-bold mb-2">No se encontraron productos</h3>
+                <p class="text-color-secondary mb-4">Intenta ajustar los filtros de búsqueda</p>
+                <p-button label="Limpiar Filtros" icon="pi pi-refresh" [outlined]="true" [rounded]="true" (onClick)="clearFilters()" />
+            </div>
+        </section>
+    </form>
+
+    <!-- Pagination -->
+    <section *ngIf="totalRecords > 0" class="flex justify-content-center">
+        <p-paginator [first]="first" [rows]="rows" [totalRecords]="totalRecords" [rowsPerPageOptions]="[8, 16, 32, 64]" (onPageChange)="onPageChange($event)"
+            styleClass="border-round-xl shadow-3" />
+    </section>
+</main>

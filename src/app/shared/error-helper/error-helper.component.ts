@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl } from '@angular/forms';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-error-helper',
-  imports: [CommonModule],
+  imports: [CommonModule,
+    Message
+  ],
   templateUrl: './error-helper.component.html',
   styleUrls: ['./error-helper.component.scss']
 })

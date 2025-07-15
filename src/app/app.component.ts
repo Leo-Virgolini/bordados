@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
-import { ScrollTop } from 'primeng/scrolltop';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ScrollTop],
+  imports: [RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

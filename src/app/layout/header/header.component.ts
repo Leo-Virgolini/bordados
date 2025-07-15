@@ -6,13 +6,15 @@ import { Avatar } from 'primeng/avatar';
 import { Badge } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
+import { InputGroup } from 'primeng/inputgroup';
+import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { Menubar } from 'primeng/menubar';
 import { OverlayBadge } from 'primeng/overlaybadge';
 import { CarritoService } from '../../services/carrito.service';
 
 @Component({
   selector: 'app-header',
-  imports: [ButtonModule, Menubar, Badge, CommonModule, Avatar, InputText, RouterLink, OverlayBadge],
+  imports: [ButtonModule, Menubar, Badge, CommonModule, Avatar, InputText, InputGroup, InputGroupAddon, RouterLink, OverlayBadge],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -25,12 +27,15 @@ export class HeaderComponent {
   items: MenuItem[] = [
     { label: 'Inicio', icon: PrimeIcons.HOME, routerLink: '/' },
     {
-      label: 'Productos', icon: PrimeIcons.BOX, routerLink: '/productos',
+      label: 'Productos', icon: PrimeIcons.SHOPPING_BAG, routerLink: '/productos',
       items: [
-        { label: 'Remeras', icon: PrimeIcons.BOX, routerLink: '/remeras' },
-        { label: 'Buzos', icon: PrimeIcons.BOX, routerLink: '/buzos' }
+        { label: 'Remeras', icon: PrimeIcons.BOX, routerLink: '/productos/remeras' },
+        { label: 'Buzos', icon: PrimeIcons.BOX, routerLink: '/productos/buzos' }
       ]
     },
+    { label: 'Personalizar', icon: PrimeIcons.PALETTE, routerLink: '/personalizar' },
+    { label: 'Admin Productos', icon: PrimeIcons.ADDRESS_BOOK, routerLink: '/admin/productos' },
+    { label: 'Admin Personalizar', icon: PrimeIcons.ADDRESS_BOOK, routerLink: '/admin/personalizar' },
     { label: 'Contacto', icon: PrimeIcons.ENVELOPE, routerLink: '/contacto' }
   ];
 

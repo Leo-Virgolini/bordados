@@ -1,0 +1,253 @@
+// // Admin Component Styles
+
+// :host {
+//   display: block;
+//   min-height: 100vh;
+// }
+
+// // Tab styling
+// ::ng-deep .p-tabview {
+//   .p-tabview-nav {
+//     border-bottom: 2px solid var(--surface-border);
+    
+//     .p-tabview-nav-link {
+//       border: none;
+//       border-bottom: 3px solid transparent;
+//       transition: all 0.3s ease;
+      
+//       &:hover {
+//         background: var(--surface-hover);
+//         border-bottom-color: var(--primary-color);
+//       }
+      
+//       &.p-highlight {
+//         background: var(--surface-card);
+//         border-bottom-color: var(--primary-color);
+//         color: var(--primary-color);
+//       }
+//     }
+//   }
+// }
+
+// // DataTable styling
+// ::ng-deep .p-datatable {
+//   .p-datatable-header {
+//     background: var(--surface-card);
+//     border: 1px solid var(--surface-border);
+//     border-bottom: none;
+//   }
+  
+//   .p-datatable-thead > tr > th {
+//     background: var(--surface-50);
+//     border: 1px solid var(--surface-border);
+//     font-weight: 600;
+//     color: var(--text-color);
+//   }
+  
+//   .p-datatable-tbody > tr {
+//     transition: background-color 0.2s ease;
+    
+//     &:hover {
+//       background: var(--surface-hover);
+//     }
+    
+//     > td {
+//       border: 1px solid var(--surface-border);
+//       padding: 0.75rem;
+//     }
+//   }
+  
+//   &.p-datatable-sm {
+//     .p-datatable-tbody > tr > td {
+//       padding: 0.5rem;
+//     }
+//   }
+// }
+
+// // Dialog styling
+// ::ng-deep .p-dialog {
+//   .p-dialog-header {
+//     background: var(--surface-card);
+//     border-bottom: 1px solid var(--surface-border);
+    
+//     .p-dialog-title {
+//       font-weight: 600;
+//       color: var(--text-color);
+//     }
+//   }
+  
+//   .p-dialog-content {
+//     background: var(--surface-ground);
+//     padding: 1.5rem;
+//   }
+  
+//   .p-dialog-footer {
+//     background: var(--surface-card);
+//     border-top: 1px solid var(--surface-border);
+//     padding: 1rem 1.5rem;
+//   }
+// }
+
+// // Form styling
+// form {
+//   .p-inputgroup {
+//     .p-inputgroup-addon {
+//       background: var(--surface-50);
+//       border-color: var(--surface-border);
+//       color: var(--text-color-secondary);
+//     }
+    
+//     input, p-inputnumber, p-select, p-multiselect {
+//       border-color: var(--surface-border);
+      
+//       &:focus {
+//         border-color: var(--primary-color);
+//         box-shadow: 0 0 0 1px var(--primary-color);
+//       }
+//     }
+//   }
+  
+//   textarea {
+//     border: 1px solid var(--surface-border);
+//     border-radius: var(--border-radius);
+//     padding: 0.75rem;
+//     font-family: inherit;
+//     resize: vertical;
+    
+//     &:focus {
+//       outline: none;
+//       border-color: var(--primary-color);
+//       box-shadow: 0 0 0 1px var(--primary-color);
+//     }
+//   }
+// }
+
+// // Color picker styling
+// ::ng-deep .p-colorpicker {
+//   .p-colorpicker-preview {
+//     border: 2px solid var(--surface-border);
+//     border-radius: var(--border-radius);
+    
+//     &:hover {
+//       border-color: var(--primary-color);
+//     }
+//   }
+// }
+
+// // File upload styling
+// ::ng-deep .p-fileupload {
+//   .p-fileupload-buttonbar {
+//     background: var(--surface-card);
+//     border: 1px solid var(--surface-border);
+//     border-radius: var(--border-radius);
+    
+//     .p-button {
+//       background: var(--primary-color);
+//       border-color: var(--primary-color);
+      
+//       &:hover {
+//         background: var(--primary-600);
+//         border-color: var(--primary-600);
+//       }
+//     }
+//   }
+// }
+
+// // Tag styling
+// ::ng-deep .p-tag {
+//   font-size: 0.75rem;
+//   font-weight: 500;
+  
+//   &.text-xs {
+//     font-size: 0.625rem;
+//     padding: 0.125rem 0.375rem;
+//   }
+// }
+
+// // Card styling
+// ::ng-deep .p-card {
+//   .p-card-header {
+//     background: var(--surface-card);
+//     border-bottom: 1px solid var(--surface-border);
+//     padding: 1.5rem;
+//   }
+  
+//   .p-card-content {
+//     padding: 1.5rem;
+//   }
+// }
+
+// // Button styling
+// ::ng-deep .p-button {
+//   &.p-button-sm {
+//     padding: 0.375rem 0.75rem;
+//     font-size: 0.875rem;
+//   }
+  
+//   &.p-button-outlined {
+//     background: transparent;
+    
+//     &:hover {
+//       background: var(--surface-hover);
+//     }
+//   }
+// }
+
+// // Responsive adjustments
+// @media (max-width: 768px) {
+//   ::ng-deep .p-datatable {
+//     .p-datatable-thead > tr > th,
+//     .p-datatable-tbody > tr > td {
+//       padding: 0.5rem 0.25rem;
+//       font-size: 0.875rem;
+//     }
+//   }
+  
+//   .p-dialog {
+//     width: 95vw !important;
+//     max-width: none !important;
+//   }
+// }
+
+// // Loading states
+// .loading {
+//   opacity: 0.6;
+//   pointer-events: none;
+// }
+
+// // Animation for dialogs
+// ::ng-deep .p-dialog {
+//   animation: dialogFadeIn 0.3s ease-out;
+// }
+
+// @keyframes dialogFadeIn {
+//   from {
+//     opacity: 0;
+//     transform: scale(0.9) translateY(-20px);
+//   }
+//   to {
+//     opacity: 1;
+//     transform: scale(1) translateY(0);
+//   }
+// }
+
+// // Custom scrollbar for dialogs
+// ::ng-deep .p-dialog-content {
+//   &::-webkit-scrollbar {
+//     width: 6px;
+//   }
+  
+//   &::-webkit-scrollbar-track {
+//     background: var(--surface-100);
+//     border-radius: 3px;
+//   }
+  
+//   &::-webkit-scrollbar-thumb {
+//     background: var(--surface-300);
+//     border-radius: 3px;
+    
+//     &:hover {
+//       background: var(--surface-400);
+//     }
+//   }
+// } 

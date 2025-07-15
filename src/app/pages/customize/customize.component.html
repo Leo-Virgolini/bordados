@@ -10,186 +10,280 @@
 </p-confirmdialog>
 <app-spinner [visible]="isLoading"></app-spinner>
 
-<main class="flex flex-column justify-content-center md:flex-row gap-6 p-3 md:p-6 bg-surface-50 border-round-xl">
-    <!-- Form Section -->
-    <section class="flex-1">
-        <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
-            <ng-template #header>
-                <h1 class="text-3xl font-bold mt-0 flex align-items-center justify-content-center text-center"><i class="pi pi-pencil mr-2" style="font-size: 1.5rem"></i> Personalizá tu
-                    prenda</h1>
-            </ng-template>
+<main class="surface-ground p-3">
+    <!-- Return Button inside the section, above the panel -->
+    <div class="mb-4">
+        <p-button label="Volver al Inicio" icon="pi pi-home" routerLink="/" [outlined]="true" [rounded]="true" severity="primary" />
+    </div>
+    <div class="grid">
+        <!-- Form Section -->
+        <section class="col-12 md:col-8">
+            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
+                <ng-template #header>
+                    <h1 class="text-3xl font-bold mt-0 flex align-items-center justify-content-center text-center"><i class="pi pi-pencil mr-2" style="font-size: 1.5rem"></i> Personalizá
+                        tu prenda</h1>
+                </ng-template>
 
-            <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto">
-                <!-- Tipo de prenda -->
-                <div>
-                    <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
-                    <p-selectbutton id="tipoPrenda" formControlName="tipo" class="ml-2" size="large" [options]="tiposPrenda" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                        [ngClass]="{'ng-invalid ng-dirty': formulario.get('tipo')?.invalid && formulario.get('tipo')?.dirty}" required>
-                        <ng-template #item let-prenda>
-                            <img [src]="'prendas/' + prenda.image + '.webp'" class="prenda" [pTooltip]="prenda.label" tooltipPosition="top" />
-                            <p-badge value="{{ prenda.precio | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="xlarge" class="absolute top-0 right-0 m-2" />
-                        </ng-template>
-                    </p-selectbutton>
-                    <app-error-helper [control]="formulario.get('tipo')"></app-error-helper>
-                </div>
+                <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto">
+                    <!-- Tipo de prenda -->
+                    <div>
+                        <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
+                        <p-selectbutton id="tipoPrenda" formControlName="tipo" class="w-auto" size="large" [options]="tiposPrenda" optionLabel="label" optionValue="value"
+                            aria-labelledby="basic" required>
+                            <ng-template #item let-prenda>
+                                <p-image [src]="'prendas/' + prenda.image + '.webp'" imageClass="w-full border-round-xl border-1" [pTooltip]="prenda.label" tooltipPosition="top" />
+                                <p-badge value="{{ prenda.precio | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="xlarge" class="absolute top-0 right-0 m-2" />
+                            </ng-template>
+                        </p-selectbutton>
+                        <app-error-helper [control]="formulario.get('tipo')"></app-error-helper>
+                    </div>
 
-                <!-- Talle -->
-                <div>
-                    <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
-                    <p-selectbutton [options]="talles" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required />
-                    <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
-                </div>
+                    <!-- Talle -->
+                    <div>
+                        <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
+                        <div class="flex align-items-center gap-3">
+                            <p-selectbutton [options]="talles" class="w-auto" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                                required />
+                            <p-button label="Guía de Talles" icon="pi pi-tags" severity="info" [rounded]="true" [raised]="true" size="small" (onClick)="openSizeGuide()" />
+                        </div>
+                        <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
+                    </div>
 
-                <!-- Color de prenda -->
-                <div>
-                    <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda: *</label>
-                    <p-selectbutton [options]="coloresPrendas" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required>
-                        <ng-template #item let-color>
-                            <div class="color-prenda border-circle border-1 border-300" [pTooltip]="color.label" tooltipPosition="top"
-                                [ngStyle]="{'background-color': color.hex, 'width': '32px', 'height': '32px'}"></div>
-                        </ng-template>
-                    </p-selectbutton>
-                    <app-error-helper [control]="formulario.get('colorPrenda')"></app-error-helper>
-                </div>
-
-                <!-- 1° Color del hilado -->
-                <div>
-                    <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado: *</label>
-                    <p-selectbutton [options]="coloresHilado" formControlName="colorHilado1" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required>
-                        <ng-template #item let-color>
-                            <div class="color-prenda border-circle border-1 border-300" [pTooltip]="color.label" tooltipPosition="top"
-                                [ngStyle]="{'background-color': color.hex, 'width': '32px', 'height': '32px'}"></div>
-                        </ng-template>
-                    </p-selectbutton>
-                    <app-error-helper [control]="formulario.get('colorHilado1')"></app-error-helper>
-                </div>
-
-                <!-- ¿Usar un segundo color? -->
-                <div>
-                    <label for="usarSegundoColor" class="block mb-2 text-lg font-semibold">¿Querés usar un segundo color de hilado?</label>
-                    <p-togglebutton formControlName="usarSegundoColor" (onChange)="onChange()" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
-                        aria-label="Confirmation" />
-                    <p-badge *ngIf="formulario.get('usarSegundoColor')?.value" value="+{{ precioSegundoColor | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="large"
-                        class="ml-2" />
-                </div>
-
-                <!-- 2° Color del hilado -->
-                <div *ngIf="formulario.get('usarSegundoColor')?.value">
-                    <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
-                    <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                        [required]="formulario.get('usarSegundoColor')?.value">
-                        <ng-template #item let-color>
-                            <div class="color-prenda border-circle border-1 border-300" [pTooltip]="color.label" tooltipPosition="top"
-                                [ngStyle]="{'background-color': color.hex, 'width': '32px', 'height': '32px'}"></div>
-                        </ng-template>
-                    </p-selectbutton>
-                    <app-error-helper [control]="formulario.get('colorHilado2')"></app-error-helper>
-                </div>
-
-                <!-- Imagen -->
-                <div>
-                    <label for="imagen" class="block mb-2 text-lg font-semibold">Imagen: *</label>
-                    <p-fileupload name="imagen" mode="advanced" accept="image/*" [maxFileSize]="maxImageSize" (onSelect)="onSelect($event)" [multiple]="false" [auto]="false"
-                        [invalidFileSizeMessageSummary]="invalidFileSizeMessageSummary" [invalidFileSizeMessageDetail]="invalidFileSizeMessageDetail" required>
-                        <ng-template #header let-chooseCallback="chooseCallback">
-                            <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
-                                <div class="flex gap-2">
-                                    <p-button (onClick)="elegirImagen($event, chooseCallback)" label="Seleccionar" icon="pi pi-images text-4xl" size="large" [raised]="true"
-                                        [outlined]="true" />
+                    <!-- Color de prenda -->
+                    <div>
+                        <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda: *</label>
+                        <p-selectbutton [options]="coloresPrendas" class="w-auto" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                            required>
+                            <ng-template #item let-color>
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
                                 </div>
-                                <!-- <p-progressbar *ngIf="image" [value]="totalSizePercent" [showValue]="true" class="w-full" styleClass="md:w-20rem h-1 w-full md:ml-auto">
+                            </ng-template>
+                        </p-selectbutton>
+                        <app-error-helper [control]="formulario.get('colorPrenda')"></app-error-helper>
+                    </div>
+
+                    <!-- 1° Color del hilado -->
+                    <div>
+                        <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado: *</label>
+                        <p-selectbutton [options]="coloresHilado" class="w-auto" formControlName="colorHilado1" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                            required>
+                            <ng-template #item let-color>
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                </div>
+                            </ng-template>
+                        </p-selectbutton>
+                        <app-error-helper [control]="formulario.get('colorHilado1')"></app-error-helper>
+                    </div>
+
+                    <!-- ¿Usar un segundo color? -->
+                    <div>
+                        <label for="usarSegundoColor" class="block mb-2 text-lg font-semibold">¿Querés usar un segundo color de hilado?</label>
+                        <p-togglebutton formControlName="usarSegundoColor" (onChange)="onChange()" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
+                            aria-label="Confirmation" />
+                        <p-badge *ngIf="formulario.get('usarSegundoColor')?.value" value="+{{ precioSegundoColor | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="large"
+                            class="ml-2" />
+                    </div>
+
+                    <!-- 2° Color del hilado -->
+                    <div *ngIf="formulario.get('usarSegundoColor')?.value">
+                        <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
+                        <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                            [required]="formulario.get('usarSegundoColor')?.value">
+                            <ng-template #item let-color>
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                </div>
+                            </ng-template>
+                        </p-selectbutton>
+                        <app-error-helper [control]="formulario.get('colorHilado2')"></app-error-helper>
+                    </div>
+
+                    <!-- Imagen -->
+                    <div>
+                        <label for="imagen" class="block mb-2 text-lg font-semibold">Imagen: *</label>
+                        <p-fileupload name="imagen" mode="advanced" accept="image/*" [maxFileSize]="maxImageSize" (onSelect)="onSelect($event)" [multiple]="false" [auto]="false" required>
+                            <ng-template #header let-chooseCallback="chooseCallback">
+                                <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
+                                    <div class="flex gap-2">
+                                        <p-button (onClick)="elegirImagen($event, chooseCallback)" label="Seleccionar" icon="pi pi-images text-4xl" size="large" [raised]="true"
+                                            [outlined]="true" />
+                                    </div>
+                                    <!-- <p-progressbar *ngIf="image" [value]="totalSizePercent" [showValue]="true" class="w-full" styleClass="md:w-20rem h-1 w-full md:ml-auto">
                                     <span class="whitespace-nowrap">{{ image?.bytes }}B / 1Mb</span>
                                     </p-progressbar> -->
-                            </div>
-                        </ng-template>
+                                </div>
+                            </ng-template>
 
-                        <ng-template #content let-removeFileCallback="removeFileCallback">
-                            <div *ngIf="imageFile" class="flex align-items-center gap-3">
-                                <p-image [alt]="imageFile.name" [src]="imageURL" width="120" preview />
-                                <span class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">
-                                    {{ imageFile.name }} - {{ formatSize(imageFile.size) }}
-                                </span>
-                                <p-button icon="pi pi-trash" (onClick)="eliminarImagen($event, removeFileCallback)" [rounded]="true" severity="danger" />
-                            </div>
-                        </ng-template>
+                            <ng-template #content let-removeFileCallback="removeFileCallback">
+                                <div *ngIf="imageFile" class="flex align-items-center gap-3">
+                                    <p-image [alt]="imageFile.name" [src]="imageURL" width="120" preview />
+                                    <span class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">
+                                        {{ imageFile.name }} - {{ formatSize(imageFile.size) }}
+                                    </span>
+                                    <p-button icon="pi pi-trash" (onClick)="eliminarImagen($event, removeFileCallback)" [rounded]="true" severity="danger" />
+                                </div>
+                            </ng-template>
 
-                        <ng-template #file></ng-template>
+                            <ng-template #file></ng-template>
 
-                        <ng-template #empty>
-                            <p-divider />
-                            <div class="flex flex-row align-items-center justify-content-center">
-                                <i class="pi pi-cloud-upload text-4xl text-primary mr-3"></i>
-                                <p class="text-lg">
-                                    Arrastrá y soltá acá la imagen.<br />(Tamaño máximo {{ formatSize(maxImageSize) }})
-                                </p>
-                            </div>
-                        </ng-template>
-                    </p-fileupload>
-                    <app-error-helper [control]="formulario.get('imagen')"></app-error-helper>
-                </div>
+                            <ng-template #empty>
+                                <p-divider />
+                                <div class="flex flex-row align-items-center justify-content-center">
+                                    <i class="pi pi-cloud-upload text-4xl text-primary mr-3"></i>
+                                    <p class="text-lg">
+                                        Arrastrá y soltá acá la imagen.<br />(Tamaño máximo {{ formatSize(maxImageSize) }})
+                                    </p>
+                                </div>
+                            </ng-template>
+                        </p-fileupload>
+                        <app-error-helper [control]="formulario.get('imagen')"></app-error-helper>
+                    </div>
 
-                <!-- Cantidad -->
-                <div>
-                    <label for="cantidad" class="block mb-2 text-lg font-semibold">Cantidad: *</label>
-                    <p-selectbutton [options]="cantidades" formControlName="cantidad" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic" required />
-                    <app-error-helper [control]="formulario.get('cantidad')"></app-error-helper>
-                </div>
+                    <!-- Cantidad -->
+                    <div>
+                        <label for="cantidad" class="block mb-2 text-lg font-semibold">Cantidad: *</label>
+                        <p-selectbutton [options]="cantidades" class="w-auto" formControlName="cantidad" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                            required />
+                        <app-error-helper [control]="formulario.get('cantidad')"></app-error-helper>
+                    </div>
 
-            </form>
-        </p-panel>
-    </section>
-
-    <!-- Panel Resumen -->
-    <aside class="flex-1">
-        <div class="sticky" style="top: 7rem;">
-            <p-panel styleClass="border-round p-3 shadow-3">
-                <ng-template #header>
-                    <h1 class="text-2xl font-bold mt-0 text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.5rem"></i> Resumen del
-                        pedido</h1>
-                </ng-template>
-                <div class="flex flex-column gap-3">
-                    <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-ticket text-primary"></i>
-                        Prenda: <strong>{{ getLabel('tipo', tiposPrenda) }}</strong> <span class="text-sm text-green-500">({{ getPrecio('tipo', tiposPrenda) |
-                            currency:'ARS':'symbol':'1.0-0' }})</span>
-                    </div>
-                    <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-tag text-primary"></i>
-                        Talle:<strong>{{ getLabel('talle', talles) }}</strong>
-                    </div>
-                    <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-palette text-primary"></i>
-                        Color de prenda: <strong>{{ getLabel('colorPrenda', coloresPrendas) }}</strong>
-                    </div>
-                    <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-palette text-primary"></i>
-                        Color del hilado: <strong>{{ getLabel('colorHilado1', coloresPrendas) }}</strong>
-                    </div>
-                    <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-palette text-primary"></i>
-                        2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresPrendas) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
-                            currency:'ARS':'symbol':'1.0-0' }})</span>
-                    </div>
-                    <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
-                        <i class="pi pi-box text-primary"></i>
-                        Cantidad: <strong>{{ formulario.get('cantidad')?.value }}</strong>
-                    </div>
-                    <div *ngIf="formulario.valid">
-                        <span class="text-lg text-green-500">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }} x {{ formulario.get('cantidad')?.value}}</span>
-                    </div>
-                    <div *ngIf="formulario.valid" class="border-top-1 border-300 pt-2 mt-2">
-                        <p>
-                            <strong class="text-xl">Total estimado:</strong>
-                            <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
-                        </p>
-                    </div>
-                    <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
-                        [loading]="isLoading" [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'danger'"
-                        class="w-full" />
-                </div>
-
+                </form>
             </p-panel>
+        </section>
+
+        <!-- Panel Resumen -->
+        <aside class="col-12 md:col-4">
+            <div class="sticky" style="top: 7rem;">
+                <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
+                    <ng-template #header>
+                        <h1 class="text-2xl font-bold mt-0 text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.5rem"></i> Resumen
+                            del pedido</h1>
+                    </ng-template>
+                    <div class="flex flex-column gap-3">
+                        <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-ticket text-primary"></i>
+                            Prenda: <strong>{{ getLabel('tipo', tiposPrenda) }}</strong> <span class="text-sm text-green-500">({{ getPrecio('tipo', tiposPrenda) |
+                                currency:'ARS':'symbol':'1.0-0' }})</span>
+                        </div>
+                        <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-tag text-primary"></i>
+                            Talle:<strong>{{ getLabel('talle', talles) }}</strong>
+                        </div>
+                        <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-palette text-primary"></i>
+                            Color de prenda: <strong>{{ getLabel('colorPrenda', coloresPrendas) }}</strong>
+                        </div>
+                        <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-palette text-primary"></i>
+                            Color del hilado: <strong>{{ getLabel('colorHilado1', coloresPrendas) }}</strong>
+                        </div>
+                        <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-palette text-primary"></i>
+                            2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresPrendas) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
+                                currency:'ARS':'symbol':'1.0-0' }})</span>
+                        </div>
+                        <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
+                            <i class="pi pi-box text-primary"></i>
+                            Cantidad: <strong>{{ formulario.get('cantidad')?.value }}</strong>
+                        </div>
+                        <div *ngIf="formulario.valid">
+                            <span class="text-lg text-green-500">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }} x {{ formulario.get('cantidad')?.value}}</span>
+                        </div>
+                        <div *ngIf="formulario.valid" class="border-top-1 border-300 pt-2 mt-2">
+                            <p>
+                                <strong class="text-xl">Total estimado:</strong>
+                                <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
+                            </p>
+                        </div>
+                        <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
+                            [loading]="isLoading" [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'danger'"
+                            class="w-full" />
+                    </div>
+
+                </p-panel>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Size Guide Modal -->
+    <p-dialog [(visible)]="showSizeGuide" [modal]="true" [closable]="true" [draggable]="false" [resizable]="false" [style]="{width: '90vw', maxWidth: '800px'}" closeOnEscape="true"
+        dismissableMask="true" (onHide)="closeSizeGuide()">
+
+        <div class="flex flex-column gap-2">
+            <!-- Description -->
+            <div class="text-center">
+                <div class="flex align-items-center justify-content-center mb-2">
+                    <i class="pi pi-tags text-4xl text-primary mr-2"></i>
+                    <h3 class="text-xl font-bold mt-0 mb-0">{{ sizeGuide.title }}</h3>
+                </div>
+                <p class="text-color-secondary">{{ sizeGuide.description }}</p>
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-surface-50 border-round p-3">
+                <h4 class="font-bold mb-3 mt-0">Cómo medir:</h4>
+                <ul class="list-none p-0 m-0">
+                    <li *ngFor="let instruction of sizeGuide.instructions" class="flex align-items-center gap-2 mb-2">
+                        <i class="pi pi-check-circle text-primary"></i>
+                        <span>{{ instruction }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Size Table -->
+            <p-table [value]="sizeGuide.measurements" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center">Talle</th>
+                        <th class="text-center">Ancho del Pecho</th>
+                        <th class="text-center">Largo Total</th>
+                        <th class="text-center">Ajuste</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-measurement>
+                    <tr>
+                        <td class="font-bold text-center">{{ measurement.size }}</td>
+                        <td class="text-center">{{ measurement.chest }}</td>
+                        <td class="text-center">{{ measurement.length }}</td>
+                        <td class="text-center">
+                            <p-tag [value]="measurement.fit" [severity]="measurement.fit === 'Ajustado' ? 'warning' : measurement.fit === 'Regular' ? 'success' : 'info'"
+                                [rounded]="true" />
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <!-- Tips -->
+            <div class="bg-blue-50 border-round p-4">
+                <div class="mb-2">
+                    <h4 class="font-bold mb-2 mt-0 text-blue-900 flex align-items-center">
+                        <i class="pi pi-info-circle mr-2"></i>Consejos:
+                    </h4>
+                </div>
+                <ul class="list-none p-0 m-0 text-blue-800">
+                    <li class="flex align-items-center gap-2 mb-1">
+                        <i class="pi pi-circle-fill text-xs"></i>
+                        <span>Si estás entre dos talles, elegí el más grande</span>
+                    </li>
+                    <li class="flex align-items-center gap-2 mb-1">
+                        <i class="pi pi-circle-fill text-xs"></i>
+                        <span>Las prendas oversize tienen un ajuste más holgado</span>
+                    </li>
+                    <li class="flex align-items-center gap-2">
+                        <i class="pi pi-circle-fill text-xs"></i>
+                        <span>Para un ajuste más personalizado, contactanos</span>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </aside>
+
+        <ng-template #footer>
+            <div class="flex justify-content-end gap-2">
+                <p-button label="Cerrar" icon="pi pi-times" [outlined]="true" (onClick)="closeSizeGuide()" />
+            </div>
+        </ng-template>
+    </p-dialog>
 
 </main>

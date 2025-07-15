@@ -13,11 +13,12 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { RouterLink } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
+import { Image } from 'primeng/image';
 
 @Component({
   selector: 'app-carrito',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink,
-    Panel, Button, InputNumber, Card, Divider, Toast, ConfirmDialog, Tag],
+    Panel, Button, InputNumber, Card, Divider, Toast, ConfirmDialog, Tag, Image],
   providers: [MessageService, ConfirmationService],
   templateUrl: './carrito.component.html',
   styleUrl: './carrito.component.scss'
@@ -41,7 +42,7 @@ export class CarritoComponent implements OnInit {
       items: this.fb.array(
         this.items.map(item =>
           this.fb.group({
-            id: [item.id],
+            id: [item.producto.id],
             cantidad: [item.cantidad, [Validators.required, Validators.min(1)]]
           })
         )
@@ -59,17 +60,23 @@ export class CarritoComponent implements OnInit {
 
   actualizarCantidad(item: CarritoItem, nuevaCantidad: number | string, inputRef: any) {
 
-    const cantidad = typeof nuevaCantidad === 'string' ? parseInt(nuevaCantidad) : nuevaCantidad;
+    const cantidad: number = typeof nuevaCantidad === 'string' ? parseInt(nuevaCantidad) : nuevaCantidad;
 
     // Check if quantity is valid
     if (cantidad && cantidad > 0 && cantidad <= 100) {
-      this.carritoService.actualizarCantidad(item.id, cantidad);
+      this.carritoService.actualizarCantidad(item.producto.id, cantidad);
     } else if (cantidad > 100) {
-      // If quantity exceeds 100, reset the input to the current item quantity
-      const itemIndex = this.items.findIndex(i => i.id === item.id);
+      // If quantity exceeds 100, reset the input to the previous item quantity
+      const itemIndex = this.items.findIndex(i => i.producto.id === item.producto.id);
       if (itemIndex !== -1) {
-        const currentQuantity = this.items[itemIndex].cantidad;
-        this.getCantidadControl(itemIndex).setValue(currentQuantity, { emitEvent: false });
+        // Use the original item quantity before any changes
+        setTimeout(() => {
+          this.getCantidadControl(itemIndex).setValue(item.cantidad);
+          // Also update the input component directly
+          if (inputRef && inputRef.input.nativeElement) {
+            inputRef.input.nativeElement.value = item.cantidad;
+          }
+        }, 0);
       }
     }
   }
@@ -100,11 +107,31 @@ export class CarritoComponent implements OnInit {
   }
 
   calcularTotal(): number {
-    return this.items.reduce((total, item) => total + item.precioUnitario * item.cantidad, 0);
+    return this.items.reduce((total, item) => total + item.total, 0);
+  }
+
+  isShippingFree(): boolean {
+    return this.calcularTotal() >= 100000;
+  }
+
+  getShippingText(): string {
+    return this.isShippingFree() ? 'Gratis' : 'A calcular';
+  }
+
+  getShippingIcon(): string {
+    return this.isShippingFree() ? 'pi pi-check' : 'pi pi-calculator';
+  }
+
+  getShippingSeverity(): string {
+    return this.isShippingFree() ? 'success' : 'info';
   }
 
   pagar() {
     alert('Implementar proceso de pago');
+  }
+
+  hasProp(obj: any, prop: string): boolean {
+    return obj && Object.prototype.hasOwnProperty.call(obj, prop);
   }
 
 }

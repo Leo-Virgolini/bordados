@@ -14,10 +14,6 @@
                 class="flex align-items-center p-menubar-item-link hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200 border-round">
                 <i *ngIf="item.icon" [class]="item.icon" class="mr-2"></i>
                 <span class="font-medium">{{ item.label }}</span>
-                <p-badge *ngIf="item.badge" [ngClass]="{ 'ml-auto': !root, 'ml-2': root }" [value]="item.badge" severity="danger" />
-                <span *ngIf="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
-                    {{ item.shortcut }}
-                </span>
                 <i *ngIf="item.items" [ngClass]="['ml-auto pi', root ? 'pi-angle-down' : 'pi-angle-right']"></i>
             </a>
         </ng-template>
@@ -26,12 +22,18 @@
             <div class="flex align-items-center gap-3">
                 <!-- Enhanced Search Bar -->
                 <div class="relative hidden md:block">
-                    <span class="p-input-icon-left">
+                    <p-inputgroup>
                         <input type="text" pInputText placeholder="Buscar productos..."
-                            class="w-20rem border-round-xl bg-surface-100 border-none pl-4 pr-4 py-2 focus:bg-surface-0 focus:shadow-2 transition-all transition-duration-200" />
-                        <i class="pi pi-search text-400 ml-2"></i>
-                    </span>
+                            class="w-20rem bg-surface-100 focus:bg-surface-0 focus:shadow-2 transition-all transition-duration-200" />
+                        <p-inputgroup-addon>
+                            <p-button icon="pi pi-search" severity="secondary" variant="text" />
+                        </p-inputgroup-addon>
+                    </p-inputgroup>
                 </div>
+
+                <!-- Admin Button -->
+                <p-button label="Admin" icon="pi pi-cog" routerLink="/admin" [outlined]="true" [rounded]="true" size="small"
+                    styleClass="hidden md:inline-flex hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />
 
                 <!-- User Profile Button -->
                 <p-button icon="pi pi-user" size="large" [text]="true" [rounded]="true" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />

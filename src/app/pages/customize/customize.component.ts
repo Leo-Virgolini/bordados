@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Badge } from 'primeng/badge';
@@ -16,6 +16,8 @@ import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
 import { Panel } from 'primeng/panel';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Dialog } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
 import { es } from '../../es.json'
 import { CarritoService } from '../../services/carrito.service';
@@ -23,17 +25,19 @@ import { CarritoItem } from '../../model/carrito-item';
 import { Router } from '@angular/router';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { Tag } from 'primeng/tag';
+import { ProductoCustomizable } from '../../model/customizable-product';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-customize',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent,
-    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent, RouterLink,
+    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag, Dialog, TableModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './customize.component.html',
   styleUrl: './customize.component.scss'
 })
-export class CustomizeComponent {
+export class CustomizeComponent implements OnInit {
 
   formulario!: FormGroup;
   imageURL: string | undefined;
@@ -41,10 +45,9 @@ export class CustomizeComponent {
   invalidFileSizeMessageSummary: string = es.invalidFileSizeMessageSummary
   invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
   isLoading: boolean = false;
+  showSizeGuide: boolean = false;
 
   maxImageSize: number = 10485760; // 10 MB
-  totalSizePercent: number = 0;
-
   precioSegundoColor: number = 1500;
 
   tiposPrenda = [
@@ -63,6 +66,26 @@ export class CustomizeComponent {
     { label: 'XL', value: 'XL' },
     { label: 'XXL', value: 'XXL' }
   ];
+
+  // Size guide data similar to MercadoLibre
+  sizeGuide = {
+    title: 'Guía de Talles',
+    description: 'Medí tu prenda favorita y compará con nuestra tabla de talles',
+    instructions: [
+      '1. Tomá una prenda que te quede bien',
+      '2. Medí el ancho del pecho (de costura a costura)',
+      '3. Medí el largo total (desde el hombro hasta el final)',
+      '4. Compará con nuestra tabla'
+    ],
+    measurements: [
+      { size: 'XS', chest: '44-46 cm', length: '62-64 cm', fit: 'Ajustado' },
+      { size: 'S', chest: '46-48 cm', length: '64-66 cm', fit: 'Regular' },
+      { size: 'M', chest: '48-50 cm', length: '66-68 cm', fit: 'Regular' },
+      { size: 'L', chest: '50-52 cm', length: '68-70 cm', fit: 'Regular' },
+      { size: 'XL', chest: '52-54 cm', length: '70-72 cm', fit: 'Holgado' },
+      { size: 'XXL', chest: '54-56 cm', length: '72-74 cm', fit: 'Holgado' }
+    ]
+  };
 
   coloresPrendas = [
     { label: 'Rojo', value: 'rojo', hex: '#C62828' },
@@ -98,6 +121,9 @@ export class CustomizeComponent {
   constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder, private confirmationService: ConfirmationService,
     private carritoService: CarritoService, private router: Router
   ) {
+  }
+
+  ngOnInit(): void {
     this.initForm();
   }
 
@@ -127,19 +153,12 @@ export class CustomizeComponent {
         '<br/><strong>Cantidad:</strong> ' + this.cantidades.find(p => p.value === this.formulario.get('cantidad')?.value)?.label
       ,
       icon: 'pi pi-exclamation-circle',
-      rejectButtonProps: {
-        label: 'Cancelar',
-        icon: 'pi pi-times',
-        outlined: true,
-        size: 'small',
-        severity: 'danger'
-      },
-      acceptButtonProps: {
-        label: 'Confirmar',
-        icon: 'pi pi-check',
-        size: 'small',
-        severity: 'primary'
-      },
+      acceptIcon: 'pi pi-check',
+      rejectIcon: 'pi pi-times',
+      acceptLabel: 'Confirmar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-outlined p-button-danger',
       accept: () => {
         if (this.submitFormulario()) {
           this.isLoading = true;
@@ -185,7 +204,6 @@ export class CustomizeComponent {
     removeFileCallback(event, 0);
     this.imageFile = undefined;
     this.imageURL = undefined;
-    this.totalSizePercent = 0;
     this.formulario.get('imagen')?.setValue(undefined);
     this.formulario.get('imagen')?.markAsTouched();
     this.formulario.get('imagen')?.updateValueAndValidity();
@@ -209,7 +227,7 @@ export class CustomizeComponent {
         this.formulario.get('imagen')?.markAsTouched();
         this.formulario.get('imagen')?.updateValueAndValidity();
         this.formulario.get('imagen')?.setValue(undefined);
-        // this.formulario.get('imagen')?.setErrors({ 'fileSize': this.invalidFileSizeMessageSummary });
+        this.formulario.get('imagen')?.setErrors({ 'fileSize': true });
       } else {
         this.imageFile = file;
         console.log(this.imageFile);
@@ -223,9 +241,6 @@ export class CustomizeComponent {
           this.imageURL = e.target.result; // Data URL
         };
         reader.readAsDataURL(this.imageFile);
-
-        this.totalSizePercent = imageSize * 100 / this.maxImageSize;
-        console.log(this.totalSizePercent);
 
         this.formulario.get('imagen')?.setErrors(null);
         this.formulario.get('imagen')?.markAsDirty();
@@ -296,23 +311,58 @@ export class CustomizeComponent {
   enviarPersonalizacion() {
   }
 
+  // agregarAlCarrito() {
+  //   const datos = this.formulario.value;
+
+  //   const nuevoItem: CarritoItem = {
+  //     id: crypto.randomUUID(),
+  //     tipo: this.getLabel('tipo', this.tiposPrenda),
+  //     talle: this.getLabel('talle', this.talles),
+  //     colorPrenda: this.getLabel('colorPrenda', this.coloresPrendas),
+  //     colorHilado1: this.getLabel('colorHilado1', this.coloresHilado),
+  //     colorHilado2: datos.usarSegundoColor ? this.getLabel('colorHilado2', this.coloresHilado) : undefined,
+  //     imagen: this.imageURL!,
+  //     cantidad: datos.cantidad,
+  //     precioUnitario: this.calcularPrecioUnitario(),
+  //     subtotal: this.calcularSubtotal()
+  //   };
+
+  //   this.carritoService.agregarItem(nuevoItem);
+  // }
+
   agregarAlCarrito() {
     const datos = this.formulario.value;
 
-    const nuevoItem: CarritoItem = {
+    const productoCustomizable = new ProductoCustomizable({
       id: crypto.randomUUID(),
-      tipo: this.getLabel('tipo', this.tiposPrenda),
+      nombre: this.getLabel('tipo', this.tiposPrenda),
+      descripcion: this.getLabel('tipo', this.tiposPrenda),
+      imagen: this.imageURL!,
+      precio: this.calcularPrecioUnitario(),
+      tipo: 'customizable',
+      tipoPrenda: this.getLabel('tipo', this.tiposPrenda),
       talle: this.getLabel('talle', this.talles),
       colorPrenda: this.getLabel('colorPrenda', this.coloresPrendas),
       colorHilado1: this.getLabel('colorHilado1', this.coloresHilado),
       colorHilado2: datos.usarSegundoColor ? this.getLabel('colorHilado2', this.coloresHilado) : undefined,
-      imagen: this.imageURL!,
-      cantidad: datos.cantidad,
-      precioUnitario: this.calcularPrecioUnitario(),
-      subtotal: this.calcularSubtotal()
-    };
+      imagenPersonalizada: this.imageURL!
+    });
+
+    // Create CarritoItem, passing the product and quantity
+    const nuevoItem = new CarritoItem({
+      producto: productoCustomizable,
+      cantidad: datos.cantidad
+    });
 
     this.carritoService.agregarItem(nuevoItem);
+  }
+
+  openSizeGuide(): void {
+    this.showSizeGuide = true;
+  }
+
+  closeSizeGuide(): void {
+    this.showSizeGuide = false;
   }
 
 }

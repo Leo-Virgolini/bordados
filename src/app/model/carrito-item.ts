@@ -1,25 +1,16 @@
+import { ProductoBase } from "./producto-base";
+
 export class CarritoItem {
 
-    constructor(
-        public id: string,
-        public tipo: string,
-        public talle: string,
-        public colorPrenda: string,
-        public colorHilado1: string,
-        public imagen: string,
-        public cantidad: number,
-        public precioUnitario: number,
-        public subtotal: number,
-        public colorHilado2?: string // opcional
-    ) { }
+    producto!: ProductoBase;
+    cantidad!: number;
 
-    // get subtotal(): number {
-    //     return this.precioUnitario * this.cantidad;
-    // }
+    constructor(init?: Partial<CarritoItem>) {
+        Object.assign(this, init);
+    }
 
-    // // Opcional: método para formatear el precio como ARS
-    // get subtotalFormateado(): string {
-    //     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(this.subtotal);
-    // }
+    get total(): number {
+        return this.producto.precio * this.cantidad;
+    }
 
 }

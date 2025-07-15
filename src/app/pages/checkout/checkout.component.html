@@ -1,5 +1,33 @@
 <p-toast></p-toast>
-<main class="flex flex-column md:p-6 bg-surface-50">
+
+<!-- Terms and Conditions Dialog -->
+<p-dialog [(visible)]="showTermsDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" [draggable]="false" [resizable]="false" [closable]="true" header="Términos y Condiciones"
+    (onHide)="closeTermsDialog()">
+
+    <div class="max-h-30rem overflow-y-auto" [innerHTML]="termsAndConditions"></div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cerrar" icon="pi pi-times" [outlined]="true" (onClick)="closeTermsDialog()" />
+            <p-button label="Aceptar" icon="pi pi-check" (onClick)="closeTermsDialog()" styleClass="p-button-primary" />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Privacy Policy Dialog -->
+<p-dialog [(visible)]="showPrivacyDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" [draggable]="false" [resizable]="false" [closable]="true" header="Política de Privacidad"
+    (onHide)="closePrivacyDialog()">
+
+    <div class="max-h-30rem overflow-y-auto" [innerHTML]="privacyPolicy"></div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cerrar" icon="pi pi-times" [outlined]="true" (onClick)="closePrivacyDialog()" />
+            <p-button label="Aceptar" icon="pi pi-check" (onClick)="closePrivacyDialog()" styleClass="p-button-primary" />
+        </div>
+    </ng-template>
+</p-dialog>
+<main class="flex flex-column md:surface-ground p-3">
     <!-- Return to Cart Button -->
     <div>
         <p-button label="Volver al Carrito" icon="pi pi-arrow-left" routerLink="/carrito" [outlined]="true" [rounded]="true" severity="primary" />
@@ -16,61 +44,153 @@
     <form [formGroup]="checkoutForm" class="flex flex-column lg:flex-row gap-6">
         <section class="flex-1">
 
-            <p-panel header="Información de Envío" styleClass="border-round-xl shadow-3 bg-surface-0">
+            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0">
+                <ng-template #header>
+                    <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-map-marker mr-2" style="font-size: 1.2rem"></i>
+                        Información de Envío</h1>
+                </ng-template>
                 <div class="flex flex-column gap-4">
-                    <!-- Personal Information -->
                     <div class="grid">
-                        <div class="col-12 md:col-6">
+                        <!-- Name -->
+                        <div class="col-12 md:col-4">
                             <label for="firstName" class="block mb-2 font-semibold">Nombre *</label>
-                            <input id="firstName" type="text" pInputText formControlName="firstName" class="w-full" placeholder="Tu nombre" autocomplete="given-name" />
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-user"></i>
+                                </p-inputgroup-addon>
+                                <input id="firstName" type="text" pInputText formControlName="firstName" class="w-full" placeholder="Tu nombre" autocomplete="given-name"
+                                    [invalid]="checkoutForm.get('firstName')?.invalid && checkoutForm.get('firstName')?.touched" />
+                            </p-inputgroup>
                             <app-error-helper [control]="checkoutForm.get('firstName')"></app-error-helper>
                         </div>
-                        <div class="col-12 md:col-6">
+                        <!-- Last Name -->
+                        <div class="col-12 md:col-4">
                             <label for="lastName" class="block mb-2 font-semibold">Apellido *</label>
-                            <input id="lastName" type="text" pInputText formControlName="lastName" class="w-full" placeholder="Tu apellido" autocomplete="family-name" />
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-user"></i>
+                                </p-inputgroup-addon>
+                                <input id="lastName" type="text" pInputText formControlName="lastName" class="w-full" placeholder="Tu apellido" autocomplete="family-name"
+                                    [invalid]="checkoutForm.get('lastName')?.invalid && checkoutForm.get('lastName')?.touched" />
+                            </p-inputgroup>
                             <app-error-helper [control]="checkoutForm.get('lastName')"></app-error-helper>
                         </div>
-                    </div>
-
-                    <!-- Email -->
-                    <div>
-                        <label for="email" class="block mb-2 font-semibold">Email *</label>
-                        <input id="email" type="email" pInputText formControlName="email" class="w-full" placeholder="tu@email.com" autocomplete="email" />
-                        <app-error-helper [control]="checkoutForm.get('email')"></app-error-helper>
-                    </div>
-
-                    <!-- Phone -->
-                    <div>
-                        <label for="phone" class="block mb-2 font-semibold">Teléfono *</label>
-                        <p-inputmask id="phone" formControlName="phone" mask="99 9999-9999" placeholder="11 2345-6789" class="w-full" autocomplete="tel" />
-                        <app-error-helper [control]="checkoutForm.get('phone')"></app-error-helper>
-                    </div>
-
-                    <!-- Address -->
-                    <div>
-                        <label for="address" class="block mb-2 font-semibold">Dirección *</label>
-                        <input id="address" type="text" pInputText formControlName="address" class="w-full" placeholder="Calle y número" autocomplete="street-address" />
-                        <app-error-helper [control]="checkoutForm.get('address')"></app-error-helper>
-                    </div>
-
-                    <!-- City and Postal Code -->
-                    <div class="grid">
-                        <div class="col-12 md:col-8">
-                            <label for="city" class="block mb-2 font-semibold">Ciudad *</label>
-                            <input id="city" type="text" pInputText formControlName="city" class="w-full" placeholder="Ciudad" autocomplete="address-level2" />
-                            <app-error-helper [control]="checkoutForm.get('city')"></app-error-helper>
+                        <!-- DNI -->
+                        <div class="col-12 md:col-4">
+                            <label for="dni" class="block mb-2 font-semibold">DNI *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-id-card"></i>
+                                </p-inputgroup-addon>
+                                <input id="dni" type="text" pInputText formControlName="dni" class="w-full" placeholder="12345678" maxlength="8" autocomplete="off"
+                                    [invalid]="checkoutForm.get('dni')?.invalid && checkoutForm.get('dni')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('dni')"></app-error-helper>
                         </div>
+                    </div>
+
+                    <div class="grid">
+                        <!-- Email -->
+                        <div class="col-12 md:col-4">
+                            <label for="email" class="block mb-2 font-semibold">Email *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-envelope"></i>
+                                </p-inputgroup-addon>
+                                <input id="email" type="email" pInputText formControlName="email" class="w-full" placeholder="tu@email.com" autocomplete="email"
+                                    [invalid]="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('email')"></app-error-helper>
+                        </div>
+                        <!-- Phone -->
+                        <div class="col-12 md:col-4">
+                            <label for="phone" class="block mb-2 font-semibold">Teléfono *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-phone"></i>
+                                </p-inputgroup-addon>
+                                <p-inputmask id="phone" formControlName="phone" mask="99 9999-9999" placeholder="11 2345-6789" styleClass="w-full" autocomplete="tel"
+                                    [invalid]="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('phone')"></app-error-helper>
+                        </div>
+                    </div>
+
+                    <div class="grid">
+                        <!-- Province -->
+                        <div class="col-12 md:col-4">
+                            <label for="provincia" class="block mb-2 font-semibold">Provincia *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-map-marker"></i>
+                                </p-inputgroup-addon>
+                                <p-select id="provincia" formControlName="provincia" [options]="provinces" optionLabel="label" optionValue="value" placeholder="Seleccioná tu provincia"
+                                    class="w-full" autocomplete="address-level1" [invalid]="checkoutForm.get('provincia')?.invalid && checkoutForm.get('provincia')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('provincia')"></app-error-helper>
+                        </div>
+                        <!-- Localidad -->
+                        <div class="col-12 md:col-4">
+                            <label for="localidad" class="block mb-2 font-semibold">Localidad *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-map-marker"></i>
+                                </p-inputgroup-addon>
+                                <input id="localidad" type="text" pInputText formControlName="localidad" class="w-full" placeholder="Localidad" autocomplete="address-level2"
+                                    [invalid]="checkoutForm.get('localidad')?.invalid && checkoutForm.get('localidad')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('localidad')"></app-error-helper>
+                        </div>
+                        <!-- Postal Code -->
                         <div class="col-12 md:col-4">
                             <label for="postalCode" class="block mb-2 font-semibold">Código Postal *</label>
-                            <input id="postalCode" type="text" pInputText formControlName="postalCode" class="w-auto" placeholder="1234" maxlength="5" autocomplete="postal-code" />
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-map"></i>
+                                </p-inputgroup-addon>
+                                <input id="postalCode" type="text" pInputText formControlName="postalCode" class="w-full" placeholder="1234" maxlength="5" autocomplete="postal-code"
+                                    [invalid]="checkoutForm.get('postalCode')?.invalid && checkoutForm.get('postalCode')?.touched" />
+                            </p-inputgroup>
                             <app-error-helper [control]="checkoutForm.get('postalCode')"></app-error-helper>
                         </div>
                     </div>
+
+                    <div class="grid">
+                        <!-- Address -->
+                        <div class="col-12 md:col-4">
+                            <label for="address" class="block mb-2 font-semibold">Dirección *</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-home"></i>
+                                </p-inputgroup-addon>
+                                <input id="address" type="text" pInputText formControlName="address" class="w-full" placeholder="Calle y número" autocomplete="street-address"
+                                    [invalid]="checkoutForm.get('address')?.invalid && checkoutForm.get('address')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('address')"></app-error-helper>
+                        </div>
+                        <!-- Piso/Depto -->
+                        <div class="col-12 md:col-4">
+                            <label for="pisoDepto" class="block mb-2 font-semibold">Piso/Depto</label>
+                            <p-inputgroup>
+                                <p-inputgroup-addon>
+                                    <i class="pi pi-building"></i>
+                                </p-inputgroup-addon>
+                                <input id="pisoDepto" type="text" pInputText formControlName="pisoDepto" class="w-full" placeholder="Piso 2, Depto A" autocomplete="off"
+                                    [invalid]="checkoutForm.get('pisoDepto')?.invalid && checkoutForm.get('pisoDepto')?.touched" />
+                            </p-inputgroup>
+                            <app-error-helper [control]="checkoutForm.get('pisoDepto')"></app-error-helper>
+                        </div>
+                    </div>
+
                 </div>
             </p-panel>
 
             <!-- Payment Method -->
-            <p-panel header="Método de Pago" styleClass="border-round-xl shadow-3 bg-surface-0 mt-4">
+            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 mt-4">
+                <ng-template #header>
+                    <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-wallet mr-2" style="font-size: 1.2rem"></i>
+                        Método de Pago</h1>
+                </ng-template>
                 <div class="flex flex-column gap-4">
                     <div class="flex align-items-center gap-3">
                         <p-radiobutton name="selectedPaymentMethod" value="creditCard" formControlName="selectedPaymentMethod" inputId="creditCard" />
@@ -85,8 +205,13 @@
                         <div class="grid">
                             <div class="col-12">
                                 <label for="cardNumber" class="block mb-2 font-semibold">Número de Tarjeta *</label>
-                                <p-inputmask id="cardNumber" formControlName="cardNumber" mask="9999 9999 9999 9999" placeholder="1234 5678 9012 3456" class="w-full"
-                                    autocomplete="cc-number" />
+                                <p-inputgroup>
+                                    <p-inputgroup-addon>
+                                        <i class="pi pi-credit-card"></i>
+                                    </p-inputgroup-addon>
+                                    <p-inputmask id="cardNumber" formControlName="cardNumber" mask="9999 9999 9999 9999" placeholder="1234 5678 9012 3456" styleClass="w-full"
+                                        autocomplete="cc-number" [invalid]="checkoutForm.get('cardNumber')?.invalid && checkoutForm.get('cardNumber')?.touched" />
+                                </p-inputgroup>
                                 <app-error-helper [control]="checkoutForm.get('cardNumber')"></app-error-helper>
                             </div>
                         </div>
@@ -94,12 +219,24 @@
                         <div class="grid mt-3">
                             <div class="col-12 md:col-6">
                                 <label for="expiryDate" class="block mb-2 font-semibold">Fecha de Vencimiento *</label>
-                                <p-inputmask id="expiryDate" formControlName="expiryDate" mask="99/99" placeholder="MM/AA" class="w-full" autocomplete="cc-exp" />
+                                <p-inputgroup>
+                                    <p-inputgroup-addon>
+                                        <i class="pi pi-calendar"></i>
+                                    </p-inputgroup-addon>
+                                    <p-inputmask id="expiryDate" formControlName="expiryDate" mask="99/99" placeholder="MM/AA" styleClass="w-full" autocomplete="cc-exp"
+                                        [invalid]="checkoutForm.get('expiryDate')?.invalid && checkoutForm.get('expiryDate')?.touched" />
+                                </p-inputgroup>
                                 <app-error-helper [control]="checkoutForm.get('expiryDate')"></app-error-helper>
                             </div>
                             <div class="col-12 md:col-6">
                                 <label for="cvv" class="block mb-2 font-semibold">CVV *</label>
-                                <input id="cvv" type="text" pInputText formControlName="cvv" class="w-auto" placeholder="123" minlength="3" maxlength="4" autocomplete="cc-csc" />
+                                <p-inputgroup>
+                                    <p-inputgroup-addon>
+                                        <i class="pi pi-shield"></i>
+                                    </p-inputgroup-addon>
+                                    <input id="cvv" type="text" pInputText formControlName="cvv" class="w-full" placeholder="123" minlength="3" maxlength="4" autocomplete="cc-csc"
+                                        [invalid]="checkoutForm.get('cvv')?.invalid && checkoutForm.get('cvv')?.touched" />
+                                </p-inputgroup>
                                 <app-error-helper [control]="checkoutForm.get('cvv')"></app-error-helper>
                             </div>
                         </div>
@@ -107,11 +244,29 @@
                         <div class="grid mt-3">
                             <div class="col-12">
                                 <label for="cardholderName" class="block mb-2 font-semibold">Nombre del Titular *</label>
-                                <input id="cardholderName" type="text" pInputText formControlName="cardholderName" class="w-full" placeholder="Como aparece en la tarjeta"
-                                    autocomplete="cc-name" />
+                                <p-inputgroup>
+                                    <p-inputgroup-addon>
+                                        <i class="pi pi-user"></i>
+                                    </p-inputgroup-addon>
+                                    <input id="cardholderName" type="text" pInputText formControlName="cardholderName" class="w-full" placeholder="Como aparece en la tarjeta"
+                                        autocomplete="cc-name" [invalid]="checkoutForm.get('cardholderName')?.invalid && checkoutForm.get('cardholderName')?.touched" />
+                                </p-inputgroup>
                                 <app-error-helper [control]="checkoutForm.get('cardholderName')"></app-error-helper>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="flex align-items-center gap-3">
+                        <p-radiobutton name="selectedPaymentMethod" value="mercadopago" formControlName="selectedPaymentMethod" inputId="mercadopago" />
+                        <label for="mercadopago" class="flex align-items-center gap-2 cursor-pointer">
+                            <i class="pi pi-wallet text-blue-500 text-xl"></i>
+                            <span class="font-semibold">MercadoPago</span>
+                        </label>
+                    </div>
+                    <div *ngIf="checkoutForm.get('selectedPaymentMethod')?.value === 'mercadopago'">
+                        <p-card>
+                            <pre class="m-0 text-xl">{{ mercadopagoData }}</pre>
+                        </p-card>
                     </div>
 
                     <div class="flex align-items-center gap-3">
@@ -141,16 +296,20 @@
                         <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.2rem"></i> Resumen del
                             pedido</h1>
                     </ng-template>
-                    <div class="flex flex-column gap-4">
+                    <div class="flex flex-column gap-2">
                         <!-- Order Items -->
                         <div *ngFor="let item of orderItems" class="flex align-items-center gap-3 p-3 border-1 border-round bg-surface-50 order-item">
-                            <img [src]="item.imagen" [alt]="item.tipo" class="w-4rem h-4rem object-cover border-round" />
+                            <img [src]="item.producto.imagen" [alt]="item.producto.nombre" class="w-4rem h-4rem object-cover border-round" />
                             <div class="flex-1">
-                                <div class="font-semibold">{{ item.tipo }}</div>
+                                <div class="font-semibold">{{ item.producto.nombre }}</div>
+                                <div class="flex align-items-center gap-2 mb-1">
+                                    <p-tag [value]="item.producto.tipo === 'customizable' ? 'Personalizable' : 'Bordado Listo'"
+                                        [severity]="item.producto.tipo === 'customizable' ? 'warn' : 'success'" [rounded]="true" />
+                                </div>
                                 <div class="text-sm text-color-secondary">Cantidad: {{ item.cantidad }}</div>
-                                <div class="text-sm text-color-secondary">{{ item.precioUnitario | currency:'ARS':'symbol':'1.0-0' }} c/u</div>
+                                <div class="text-sm text-color-secondary">{{ item.producto.precio | currency:'ARS':'symbol':'1.0-0' }} c/u</div>
                             </div>
-                            <div class="font-bold text-primary">{{ item.subtotal | currency:'ARS':'symbol':'1.0-0' }}</div>
+                            <div class="font-bold text-primary">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
                         </div>
 
                         <p-divider></p-divider>
@@ -162,13 +321,13 @@
                         </div>
                         <div class="flex justify-content-between align-items-center">
                             <span class="text-color-secondary">Envío</span>
-                            <p-tag value="Gratis" icon="pi pi-check" severity="success" badgeSize="xlarge" class="text-green-500 font-semibold" [rounded]="true"
-                                style="margin-right: -0.5rem;" />
+                            <p-tag [value]="getShippingText()" [icon]="getShippingIcon()" [severity]="getShippingSeverity()" badgeSize="xlarge"
+                                [class]="isShippingFree() ? 'text-green-500 font-semibold' : 'text-blue-500 font-semibold'" [rounded]="true" style="margin-right: -0.5rem;" />
                         </div>
                         <div class="flex justify-content-between align-items-center">
-                            <span class="text-color-secondary">IVA <p-tag [value]="'+ ' + ivaPercentage * 100 + '%'" severity="warn" badgeSize="xlarge" class="font-semibold"
+                            <span class="text-color-secondary">Precio sin IVA <p-tag [value]="'- ' + ivaPercentage * 100 + '%'" severity="warn" badgeSize="xlarge" class="font-semibold"
                                     [rounded]="true" /></span>
-                            <span class="font-semibold">{{ iva | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            <span class="font-semibold">{{ subtotal / (1 + ivaPercentage) | currency:'ARS':'symbol':'1.0-0' }}</span>
                         </div>
                         <div *ngIf="checkoutForm.get('selectedPaymentMethod')?.value === 'transfer'" class="flex justify-content-between align-items-center">
                             <span class="text-color-secondary">Descuento <p-tag [value]="'- ' + discountPercentage * 100 + '%'" severity="success" badgeSize="xlarge" class="font-semibold"
@@ -179,7 +338,7 @@
                         <p-divider></p-divider>
 
                         <div class="flex justify-content-between align-items-center">
-                            <span class="text-xl font-bold">Total</span>
+                            <span class="text-xl font-bold">Total con IVA</span>
                             <span class="text-2xl font-bold text-primary">{{ total | currency:'ARS':'symbol':'1.0-0' }}</span>
                         </div>
 
@@ -187,14 +346,18 @@
                         <div class="flex align-items-start gap-2 mt-3">
                             <p-checkbox formControlName="acceptTerms" [binary]="true" [inputId]="'terms'" />
                             <label for="terms" class="text-sm cursor-pointer">
-                                Acepto los <a href="#" class="text-primary">términos y condiciones</a> y la
-                                <a href="#" class="text-primary">política de privacidad</a>
+                                Acepto los
+                                <a href="javascript:void(0)" (click)="openTermsDialog()" class="text-primary cursor-pointer">términos y condiciones</a>
+                                y la
+                                <a href="javascript:void(0)" (click)="openPrivacyDialog()" class="text-primary cursor-pointer">política de privacidad</a>
                             </label>
                         </div>
 
                         <!-- Pay Button -->
-                        <p-button label="Pagar Ahora" [icon]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value ? 'pi pi-lock' : 'pi pi-wallet'" [raised]="true" size="large"
-                            [disabled]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value" (onClick)="processPayment()" [loading]="isProcessing" class="w-full mt-3" />
+                        <div class="flex justify-content-center mt-3">
+                            <p-button label="Pagar Ahora" [icon]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value ? 'pi pi-lock' : 'pi pi-wallet'" [raised]="true"
+                                size="large" [disabled]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value" (onClick)="processPayment()" [loading]="isProcessing" />
+                        </div>
 
                         <small class="text-center text-color-secondary">
                             <i class="pi pi-shield text-green-500 mr-1"></i>
