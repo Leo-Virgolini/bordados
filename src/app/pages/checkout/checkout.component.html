@@ -1,8 +1,8 @@
 <p-toast></p-toast>
 
 <!-- Terms and Conditions Dialog -->
-<p-dialog [(visible)]="showTermsDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" [draggable]="false" [resizable]="false" [closable]="true" header="Términos y Condiciones"
-    (onHide)="closeTermsDialog()">
+<p-dialog [(visible)]="showTermsDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" dismissableMask="true" draggable="false" resizable="false" closable="true"
+    header="Términos y Condiciones" (onHide)="closeTermsDialog()">
 
     <div class="max-h-30rem overflow-y-auto" [innerHTML]="termsAndConditions"></div>
 
@@ -15,8 +15,8 @@
 </p-dialog>
 
 <!-- Privacy Policy Dialog -->
-<p-dialog [(visible)]="showPrivacyDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" [draggable]="false" [resizable]="false" [closable]="true" header="Política de Privacidad"
-    (onHide)="closePrivacyDialog()">
+<p-dialog [(visible)]="showPrivacyDialog" modal="true" styleClass="w-full md:w-6 lg:w-5" dismissableMask="true" draggable="false" resizable="false" closable="true"
+    header="Política de Privacidad" (onHide)="closePrivacyDialog()">
 
     <div class="max-h-30rem overflow-y-auto" [innerHTML]="privacyPolicy"></div>
 
@@ -41,9 +41,9 @@
     </section>
 
     <!-- Checkout Form -->
-    <form [formGroup]="checkoutForm" class="flex flex-column lg:flex-row gap-6">
-        <section class="flex-1">
+    <form [formGroup]="checkoutForm" class="grid">
 
+        <section class="col-12 md:col-8">
             <p-panel styleClass="border-round-xl shadow-3 bg-surface-0">
                 <ng-template #header>
                     <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-map-marker mr-2" style="font-size: 1.2rem"></i>
@@ -289,7 +289,7 @@
         </section>
 
         <!-- Order Summary -->
-        <aside class="w-full lg:w-25rem">
+        <aside class="col-12 md:col-4">
             <div class="sticky" style="top: 7rem;">
                 <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-2">
                     <ng-template #header>
@@ -299,15 +299,15 @@
                     <div class="flex flex-column gap-2">
                         <!-- Order Items -->
                         <div *ngFor="let item of orderItems" class="flex align-items-center gap-3 p-3 border-1 border-round bg-surface-50 order-item">
-                            <img [src]="item.producto.imagen" [alt]="item.producto.nombre" class="w-4rem h-4rem object-cover border-round" />
+                            <img [src]="item.product.image" [alt]="item.product.name" class="w-4rem h-4rem object-cover border-round" />
                             <div class="flex-1">
-                                <div class="font-semibold">{{ item.producto.nombre }}</div>
+                                <div class="font-semibold">{{ item.product.name }}</div>
                                 <div class="flex align-items-center gap-2 mb-1">
-                                    <p-tag [value]="item.producto.tipo === 'customizable' ? 'Personalizable' : 'Bordado Listo'"
-                                        [severity]="item.producto.tipo === 'customizable' ? 'warn' : 'success'" [rounded]="true" />
+                                    <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
+                                        [severity]="item.product.type === 'personalizable' ? 'warn' : 'success'" [rounded]="true" />
                                 </div>
-                                <div class="text-sm text-color-secondary">Cantidad: {{ item.cantidad }}</div>
-                                <div class="text-sm text-color-secondary">{{ item.producto.precio | currency:'ARS':'symbol':'1.0-0' }} c/u</div>
+                                <div class="text-sm text-color-secondary">Cantidad: {{ item.quantity }}</div>
+                                <div class="text-sm text-color-secondary">{{ item.product.price | currency:'ARS':'symbol':'1.0-0' }} c/u</div>
                             </div>
                             <div class="font-bold text-primary">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
                         </div>
@@ -318,6 +318,42 @@
                         <div class="flex justify-content-between align-items-center">
                             <span class="text-color-secondary">Subtotal</span>
                             <span class="font-semibold">{{ subtotal | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        </div>
+
+                        <!-- Coupon Section -->
+                        <div class="border-1 border-round p-3 bg-surface-50">
+                            <div class="flex align-items-center gap-2 mb-2">
+                                <i class="pi pi-ticket text-primary"></i>
+                                <span class="font-semibold">Cupón de Descuento</span>
+                            </div>
+
+                            <div *ngIf="!selectedCoupon" class="flex gap-2">
+                                <p-inputgroup class="flex-1">
+                                    <p-inputgroup-addon>
+                                        <i class="pi pi-ticket"></i>
+                                    </p-inputgroup-addon>
+                                    <input type="text" pInputText formControlName="couponCode" class="w-full" placeholder="Ingresá tu código"
+                                        [invalid]="checkoutForm.get('couponCode')?.invalid && checkoutForm.get('couponCode')?.touched" />
+                                </p-inputgroup>
+                                <p-button icon="pi pi-check" (onClick)="validateAndApplyCoupon()" [loading]="couponLoading" [disabled]="!checkoutForm.get('couponCode')?.value"
+                                    [outlined]="true" />
+                            </div>
+
+                            <div *ngIf="selectedCoupon" class="flex flex-column gap-2">
+                                <div class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <p-tag [value]="selectedCoupon.code" severity="success" [rounded]="true" />
+                                        <span class="font-semibold text-green-600">
+                                            {{ selectedCoupon.discountType === 'percentage' ? selectedCoupon.discountValue + '%' : '$' +
+                                            selectedCoupon.discountValue.toLocaleString('es-AR') }}
+                                        </span>
+                                    </div>
+                                    <p-button icon="pi pi-times" (onClick)="clearCoupon()" [outlined]="true" severity="danger" size="small" />
+                                </div>
+                                <div *ngIf="selectedCoupon.description" class="text-sm text-color-secondary">
+                                    {{ selectedCoupon.description }}
+                                </div>
+                            </div>
                         </div>
                         <div class="flex justify-content-between align-items-center">
                             <span class="text-color-secondary">Envío</span>
@@ -335,11 +371,21 @@
                             <span class="font-semibold text-green-500">-{{ discount | currency:'ARS':'symbol':'1.0-0' }}</span>
                         </div>
 
+                        <div *ngIf="selectedCoupon" class="flex justify-content-between align-items-center">
+                            <span class="text-color-secondary">Cupón <p-tag [value]="selectedCoupon.code" severity="success" badgeSize="xlarge" class="font-semibold"
+                                    [rounded]="true" /></span>
+                            <span class="font-semibold text-green-500">-{{ couponDiscount | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        </div>
+
                         <p-divider></p-divider>
 
                         <div class="flex justify-content-between align-items-center">
                             <span class="text-xl font-bold">Total con IVA</span>
                             <span class="text-2xl font-bold text-primary">{{ total | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        </div>
+
+                        <div *ngIf="getDiscountPercentage() > 0" class="flex justify-content-center mt-2">
+                            <p-tag [value]="'Descuento total: ' + getDiscountPercentage() + '%'" severity="success" [rounded]="true" class="font-semibold" />
                         </div>
 
                         <!-- Terms and Conditions -->

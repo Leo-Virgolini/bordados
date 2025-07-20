@@ -1,0 +1,364 @@
+<p-card styleClass="border-round-xl shadow-3 p-3">
+    <ng-template #header>
+        <div class="flex justify-content-between align-items-center">
+            <h2 class="text-xl font-bold m-0">
+                <i class="pi pi-shopping-bag mr-2"></i>Gestión de Productos
+            </h2>
+            <p-button label="Nuevo Producto" icon="pi pi-plus" [raised]="true" (onClick)="openProductDialog()" />
+        </div>
+    </ng-template>
+
+    <p-table [value]="products" [loading]="productsLoading" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos" [rowsPerPageOptions]="[5, 10, 25, 50]" responsiveLayout="scroll"
+        [tableStyle]="{'min-width': '50rem'}" (onSort)="onSort($event)">
+
+        <ng-template #header>
+            <tr>
+                <th pSortableColumn="id" class="text-center">
+                    ID <p-sortIcon field="id"></p-sortIcon>
+                </th>
+                <th pSortableColumn="name" class="text-center">
+                    Nombre <p-sortIcon field="name"></p-sortIcon>
+                </th>
+                <th class="text-center">Imagen</th>
+                <th pSortableColumn="price" class="text-center">
+                    Precio <p-sortIcon field="price"></p-sortIcon>
+                </th>
+                <th pSortableColumn="stock" class="text-center">
+                    Stock <p-sortIcon field="stock"></p-sortIcon>
+                </th>
+                <th pSortableColumn="category" class="text-center">
+                    Categoría <p-sortIcon field="category"></p-sortIcon>
+                </th>
+                <th pSortableColumn="garmentType" class="text-center">
+                    Tipo de Prenda <p-sortIcon field="garmentType"></p-sortIcon>
+                </th>
+                <th pSortableColumn="size" class="text-center">
+                    Talle <p-sortIcon field="size"></p-sortIcon>
+                </th>
+                <th pSortableColumn="garmentColor" class="text-center">
+                    Color <p-sortIcon field="garmentColor"></p-sortIcon>
+                </th>
+                <th pSortableColumn="rating" class="text-center">
+                    Rating <p-sortIcon field="rating"></p-sortIcon>
+                </th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Etiquetas</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+            <tr>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center"></th>
+                <th class="text-center">
+                    <p-columnFilter type="numeric" field="price" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="numeric" field="stock" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="category" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="garmentType" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="size" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="text" field="garmentColor" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center">
+                    <p-columnFilter type="numeric" field="rating" display="menu"></p-columnFilter>
+                </th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-product>
+            <tr>
+                <td class="text-center">
+                    <span class="font-bold text-primary">{{ product.id }}</span>
+                </td>
+                <td class="text-center">
+                    <div class="flex flex-column align-items-center">
+                        <span class="font-semibold text-900">{{ product.name }}</span>
+                        <span class="text-sm text-600">{{ product.description | slice:0:50 }}{{ product.description.length > 50 ? '...' : '' }}</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <p-image [src]="product.image" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" preview />
+                </td>
+                <td class="text-center">
+                    <div class="flex flex-column align-items-center">
+                        <span *ngIf="product.discount > 0" class="text-sm text-500 line-through">{{ product.price | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        <span class="font-bold text-primary">{{ getDiscountedPrice(product) | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        <p-tag *ngIf="product.discount > 0" [value]="'-' + product.discount + '%'" severity="success" [rounded]="true"></p-tag>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="flex align-items-center justify-content-center gap-2">
+                        <span class="font-semibold">{{ product.stock }}</span>
+                        <p-tag [value]="getProductStockStatus(product.stock).value" [severity]="getProductStockStatus(product.stock).severity" [rounded]="true"></p-tag>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <p-tag [value]="getCategoryLabel(product.category)" severity="info" [rounded]="true"></p-tag>
+                </td>
+                <td class="text-center">
+                    <span class="font-semibold text-900">{{ product.garmentType }}</span>
+                </td>
+                <td class="text-center">
+                    <p-tag [value]="product.size" severity="warn" [rounded]="true"></p-tag>
+                </td>
+                <td class="text-center">
+                    <div class="flex align-items-center justify-content-center gap-2">
+                        <div class="w-2rem h-2rem border-round border-1 border-gray-300" [style.background-color]="getColorValue(product.garmentColor)"></div>
+                        <span class="font-semibold">{{ product.garmentColor }}</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="flex align-items-center justify-content-center gap-2">
+                        <span class="font-semibold">{{ product.rating }}</span>
+                        <i class="pi pi-star-fill text-yellow-500"></i>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="flex flex-column gap-1 align-items-center">
+                        <p-tag *ngIf="product.isNew" value="Nuevo" severity="success" [rounded]="true" size="small"></p-tag>
+                        <p-tag *ngIf="product.isFeatured" value="Destacado" severity="warn" [rounded]="true" size="small"></p-tag>
+                        <span *ngIf="!product.isNew && !product.isFeatured" class="text-400 text-sm">Normal</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="flex flex-column gap-1 align-items-center">
+                        <p-tag *ngFor="let tag of product.tags" [value]="getTagLabel(tag)" severity="secondary" [rounded]="true" size="small"></p-tag>
+                        <span *ngIf="!product.tags || product.tags.length === 0" class="text-400 text-sm">Sin etiquetas</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="flex gap-2 justify-content-center">
+                        <p-button icon="pi pi-pencil" (onClick)="editProduct(product)" [rounded]="true" size="small">
+                        </p-button>
+                        <p-button icon="pi pi-trash" (onClick)="confirmDeleteProduct(product)" [rounded]="true" severity="danger" size="small">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+            <tr>
+                <td colspan="13" class="text-center py-6">
+                    <i class="pi pi-shopping-bag text-6xl text-300 mb-3 block"></i>
+                    <h3 class="text-xl font-semibold text-600 mb-2">No hay productos</h3>
+                    <p class="text-500 mb-4">Agrega tu primer producto para comenzar</p>
+                    <p-button label="Agregar Producto" icon="pi pi-plus" (onClick)="openProductDialog()" [rounded]="true"></p-button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+<!-- Product Dialog -->
+<p-dialog [header]="editingProduct ? 'Editar Producto' : 'Nuevo Producto'" [(visible)]="showProductDialog" [modal]="true" [style]="{width: '40rem', maxHeight: '90vh'}" [draggable]="false"
+    [resizable]="false" [closable]="true" [closeOnEscape]="true" [dismissableMask]="false" styleClass="admin-dialog">
+
+    <div class="dialog-content-wrapper">
+        <form [formGroup]="productForm" class="flex flex-column gap-4">
+            <div class="grid">
+                <div class="col-12">
+                    <label for="productId" class="block mb-2 font-semibold">ID *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-hashtag"></i>
+                        </p-inputgroup-addon>
+                        <input id="productId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del producto" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('id')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-12">
+                    <label for="productName" class="block mb-2 font-semibold">Nombre *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-tag"></i>
+                        </p-inputgroup-addon>
+                        <input id="productName" type="text" pInputText formControlName="name" class="w-full" placeholder="Nombre del producto" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('name')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-12">
+                    <label for="productDescription" class="block mb-2 font-semibold">Descripción *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-file-edit"></i>
+                        </p-inputgroup-addon>
+                        <textarea pTextarea id="productDescription" formControlName="description" class="w-full" rows="3" placeholder="Descripción del producto"></textarea>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('description')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-12">
+                    <label for="productImage" class="block mb-2 font-semibold">URL de Imagen *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-image"></i>
+                        </p-inputgroup-addon>
+                        <input id="productImage" type="text" pInputText formControlName="image" class="w-full" placeholder="https://ejemplo.com/imagen.jpg" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('image')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <label for="productPrice" class="block mb-2 font-semibold">Precio *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-dollar"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber id="productPrice" formControlName="price" class="w-full" mode="currency" currency="ARS" locale="es-AR" [minFractionDigits]="0"
+                            [maxFractionDigits]="0" placeholder="0"></p-inputnumber>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('price')"></app-error-helper>
+                </div>
+                <div class="col-6">
+                    <label for="productStock" class="block mb-2 font-semibold">Stock *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-box"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber id="productStock" formControlName="stock" class="w-full" [min]="0" [showButtons]="true" placeholder="0"></p-inputnumber>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('stock')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <label for="productCategory" class="block mb-2 font-semibold">Categoría *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-th-large"></i>
+                        </p-inputgroup-addon>
+                        <p-select id="productCategory" formControlName="category" [options]="productCategories" optionLabel="label" optionValue="value" placeholder="Seleccionar categoría"
+                            class="w-full" appendTo="body"></p-select>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('category')"></app-error-helper>
+                </div>
+                <div class="col-6">
+                    <label for="productRating" class="block mb-2 font-semibold">Rating</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-star"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber id="productRating" formControlName="rating" class="w-full" [min]="0" [max]="5" [minFractionDigits]="1" [maxFractionDigits]="1"
+                            placeholder="0.0"></p-inputnumber>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('rating')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <label for="productGarmentType" class="block mb-2 font-semibold">Tipo de Prenda *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-tag"></i>
+                        </p-inputgroup-addon>
+                        <p-select id="productGarmentType" formControlName="garmentType" [options]="garmentTypes" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo"
+                            class="w-full" appendTo="body"></p-select>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('garmentType')"></app-error-helper>
+                </div>
+                <div class="col-6">
+                    <label for="productSize" class="block mb-2 font-semibold">Talle *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-list"></i>
+                        </p-inputgroup-addon>
+                        <p-select id="productSize" formControlName="size" [options]="availableSizes" optionLabel="label" optionValue="value" placeholder="Seleccionar talle" class="w-full"
+                            appendTo="body"></p-select>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('size')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <label for="productGarmentColor" class="block mb-2 font-semibold">Color *</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-palette"></i>
+                        </p-inputgroup-addon>
+                        <p-select id="productGarmentColor" formControlName="garmentColor" [options]="availableColors" optionLabel="label" optionValue="value"
+                            placeholder="Seleccionar color" class="w-full" appendTo="body"></p-select>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('garmentColor')"></app-error-helper>
+                </div>
+                <div class="col-6">
+                    <label for="productDiscount" class="block mb-2 font-semibold">Descuento (%)</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-percentage"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber id="productDiscount" formControlName="discount" class="w-full" [min]="0" [max]="100" suffix="%" placeholder="0"></p-inputnumber>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('discount')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <label for="productTags" class="block mb-2 font-semibold">Etiquetas</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-tags"></i>
+                        </p-inputgroup-addon>
+                        <p-multiselect id="productTags" formControlName="tags" [options]="availableProductTags" optionLabel="label" optionValue="value" placeholder="Seleccionar etiquetas"
+                            class="w-full" appendTo="body" [showToggleAll]="true" [maxSelectedLabels]="3" selectedItemsLabel="{0} elementos seleccionados"></p-multiselect>
+                    </p-inputgroup>
+                    <app-error-helper [control]="productForm.get('tags')"></app-error-helper>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-6">
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox id="productIsNew" formControlName="isNew" [binary]="true"></p-checkbox>
+                        <label for="productIsNew" class="cursor-pointer">Producto Nuevo</label>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox id="productIsFeatured" formControlName="isFeatured" [binary]="true"></p-checkbox>
+                        <label for="productIsFeatured" class="cursor-pointer">Producto Destacado</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" (onClick)="showProductDialog = false" [outlined]="true" [rounded]="true" [disabled]="savingProduct"></p-button>
+            <p-button [label]="editingProduct ? 'Actualizar' : 'Guardar'" (onClick)="saveProduct()" [disabled]="productForm.invalid || savingProduct" [rounded]="true"
+                [loading]="savingProduct">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

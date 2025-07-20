@@ -21,18 +21,21 @@ import { ConfirmPopup } from 'primeng/confirmpopup';
 import { Toast } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CarritoService } from '../../services/carrito.service';
-import { CarritoItem } from '../../model/carrito-item';
-import { Producto } from '../../model/product';
-import { Category } from '../../model/category';
 import { SortOption } from '../../model/sort-option';
 import { ProductsService } from '../../services/products.service';
 import { InputGroup } from 'primeng/inputgroup';
+import { InputGroupAddon } from 'primeng/inputgroupaddon';
+import { InputNumber } from 'primeng/inputnumber';
+import { FormsModule } from '@angular/forms';
+import { Product } from '../../model/product';
+import { CartItem } from '../../model/cart-item';
 
 @Component({
     selector: 'app-products-sale',
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         InputText,
         Button,
         Card,
@@ -50,7 +53,9 @@ import { InputGroup } from 'primeng/inputgroup';
         ProgressSpinner,
         ConfirmPopup,
         Toast,
-        InputGroup
+        InputGroup,
+        InputGroupAddon,
+        InputNumber
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './products-sale.component.html',
@@ -62,11 +67,12 @@ export class ProductsSaleComponent implements OnInit {
     filtersForm!: FormGroup;
 
     // Products data
-    allProducts: Producto[] = [];
-    filteredProducts: Producto[] = [];
-    displayedProducts: Producto[] = [];
+    allProducts: Product[] = [];
+    filteredProducts: Product[] = [];
+    displayedProducts: Product[] = [];
     isLoading: boolean = false;
-    selectedProduct: Producto | null = null;
+    selectedProduct: Product | null = null;
+    selectedQuantity: number = 1;
     loadingProducts: Set<string> = new Set(); // Track which products are being added to cart
 
     // Pagination
@@ -75,22 +81,22 @@ export class ProductsSaleComponent implements OnInit {
     totalRecords: number = 0;
 
     // Options for filters
-    categories: Category[] = [
-        new Category('Remeras', 'remeras'),
-        new Category('Buzos', 'buzos'),
-        new Category('Camisetas', 'camisetas'),
-        new Category('Hoodies', 'hoodies'),
-        new Category('Accesorios', 'accesorios')
+    categories: SortOption[] = [
+        new SortOption('Remeras', 'remeras'),
+        new SortOption('Buzos', 'buzos'),
+        new SortOption('Camisetas', 'camisetas'),
+        new SortOption('Hoodies', 'hoodies'),
+        new SortOption('Accesorios', 'accesorios')
     ];
 
-    tags: Category[] = [
-        new Category('Oversize', 'oversize'),
-        new Category('Básico', 'basico'),
-        new Category('Estampado', 'estampado'),
-        new Category('Liso', 'liso'),
-        new Category('Deportivo', 'deportivo'),
-        new Category('Casual', 'casual'),
-        new Category('Premium', 'premium')
+    tags: SortOption[] = [
+        new SortOption('Oversize', 'oversize'),
+        new SortOption('Básico', 'basico'),
+        new SortOption('Estampado', 'estampado'),
+        new SortOption('Liso', 'liso'),
+        new SortOption('Deportivo', 'deportivo'),
+        new SortOption('Casual', 'casual'),
+        new SortOption('Premium', 'premium')
     ];
 
     // Removed product types filter since this component only shows pre-embroidered products
@@ -142,8 +148,8 @@ export class ProductsSaleComponent implements OnInit {
         this.isLoading = true;
         this.productsService.getProducts().subscribe({
             next: (products) => {
-                // Filter only pre-embroidered products (tipo === 'bordado')
-                this.allProducts = products.filter(product => product.tipo === 'bordado');
+                // Filter only pre-embroidered products (type === 'bordado')
+                this.allProducts = products.filter(product => product.type === 'bordado');
                 this.applyFilters();
                 this.isLoading = false;
             },
@@ -162,8 +168,8 @@ export class ProductsSaleComponent implements OnInit {
         if (formValue.searchTerm.trim()) {
             const search = formValue.searchTerm.toLowerCase();
             filtered = filtered.filter(product =>
-                product.nombre.toLowerCase().includes(search) ||
-                product.descripcion.toLowerCase().includes(search) ||
+                product.name.toLowerCase().includes(search) ||
+                product.description.toLowerCase().includes(search) ||
                 product.tags.some((tag: string) => tag.toLowerCase().includes(search))
             );
         }
@@ -171,7 +177,7 @@ export class ProductsSaleComponent implements OnInit {
         // Category filter
         if (formValue.selectedCategories.length > 0) {
             filtered = filtered.filter(product =>
-                formValue.selectedCategories.includes(product.categoria)
+                formValue.selectedCategories.includes(product.category)
             );
         }
 
@@ -184,17 +190,17 @@ export class ProductsSaleComponent implements OnInit {
 
         // Price range filter
         filtered = filtered.filter(product =>
-            product.precio >= formValue.priceRange[0] && product.precio <= formValue.priceRange[1]
+            product.price >= formValue.priceRange[0] && product.price <= formValue.priceRange[1]
         );
 
         // New products filter
         if (formValue.showOnlyNew) {
-            filtered = filtered.filter(product => product.esNuevo);
+            filtered = filtered.filter(product => product.isNew);
         }
 
         // Featured products filter
         if (formValue.showOnlyFeatured) {
-            filtered = filtered.filter(product => product.esDestacado);
+            filtered = filtered.filter(product => product.isFeatured);
         }
 
         // Stock filter
@@ -211,25 +217,25 @@ export class ProductsSaleComponent implements OnInit {
         this.updateDisplayedProducts();
     }
 
-    private sortProducts(products: Producto[], selectedSort: string): void {
+    private sortProducts(products: Product[], selectedSort: string): void {
         switch (selectedSort) {
             case 'name-asc':
-                products.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                products.sort((a, b) => a.name.localeCompare(b.name));
                 break;
             case 'name-desc':
-                products.sort((a, b) => b.nombre.localeCompare(a.nombre));
+                products.sort((a, b) => b.name.localeCompare(a.name));
                 break;
             case 'price-asc':
-                products.sort((a, b) => a.precio - b.precio);
+                products.sort((a, b) => a.price - b.price);
                 break;
             case 'price-desc':
-                products.sort((a, b) => b.precio - a.precio);
+                products.sort((a, b) => b.price - a.price);
                 break;
             case 'discount-desc':
-                products.sort((a, b) => b.descuento - a.descuento);
+                products.sort((a, b) => b.discount - a.discount);
                 break;
             case 'newest':
-                products.sort((a, b) => (b.esNuevo ? 1 : 0) - (a.esNuevo ? 1 : 0));
+                products.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
                 break;
             case 'rating-desc':
                 products.sort((a, b) => b.rating - a.rating);
@@ -287,45 +293,90 @@ export class ProductsSaleComponent implements OnInit {
         }
     }
 
-    addToCart(event: Event, product: Producto): void {
+    addToCart(event: Event, product: Product): void {
         this.selectedProduct = product;
-        this.confirmationService.confirm({
-            target: event.target as EventTarget,
-            message: `¿Agregar?`,
-            icon: 'pi pi-shopping-cart',
-            acceptLabel: 'Agregar',
-            acceptIcon: 'pi pi-cart-plus',
-            acceptButtonStyleClass: 'p-button-primary',
-            rejectLabel: 'Cancelar',
-            rejectIcon: 'pi pi-times',
-            rejectButtonStyleClass: 'p-button-secondary',
-            accept: () => {
-                // Add loading state for this specific product
-                this.loadingProducts.add(product.id);
+        this.selectedQuantity = 1; // Reset quantity to 1 for each new product
 
-                // Simulate API call delay
-                setTimeout(() => {
-                    this.carritoService.agregarItem(new CarritoItem({
-                        producto: product,
-                        cantidad: 1
-                    }));
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Producto agregado',
-                        detail: `${product.nombre} se agregó al carrito`,
-                        icon: 'pi pi-cart-plus',
-                        life: 3000
-                    });
+        // Close any existing popup first to ensure proper repositioning
+        this.confirmationService.close();
 
-                    // Remove loading state
-                    this.loadingProducts.delete(product.id);
+        // Use setTimeout to ensure the previous popup is fully closed
+        setTimeout(() => {
+            this.confirmationService.confirm({
+                target: event.target as EventTarget,
+                message: `¿Agregar ${product.name} al carrito?`,
+                icon: 'pi pi-shopping-cart',
+                acceptLabel: 'Agregar',
+                acceptIcon: 'pi pi-cart-plus',
+                acceptButtonStyleClass: 'p-button-primary',
+                rejectLabel: 'Cancelar',
+                rejectIcon: 'pi pi-times',
+                rejectButtonStyleClass: 'p-button-secondary',
+                accept: () => {
+                    // Validate quantity
+                    if (this.selectedQuantity < 1) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Cantidad inválida',
+                            detail: 'La cantidad debe ser al menos 1',
+                            life: 3000
+                        });
+                        return;
+                    }
+
+                    if (this.selectedQuantity > product.stock) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Stock insuficiente',
+                            detail: `Solo hay ${product.stock} ${product.stock === 1 ? 'unidad' : 'unidades'} disponible${product.stock === 1 ? '' : 's'}`,
+                            life: 3000
+                        });
+                        return;
+                    }
+
+                    // Check if adding this quantity would exceed available stock
+                    const currentCartQuantity = this.carritoService.getCartItemQuantity(product.id);
+                    const totalQuantity = currentCartQuantity + this.selectedQuantity;
+
+                    if (totalQuantity > product.stock) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Stock insuficiente',
+                            detail: `Ya tienes ${currentCartQuantity} en el carrito. ${currentCartQuantity === product.stock ? 'No puedes agregar más' : `Solo puedes agregar ${product.stock - currentCartQuantity} más.`}`,
+                            life: 3000
+                        });
+                        return;
+                    }
+
+                    // Add loading state for this specific product
+                    this.loadingProducts.add(product.id);
+
+                    // Simulate API call delay
+                    setTimeout(() => {
+                        this.carritoService.agregarItem(new CartItem({
+                            product: product,
+                            quantity: this.selectedQuantity
+                        }));
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Producto agregado',
+                            detail: `'${product.name}' x ${this.selectedQuantity} agregado al carrito`,
+                            icon: 'pi pi-cart-plus',
+                            life: 3000
+                        });
+
+                        // Remove loading state
+                        this.loadingProducts.delete(product.id);
+                        this.selectedProduct = null;
+                        this.selectedQuantity = 1;
+                    }, 1000); // 1 second delay to show loading
+                },
+                reject: () => {
                     this.selectedProduct = null;
-                }, 1000); // 1 second delay to show loading
-            },
-            reject: () => {
-                this.selectedProduct = null;
-            }
-        });
+                    this.selectedQuantity = 1;
+                }
+            });
+        }, 100); // Small delay to ensure proper repositioning
     }
 
     isProductLoading(productId: string): boolean {
@@ -340,7 +391,7 @@ export class ProductsSaleComponent implements OnInit {
 
     getStockStatus(stock: number): { severity: string; value: string } {
         if (stock === 0) return { severity: 'danger', value: 'Sin stock' };
-        if (stock <= 5) return { severity: 'warning', value: 'Últimas unidades' };
+        if (stock <= 5) return { severity: 'warn', value: 'Últimas unidades' };
         return { severity: 'success', value: 'En stock' };
     }
 
@@ -356,11 +407,11 @@ export class ProductsSaleComponent implements OnInit {
         return Math.ceil(this.totalRecords / this.rows);
     }
 
-    getDiscountedPrice(product: Producto): number {
-        if (product.descuento > 0) {
-            return product.precio * (1 - product.descuento / 100);
+    getDiscountedPrice(product: Product): number {
+        if (product.discount > 0) {
+            return product.price * (1 - product.discount / 100);
         }
-        return product.precio;
+        return product.price;
     }
 
 } 

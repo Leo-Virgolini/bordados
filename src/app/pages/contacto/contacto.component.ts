@@ -11,14 +11,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Textarea } from 'primeng/textarea';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
-
-interface ContactForm {
-    nombre: string;
-    email: string;
-    telefono: string;
-    asunto: string;
-    mensaje: string;
-}
+import { ContactForm } from '../../model/contact-form';
 
 @Component({
     selector: 'app-contacto',
@@ -49,11 +42,11 @@ export class ContactoComponent {
 
     constructor(private messageService: MessageService) {
         this.contactForm = this.fb.group({
-            nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+            name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
             email: ['', [Validators.required, Validators.email]],
-            telefono: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(15)]],
-            asunto: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
-            mensaje: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]]
+            phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(15)]],
+            subject: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
+            message: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]]
         });
     }
 

@@ -31,7 +31,8 @@
                         <p-selectbutton id="tipoPrenda" formControlName="tipo" class="w-auto" size="large" [options]="tiposPrenda" optionLabel="label" optionValue="value"
                             aria-labelledby="basic" required>
                             <ng-template #item let-prenda>
-                                <p-image [src]="'prendas/' + prenda.image + '.webp'" imageClass="w-full border-round-xl border-1" [pTooltip]="prenda.label" tooltipPosition="top" />
+                                <p-image [src]="'prendas/' + prenda.image + '.webp'" imageClass="w-full border-round-xl border-500 border-1" [pTooltip]="prenda.label"
+                                    tooltipPosition="top" />
                                 <p-badge value="{{ prenda.precio | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="xlarge" class="absolute top-0 right-0 m-2" />
                             </ng-template>
                         </p-selectbutton>
@@ -66,11 +67,11 @@
                     <!-- 1° Color del hilado -->
                     <div>
                         <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado: *</label>
-                        <p-selectbutton [options]="coloresHilado" class="w-auto" formControlName="colorHilado1" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                        <p-selectbutton [options]="coloresHilado" class="w-auto" formControlName="colorHilado1" size="large" optionLabel="name" optionValue="id" aria-labelledby="basic"
                             required>
                             <ng-template #item let-color>
-                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
-                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
                                 </div>
                             </ng-template>
                         </p-selectbutton>
@@ -89,11 +90,11 @@
                     <!-- 2° Color del hilado -->
                     <div *ngIf="formulario.get('usarSegundoColor')?.value">
                         <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
-                        <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                        <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="name" optionValue="id" aria-labelledby="basic"
                             [required]="formulario.get('usarSegundoColor')?.value">
                             <ng-template #item let-color>
-                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
-                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
                                 </div>
                             </ng-template>
                         </p-selectbutton>
@@ -177,11 +178,11 @@
                         </div>
                         <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
                             <i class="pi pi-palette text-primary"></i>
-                            Color del hilado: <strong>{{ getLabel('colorHilado1', coloresPrendas) }}</strong>
+                            Color del hilado: <strong>{{ getLabel('colorHilado1', coloresHilado) }}</strong>
                         </div>
                         <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
                             <i class="pi pi-palette text-primary"></i>
-                            2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresPrendas) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
+                            2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresHilado) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
                                 currency:'ARS':'symbol':'1.0-0' }})</span>
                         </div>
                         <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
@@ -248,7 +249,7 @@
                         <td class="text-center">{{ measurement.chest }}</td>
                         <td class="text-center">{{ measurement.length }}</td>
                         <td class="text-center">
-                            <p-tag [value]="measurement.fit" [severity]="measurement.fit === 'Ajustado' ? 'warning' : measurement.fit === 'Regular' ? 'success' : 'info'"
+                            <p-tag [value]="measurement.fit" [severity]="measurement.fit === 'Ajustado' ? 'warn' : measurement.fit === 'Regular' ? 'success' : 'info'"
                                 [rounded]="true" />
                         </td>
                     </tr>

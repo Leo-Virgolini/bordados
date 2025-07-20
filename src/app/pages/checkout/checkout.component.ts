@@ -5,8 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Router, RouterLink } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
-import { CarritoItem } from '../../model/carrito-item';
-import { SpinnerComponent } from '../../shared/spinner/spinner.component';
+import { CartItem } from '../../model/cart-item';
+import { SettingsService } from '../../services/settings.service';
+import { CouponsService, DiscountCoupon } from '../../services/coupons.service';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
 import { Panel } from 'primeng/panel';
 import { InputText } from 'primeng/inputtext';
@@ -30,7 +31,6 @@ import { Dialog } from 'primeng/dialog';
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
-    SpinnerComponent,
     ErrorHelperComponent,
     Panel,
     InputText,
@@ -57,13 +57,19 @@ export class CheckoutComponent implements OnInit {
   isProcessing: boolean = false;
   showTermsDialog: boolean = false;
   showPrivacyDialog: boolean = false;
-  orderItems: CarritoItem[] = [];
+  orderItems: CartItem[] = [];
   subtotal: number = 0;
   discountPercentage: number = 0.10;
   discount: number = 0;
   ivaPercentage: number = 0.21;
   iva: number = 0;
   total: number = 0;
+  freeShippingThreshold: number = 50000; // Default value, will be loaded from service
+
+  // Coupon properties
+  selectedCoupon: DiscountCoupon | null = null;
+  couponLoading: boolean = false;
+  couponDiscount: number = 0;
   transferData: string = 'CBU: 00000000000000000000000000000000\n' +
     'Alias: alias.alias.alias\n' +
     'Banco: Banco Galicia';
@@ -212,13 +218,16 @@ export class CheckoutComponent implements OnInit {
     private carritoService: CarritoService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private router: Router
+    private router: Router,
+    private settingsService: SettingsService,
+    private couponsService: CouponsService
   ) {
   }
 
   ngOnInit() {
     this.initForm();
     this.loadOrderItems();
+    this.loadSettings();
     this.calculateTotals();
 
     // Listen to payment method changes
@@ -244,12 +253,19 @@ export class CheckoutComponent implements OnInit {
       expiryDate: ['', [Validators.required, Validators.minLength(5), Validators.pattern(/^\d{2}\/\d{2}$/)]],
       cvv: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(4), Validators.pattern(/^\d*$/)]],
       cardholderName: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
+      couponCode: [''],
       acceptTerms: [false, [Validators.requiredTrue]]
     });
   }
 
   private loadOrderItems(): void {
     this.orderItems = this.carritoService.getCarrito();
+  }
+
+  private loadSettings(): void {
+    this.settingsService.getFreeShippingThreshold().subscribe(threshold => {
+      this.freeShippingThreshold = threshold;
+    });
   }
 
   private calculateTotals(): void {
@@ -259,21 +275,20 @@ export class CheckoutComponent implements OnInit {
     // Calculate discount based on payment method
     const selectedPaymentMethod: string = this.checkoutForm.get('selectedPaymentMethod')?.value;
     if (selectedPaymentMethod === 'transfer') {
-      console.log('transfer');
-      this.discount = (this.subtotal + this.iva) * this.discountPercentage; // discount on subtotal + IVA
+      this.discount = (this.subtotal) * this.discountPercentage; // discount on subtotal + IVA
     } else if (selectedPaymentMethod === 'mercadopago') {
-      console.log('mercadopago');
       this.discount = 0; // no discount for MercadoPago
     } else {
-      console.log('credit card');
       this.discount = 0; // no discount for credit card
     }
 
-    this.total = this.subtotal + this.iva - this.discount;
+    // Apply coupon discount
+    const totalAfterPaymentDiscount = this.subtotal - this.discount;
+    this.total = totalAfterPaymentDiscount - this.couponDiscount;
   }
 
   isShippingFree(): boolean {
-    return this.total >= 100000;
+    return this.total >= this.freeShippingThreshold;
   }
 
   getShippingText(): string {
@@ -286,6 +301,99 @@ export class CheckoutComponent implements OnInit {
 
   getShippingSeverity(): string {
     return this.isShippingFree() ? 'success' : 'info';
+  }
+
+  validateAndApplyCoupon(): void {
+    const couponCode = this.checkoutForm.get('couponCode')?.value;
+    if (!couponCode) {
+      this.selectedCoupon = null;
+      this.couponDiscount = 0;
+      this.calculateTotals();
+      return;
+    }
+
+    this.couponLoading = true;
+    const subtotal = this.subtotal;
+
+    this.couponsService.validateCoupon(couponCode, subtotal).subscribe({
+      next: (result) => {
+        if (result.valid && result.coupon) {
+          // Apply coupon
+          this.selectedCoupon = result.coupon;
+          let discountAmount = 0;
+
+          if (result.coupon.discountType === 'percentage') {
+            discountAmount = subtotal * (result.coupon.discountValue / 100);
+          } else {
+            discountAmount = result.coupon.discountValue;
+          }
+
+          // Ensure discount doesn't exceed subtotal
+          discountAmount = Math.min(discountAmount, subtotal);
+          this.couponDiscount = discountAmount;
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Cupón aplicado',
+            detail: `Descuento de ${result.coupon.discountType === 'percentage' ? result.coupon.discountValue + '%' : '$' + result.coupon.discountValue.toLocaleString('es-AR')} aplicado`
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Cupón inválido',
+            detail: result.error || 'El código de cupón no es válido'
+          });
+          this.selectedCoupon = null;
+          this.couponDiscount = 0;
+          this.checkoutForm.get('couponCode')?.setValue('');
+        }
+        this.couponLoading = false;
+        this.calculateTotals();
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al validar el cupón: ' + error.message
+        });
+        this.selectedCoupon = null;
+        this.couponDiscount = 0;
+        this.checkoutForm.get('couponCode')?.setValue('');
+        this.couponLoading = false;
+        this.calculateTotals();
+      }
+    });
+  }
+
+  clearCoupon(): void {
+    this.selectedCoupon = null;
+    this.couponDiscount = 0;
+    this.checkoutForm.get('couponCode')?.setValue('');
+    this.calculateTotals();
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Cupón removido',
+      detail: 'El cupón ha sido removido del pedido'
+    });
+  }
+
+  getCouponDisplayValue(coupon: DiscountCoupon): string {
+    if (coupon.discountType === 'percentage') {
+      return `${coupon.code} - ${coupon.discountValue}%`;
+    } else {
+      return `${coupon.code} - $${coupon.discountValue.toLocaleString('es-AR')}`;
+    }
+  }
+
+  getDiscountPercentage(): number {
+    const subtotal = this.subtotal;
+    const totalDiscount = this.discount + this.couponDiscount;
+
+    if (subtotal > 0 && totalDiscount > 0) {
+      return Math.round((totalDiscount / subtotal) * 100);
+    }
+    return 0;
   }
 
   onChange(): void {
@@ -354,6 +462,18 @@ export class CheckoutComponent implements OnInit {
   processPayment(): void {
     if (this.checkoutForm.valid && this.checkoutForm.get('acceptTerms')?.value) {
       this.isProcessing = true;
+
+      // Track coupon usage if a coupon was applied
+      if (this.selectedCoupon) {
+        this.couponsService.applyCouponUsage(this.selectedCoupon.id).subscribe({
+          next: () => {
+            console.log('Coupon usage tracked successfully');
+          },
+          error: (error) => {
+            console.error('Error tracking coupon usage:', error);
+          }
+        });
+      }
 
       // Simulate payment processing
       setTimeout(() => {

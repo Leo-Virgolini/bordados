@@ -1,10 +1,11 @@
 import { Component, ViewChildren, QueryList, ElementRef, OnInit } from '@angular/core';
-import { CarritoItem } from '../../model/carrito-item';
+import { CartItem } from '../../model/cart-item';
 import { Button } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { Panel } from 'primeng/panel';
 import { CarritoService } from '../../services/carrito.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, FormArray, FormControl } from '@angular/forms';
+import { SettingsService } from '../../services/settings.service';
 import { InputNumber } from 'primeng/inputnumber';
 import { Card } from 'primeng/card';
 import { Divider } from 'primeng/divider';
@@ -25,16 +26,24 @@ import { Image } from 'primeng/image';
 })
 export class CarritoComponent implements OnInit {
 
-  items: CarritoItem[] = [];
+  items: CartItem[] = [];
   form!: FormGroup;
+  freeShippingThreshold: number = 50000; // Default value, will be loaded from service
 
-  constructor(private carritoService: CarritoService, private fb: FormBuilder, private messageService: MessageService, private confirmationService: ConfirmationService) { }
+  constructor(
+    private carritoService: CarritoService,
+    private fb: FormBuilder,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,
+    private settingsService: SettingsService
+  ) { }
 
   ngOnInit() {
-    this.carritoService.items$.subscribe((items: CarritoItem[]) => {
+    this.carritoService.items$.subscribe((items: CartItem[]) => {
       this.items = items;
       this.initializeForm();
     });
+    this.loadSettings();
   }
 
   initializeForm() {
@@ -42,11 +51,17 @@ export class CarritoComponent implements OnInit {
       items: this.fb.array(
         this.items.map(item =>
           this.fb.group({
-            id: [item.producto.id],
-            cantidad: [item.cantidad, [Validators.required, Validators.min(1)]]
+            id: [item.product.id],
+            cantidad: [item.quantity, [Validators.required, Validators.min(1)]]
           })
         )
       )
+    });
+  }
+
+  private loadSettings(): void {
+    this.settingsService.getFreeShippingThreshold().subscribe(threshold => {
+      this.freeShippingThreshold = threshold;
     });
   }
 
@@ -58,23 +73,23 @@ export class CarritoComponent implements OnInit {
     return this.itemsFormArray.at(index).get('cantidad') as FormControl;
   }
 
-  actualizarCantidad(item: CarritoItem, nuevaCantidad: number | string, inputRef: any) {
+  actualizarCantidad(item: CartItem, nuevaCantidad: number | string, inputRef: any) {
 
     const cantidad: number = typeof nuevaCantidad === 'string' ? parseInt(nuevaCantidad) : nuevaCantidad;
 
     // Check if quantity is valid
     if (cantidad && cantidad > 0 && cantidad <= 100) {
-      this.carritoService.actualizarCantidad(item.producto.id, cantidad);
+      this.carritoService.actualizarCantidad(item.product.id, cantidad);
     } else if (cantidad > 100) {
       // If quantity exceeds 100, reset the input to the previous item quantity
-      const itemIndex = this.items.findIndex(i => i.producto.id === item.producto.id);
+      const itemIndex = this.items.findIndex(i => i.product.id === item.product.id);
       if (itemIndex !== -1) {
         // Use the original item quantity before any changes
         setTimeout(() => {
-          this.getCantidadControl(itemIndex).setValue(item.cantidad);
+          this.getCantidadControl(itemIndex).setValue(item.quantity);
           // Also update the input component directly
           if (inputRef && inputRef.input.nativeElement) {
-            inputRef.input.nativeElement.value = item.cantidad;
+            inputRef.input.nativeElement.value = item.quantity;
           }
         }, 0);
       }
@@ -111,7 +126,7 @@ export class CarritoComponent implements OnInit {
   }
 
   isShippingFree(): boolean {
-    return this.calcularTotal() >= 100000;
+    return this.calcularTotal() >= this.freeShippingThreshold;
   }
 
   getShippingText(): string {
@@ -132,6 +147,21 @@ export class CarritoComponent implements OnInit {
 
   hasProp(obj: any, prop: string): boolean {
     return obj && Object.prototype.hasOwnProperty.call(obj, prop);
+  }
+
+  getThreadColorName(product: any, colorNumber: number): string {
+    if (product.type === 'personalizable') {
+      if (colorNumber === 1) {
+        return product.threadColor1?.name || '-';
+      } else if (colorNumber === 2) {
+        return product.threadColor2?.name || '-';
+      }
+    }
+    return '-';
+  }
+
+  hasSecondThreadColor(product: any): boolean {
+    return product.type === 'personalizable' && !!product.threadColor2;
   }
 
 }

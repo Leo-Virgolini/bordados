@@ -78,16 +78,16 @@
                 <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
                     <!-- Name Field -->
                     <div class="field">
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                             Nombre Completo *
                         </label>
                         <p-inputgroup>
                             <p-inputgroup-addon>
                                 <i class="pi pi-user"></i>
                             </p-inputgroup-addon>
-                            <input id="nombre" type="text" pInputText formControlName="nombre" placeholder="Tu nombre completo" [invalid]="isFieldInvalid('nombre')" class="w-full" />
+                            <input id="name" type="text" pInputText formControlName="name" placeholder="Tu nombre completo" [invalid]="isFieldInvalid('name')" class="w-full" />
                         </p-inputgroup>
-                        <app-error-helper [control]="contactForm.get('nombre')"></app-error-helper>
+                        <app-error-helper [control]="contactForm.get('name')"></app-error-helper>
                     </div>
 
                     <!-- Email Field -->
@@ -106,46 +106,46 @@
 
                     <!-- Phone Field -->
                     <div class="field">
-                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
                             Teléfono *
                         </label>
                         <p-inputgroup>
                             <p-inputgroup-addon>
                                 <i class="pi pi-phone"></i>
                             </p-inputgroup-addon>
-                            <p-inputmask id="telefono" formControlName="telefono" mask="(99) 9999-9999" placeholder="(11) 1234-5678" [invalid]="isFieldInvalid('telefono')"
+                            <p-inputmask id="phone" formControlName="phone" mask="(99) 9999-9999" placeholder="(11) 1234-5678" [invalid]="isFieldInvalid('phone')"
                                 styleClass="w-full" />
                         </p-inputgroup>
-                        <app-error-helper [control]="contactForm.get('telefono')"></app-error-helper>
+                        <app-error-helper [control]="contactForm.get('phone')"></app-error-helper>
                     </div>
 
                     <!-- Subject Field -->
                     <div class="field">
-                        <label for="asunto" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
                             Asunto *
                         </label>
                         <p-inputgroup>
                             <p-inputgroup-addon>
                                 <i class="pi pi-tag"></i>
                             </p-inputgroup-addon>
-                            <input id="asunto" type="text" pInputText formControlName="asunto" placeholder="¿En qué podemos ayudarte?" [invalid]="isFieldInvalid('asunto')"
+                            <input id="subject" type="text" pInputText formControlName="subject" placeholder="¿En qué podemos ayudarte?" [invalid]="isFieldInvalid('subject')"
                                 class="w-full" />
                         </p-inputgroup>
-                        <app-error-helper [control]="contactForm.get('asunto')"></app-error-helper>
+                        <app-error-helper [control]="contactForm.get('subject')"></app-error-helper>
                     </div>
 
                     <!-- Message Field -->
                     <div class="field">
-                        <label for="mensaje" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
                             Mensaje *
                         </label>
                         <p-inputgroup>
                             <p-inputgroup-addon>
                                 <i class="pi pi-comment"></i>
                             </p-inputgroup-addon>
-                            <textarea pInputTextarea id="mensaje" formControlName="mensaje" placeholder="Cuéntanos más detalles..." rows="5" class="w-full resize-none"></textarea>
+                            <textarea pInputTextarea id="message" formControlName="message" placeholder="Cuéntanos más detalles..." rows="5" class="w-full resize-none"></textarea>
                         </p-inputgroup>
-                        <app-error-helper [control]="contactForm.get('mensaje')"></app-error-helper>
+                        <app-error-helper [control]="contactForm.get('message')"></app-error-helper>
                     </div>
 
                     <!-- Submit Button -->

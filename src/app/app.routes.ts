@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
 import { HomeComponent } from './pages/home/home.component';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
     {
@@ -16,9 +17,9 @@ export const routes: Routes = [
     },
     {
         path: 'admin',
+        canActivate: [AdminGuard],
         children: [
-            { path: 'personalizar', loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent) },
-            { path: 'productos', loadComponent: () => import('./pages/admin-products/admin-products.component').then(m => m.AdminProductsComponent) }
+            { path: '', loadComponent: () => import('./pages/admin/admin-tabs.component').then(m => m.AdminTabsComponent) }
         ]
     },
     {

@@ -3,7 +3,31 @@
     <p-toast position="bottom-center" />
 
     <!-- Confirm Popup -->
-    <p-confirmpopup />
+    <p-confirmpopup #cp>
+        <ng-template #content let-message>
+            <div class="flex flex-column gap-4">
+                <div class="flex align-items-center gap-3">
+                    <i [class]="message.icon" class="text-2xl text-primary"></i>
+                    <span class="font-semibold">{{ message.message }}</span>
+                </div>
+
+                <!-- Quantity Input -->
+                <div class="flex flex-column gap-2">
+                    <label for="quantity" class="font-semibold">Cantidad:</label>
+                    <p-inputgroup>
+                        <p-inputgroup-addon>
+                            <i class="pi pi-shopping-cart"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber #quantityInput id="quantity" [(ngModel)]="selectedQuantity" [min]="1" [max]="selectedProduct?.stock || 1" [showButtons]="true"
+                            buttonLayout="horizontal" spinnerMode="horizontal" [step]="1" class="w-full" placeholder="1" [autofocus]="true" />
+                    </p-inputgroup>
+                    <small class="text-color-secondary">
+                        Stock disponible: {{ selectedProduct?.stock || 0 }} unidades
+                    </small>
+                </div>
+            </div>
+        </ng-template>
+    </p-confirmpopup>
 
     <!-- Header -->
     <section class="text-center">
@@ -108,17 +132,17 @@
                         <!-- Product Image -->
                         <ng-template #header>
                             <div class="relative">
-                                <p-image [src]="product.imagen" [alt]="product.nombre" imageClass="w-full border-round-top-xl" [preview]="true" />
+                                <p-image [src]="product.image" [alt]="product.name" imageClass="w-full border-round-top-xl" [preview]="true" />
 
                                 <!-- Discount Badge -->
-                                <p-tag *ngIf="product.descuento > 0" [value]="'-' + product.descuento + '%'" [severity]="getDiscountColor(product.descuento)"
+                                <p-tag *ngIf="product.discount > 0" [value]="'-' + product.discount + '%'" [severity]="getDiscountColor(product.discount)"
                                     class="absolute top-0 right-0 m-2" [rounded]="true" />
 
                                 <!-- New Badge -->
-                                <p-tag *ngIf="product.esNuevo" value="NUEVO" severity="info" class="absolute top-0 left-0 m-2" [rounded]="true" />
+                                <p-tag *ngIf="product.isNew" value="NUEVO" severity="info" class="absolute top-0 left-0 m-2" [rounded]="true" />
 
                                 <!-- Featured Badge -->
-                                <p-tag *ngIf="product.esDestacado" value="DESTACADO" severity="warning" class="absolute top-0 left-0 m-2" [rounded]="true" style="margin-left: 4.5rem;" />
+                                <p-tag *ngIf="product.isFeatured" value="DESTACADO" severity="warn" class="absolute top-0 left-0 m-2" [rounded]="true" style="margin-left: 4.5rem;" />
 
                                 <!-- All products are pre-embroidered, no need for type badge -->
                             </div>
@@ -128,36 +152,36 @@
                         <div class="flex flex-column gap-3">
                             <!-- Title and Rating -->
                             <div>
-                                <h3 class="text-lg font-bold mb-2 line-height-1-2">{{ product.nombre }}</h3>
+                                <h3 class="text-lg font-bold mb-2 line-height-1-2">{{ product.name }}</h3>
                                 <div class="flex align-items-center gap-2 mb-2">
                                     <i class="pi pi-star-fill text-yellow-500"></i>
                                     <span class="font-semibold">{{ product.rating }}</span>
-                                    <span class="text-color-secondary">({{ getRandomReviews(product.rating) }} reviews)</span>
+                                    <span class="text-color-secondary">({{ getRandomReviews(product.rating) }} reseñas)</span>
                                 </div>
                             </div>
 
                             <!-- Description -->
-                            <p class="text-color-secondary text-sm line-height-1-4">{{ product.descripcion }}</p>
+                            <p class="text-color-secondary text-sm line-height-1-4">{{ product.description }}</p>
 
                             <!-- Product Specifications -->
                             <div class="flex flex-column gap-2 mb-3">
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Talle: <span class="font-semibold text-900">{{ product.talle }}</span></span>
+                                    <span class="text-600 text-sm">Talle: <span class="font-semibold text-900">{{ product.size }}</span></span>
                                 </div>
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-palette text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Color: <span class="font-semibold text-900">{{ product.colorPrenda }}</span></span>
+                                    <span class="text-600 text-sm">Color: <span class="font-semibold text-900">{{ product.garmentColor }}</span></span>
                                 </div>
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-box text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.tipoPrenda | titlecase }}</span></span>
+                                    <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.garmentType | titlecase }}</span></span>
                                 </div>
                             </div>
 
                             <!-- Tags -->
                             <div class="flex flex-wrap gap-1">
-                                <p-tag *ngFor="let tag of product.tags.slice(0, 3)" [value]="tag" severity="secondary" [rounded]="true" styleClass="text-xs" />
+                                <p-tag *ngFor="let tag of product.tags.slice(0, 3)" [value]="tag" severity="info" [rounded]="true" styleClass="text-xs" />
                             </div>
 
                             <!-- Stock Status -->
@@ -169,12 +193,12 @@
                             <!-- Price -->
                             <div class="flex align-items-center gap-2">
                                 <!-- Show original price crossed out and discounted price when there's a discount -->
-                                <div *ngIf="product.descuento > 0" class="flex flex-row gap-1 align-items-center">
+                                <div *ngIf="product.discount > 0" class="flex flex-row gap-1 align-items-center">
                                     <span class="text-2xl font-bold text-teal-500">${{ getDiscountedPrice(product) | number }}</span>
-                                    <span class="line-through text-color-secondary">${{ product.precio | number }}</span>
+                                    <span class="line-through text-color-secondary">${{ product.price | number }}</span>
                                 </div>
                                 <!-- Show only original price when there's no discount -->
-                                <span *ngIf="product.descuento === 0" class="text-2xl font-bold text-teal-500">${{ product.precio | number }}</span>
+                                <span *ngIf="product.discount === 0" class="text-2xl font-bold text-teal-500">${{ product.price | number }}</span>
                             </div>
 
                             <!-- Add to Cart Button -->

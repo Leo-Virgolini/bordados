@@ -1,0 +1,968 @@
+<div class="grid">
+    <!-- Sales Summary Cards -->
+    <div class="col-12 lg:col-3">
+        <p-card styleClass="border-round-xl shadow-3">
+            <div class="flex align-items-center justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Ventas del Mes</span>
+                    <div class="text-900 font-bold text-xl">{{ monthlySales | currency:'ARS':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
+                    <i class="pi pi-dollar text-blue-500 text-xl"></i>
+                </div>
+            </div>
+        </p-card>
+    </div>
+    <div class="col-12 lg:col-3">
+        <p-card styleClass="border-round-xl shadow-3">
+            <div class="flex align-items-center justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Pedidos del Mes</span>
+                    <div class="text-900 font-bold text-xl">{{ monthlyOrders }}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
+                    <i class="pi pi-shopping-cart text-orange-500 text-xl"></i>
+                </div>
+            </div>
+        </p-card>
+    </div>
+    <div class="col-12 lg:col-3">
+        <p-card styleClass="border-round-xl shadow-3">
+            <div class="flex align-items-center justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Clientes Nuevos</span>
+                    <div class="text-900 font-bold text-xl">{{ newCustomers }}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
+                    <i class="pi pi-users text-green-500 text-xl"></i>
+                </div>
+            </div>
+        </p-card>
+    </div>
+    <div class="col-12 lg:col-3">
+        <p-card styleClass="border-round-xl shadow-3">
+            <div class="flex align-items-center justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Ticket Promedio</span>
+                    <div class="text-900 font-bold text-xl">{{ averageTicket | currency:'ARS':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width:2.5rem;height:2.5rem">
+                    <i class="pi pi-chart-bar text-purple-500 text-xl"></i>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+</div>
+
+<!-- Tabs Section -->
+<div class="col-12">
+    <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0" leftIcon="pi pi-users">Gestión de Clientes</p-tab>
+            <p-tab value="1" leftIcon="pi pi-shopping-cart">Gestión de Pedidos</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <!-- Customers Tab Panel -->
+            <p-tabpanel value="0">
+                <div class="flex justify-content-between align-items-center mb-3">
+                    <h3 class="text-lg font-semibold m-0">
+                        <i class="pi pi-users mr-2"></i>Todos los Clientes
+                    </h3>
+                    <div class="flex gap-2">
+                        <p-button label="Exportar Clientes" icon="pi pi-download" [outlined]="true" (onClick)="exportCustomers()" />
+                        <p-button label="Nuevo Cliente" icon="pi pi-plus" [raised]="true" (onClick)="openCustomerDialog()" />
+                    </div>
+                </div>
+
+                <p-table [value]="customers" [loading]="customersLoading" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes" [rowsPerPageOptions]="[5, 10, 25, 50]" responsiveLayout="scroll"
+                    [tableStyle]="{'min-width': '50rem'}" (onSort)="onSort($event)">
+
+                    <ng-template #header>
+                        <tr>
+                            <th pSortableColumn="id" class="text-center">
+                                ID <p-sortIcon field="id"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="name" class="text-center">
+                                Nombre <p-sortIcon field="name"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="email" class="text-center">
+                                Email <p-sortIcon field="email"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="phone" class="text-center">
+                                Teléfono <p-sortIcon field="phone"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="dni" class="text-center">
+                                DNI <p-sortIcon field="dni"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="province" class="text-center">
+                                Provincia <p-sortIcon field="province"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="city" class="text-center">
+                                Localidad <p-sortIcon field="city"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="postalCode" class="text-center">
+                                CP <p-sortIcon field="postalCode"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="address" class="text-center">
+                                Dirección <p-sortIcon field="address"></p-sortIcon>
+                            </th>
+                            <th class="text-center">Pedidos</th>
+                            <th class="text-center">Total Gastado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="email" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="phone" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="dni" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="province" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="city" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="postalCode" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="address" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center"></th>
+                            <th class="text-center"></th>
+                            <th class="text-center"></th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template #body let-customer>
+                        <tr>
+                            <td class="text-center">
+                                <span class="font-bold text-primary">{{ customer.id }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex flex-column align-items-center">
+                                    <span class="font-semibold text-900">{{ customer.name }} {{ customer.lastName }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.email }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.phone }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.dni }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.province }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.city }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-600">{{ customer.postalCode }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex flex-column align-items-center">
+                                    <span class="text-sm text-500">{{ customer.address }}</span>
+                                    <span *ngIf="customer.floorApartment" class="text-xs text-400">{{ customer.floorApartment }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <p-tag [value]="getCustomerOrderCount(customer.id).toString()" severity="info" [rounded]="true"></p-tag>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-bold text-primary">{{ getCustomerTotalSpent(customer.id) | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex gap-2 justify-content-center">
+                                    <p-button icon="pi pi-eye" (onClick)="viewCustomer(customer)" [rounded]="true" size="small" pTooltip="Ver Detalles">
+                                    </p-button>
+                                    <p-button icon="pi pi-pencil" (onClick)="editCustomer(customer)" [rounded]="true" size="small" pTooltip="Editar">
+                                    </p-button>
+                                    <p-button icon="pi pi-trash" (onClick)="confirmDeleteCustomer(customer)" [rounded]="true" severity="danger" size="small" pTooltip="Eliminar">
+                                    </p-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template #emptymessage>
+                        <tr>
+                            <td colspan="11" class="text-center py-6">
+                                <i class="pi pi-users text-6xl text-300 mb-3 block"></i>
+                                <h3 class="text-xl font-semibold text-600 mb-2">No hay clientes</h3>
+                                <p class="text-500 mb-4">Los clientes aparecerán aquí cuando se registren</p>
+                                <p-button label="Nuevo Cliente" icon="pi pi-plus" (onClick)="openCustomerDialog()" [rounded]="true"></p-button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Orders Tab Panel -->
+            <p-tabpanel value="1">
+                <div class="flex justify-content-between align-items-center mb-3">
+                    <h3 class="text-lg font-semibold m-0">
+                        <i class="pi pi-list mr-2"></i>Todos los Pedidos
+                    </h3>
+                    <div class="flex gap-2">
+                        <p-button label="Exportar" icon="pi pi-download" [outlined]="true" (onClick)="exportOrders()" />
+                        <p-button label="Nuevo Pedido" icon="pi pi-plus" [raised]="true" (onClick)="openOrderDialog()" />
+                    </div>
+                </div>
+
+                <p-table [value]="orders" [loading]="ordersLoading" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pedidos" [rowsPerPageOptions]="[5, 10, 25, 50]" responsiveLayout="scroll"
+                    [tableStyle]="{'min-width': '50rem'}" (onSort)="onSort($event)">
+
+                    <ng-template #header>
+                        <tr>
+                            <th pSortableColumn="id" class="text-center">
+                                ID <p-sortIcon field="id"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="date" class="text-center">
+                                Fecha <p-sortIcon field="date"></p-sortIcon>
+                            </th>
+                            <th class="text-center">Cliente</th>
+                            <th class="text-center">Dirección de Envío</th>
+                            <th class="text-center">Productos</th>
+                            <th pSortableColumn="total" class="text-center">
+                                Total <p-sortIcon field="total"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="status" class="text-center">
+                                Estado <p-sortIcon field="status"></p-sortIcon>
+                            </th>
+                            <th pSortableColumn="paymentMethod" class="text-center">
+                                Pago <p-sortIcon field="paymentMethod"></p-sortIcon>
+                            </th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="date" field="date" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="customer" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center"></th>
+                            <th class="text-center"></th>
+                            <th class="text-center">
+                                <p-columnFilter type="numeric" field="total" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="status" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center">
+                                <p-columnFilter type="text" field="paymentMethod" display="menu"></p-columnFilter>
+                            </th>
+                            <th class="text-center"></th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template #body let-order>
+                        <tr>
+                            <td class="text-center">
+                                <span class="font-bold text-primary">#{{ order.id }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-semibold">{{ order.date | date:'dd/MM/yyyy' }}</span>
+                                <br>
+                                <span class="text-sm text-600">{{ order.date | date:'HH:mm' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex flex-column align-items-center">
+                                    <span class="font-semibold text-900 cursor-pointer text-primary hover:text-primary-600" (click)="openCustomerDetailsDialog(order.customer)"
+                                        pTooltip="Hacer clic para ver detalles del cliente">
+                                        {{ order.customer.name }} {{ order.customer.lastName }}
+                                    </span>
+                                    <span class="text-sm text-600">{{ order.customer.email }}</span>
+                                    <span class="text-sm text-500">{{ order.customer.phone }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex flex-column align-items-center">
+                                    <span class="text-sm font-semibold">{{ order.shippingAddress }}</span>
+                                    <span *ngIf="order.shippingFloorApartment" class="text-xs text-500">{{ order.shippingFloorApartment }}</span>
+                                    <span class="text-sm text-600">{{ order.shippingCity }}, {{ order.shippingProvince }}</span>
+                                    <span class="text-sm text-500">CP: {{ order.shippingPostalCode }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex flex-column gap-1">
+                                    <div *ngFor="let item of order.items.slice(0, 2)" class="text-sm">
+                                        <span class="font-semibold">{{ item.quantity }}x</span> {{ getProductName(item.productId) }}
+                                    </div>
+                                    <div *ngIf="order.items.length > 2" class="text-sm text-500">
+                                        +{{ order.items.length - 2 }} más...
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-bold text-primary">{{ order.total | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <p-tag [value]="getOrderStatusLabel(order.status)" [severity]="getOrderStatusSeverity(order.status)" [rounded]="true"></p-tag>
+                            </td>
+                            <td class="text-center">
+                                <p-tag [value]="getPaymentMethodLabel(order.paymentMethod)" severity="info" [rounded]="true"></p-tag>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex gap-2 justify-content-center">
+                                    <p-button icon="pi pi-eye" (onClick)="viewOrder(order)" [rounded]="true" size="small" pTooltip="Ver Detalles">
+                                    </p-button>
+                                    <p-button icon="pi pi-pencil" (onClick)="editOrder(order)" [rounded]="true" size="small" pTooltip="Editar">
+                                    </p-button>
+                                    <p-button icon="pi pi-trash" (onClick)="confirmDeleteOrder(order)" [rounded]="true" severity="danger" size="small" pTooltip="Eliminar">
+                                    </p-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template #emptymessage>
+                        <tr>
+                            <td colspan="9" class="text-center py-6">
+                                <i class="pi pi-shopping-cart text-6xl text-300 mb-3 block"></i>
+                                <h3 class="text-xl font-semibold text-600 mb-2">No hay pedidos</h3>
+                                <p class="text-500 mb-4">Los pedidos aparecerán aquí cuando se realicen ventas</p>
+                                <p-button label="Nuevo Pedido" icon="pi pi-plus" (onClick)="openOrderDialog()" [rounded]="true"></p-button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>
+
+<!-- Customer Dialog -->
+<p-dialog [(visible)]="showCustomerDialog" modal="true" styleClass="w-full md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
+    [header]="editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'" (onHide)="showCustomerDialog = false">
+
+    <form [formGroup]="customerForm" class="flex flex-column gap-4">
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customerName" class="block mb-2 font-semibold">Nombre *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-user"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerName" type="text" pInputText formControlName="name" class="w-full" placeholder="Nombre del cliente" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('name')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customerLastName" class="block mb-2 font-semibold">Apellido *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-user"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerLastName" type="text" pInputText formControlName="lastName" class="w-full" placeholder="Apellido del cliente" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('lastName')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customerEmail" class="block mb-2 font-semibold">Email *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-envelope"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerEmail" type="email" pInputText formControlName="email" class="w-full" placeholder="cliente@email.com" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('email')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customerPhone" class="block mb-2 font-semibold">Teléfono *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-phone"></i>
+                    </p-inputgroup-addon>
+                    <p-inputmask id="customerPhone" formControlName="phone" mask="99 9999-9999" placeholder="11 2345-6789" styleClass="w-full" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('phone')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customerDni" class="block mb-2 font-semibold">DNI *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-id-card"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerDni" type="text" pInputText formControlName="dni" class="w-full" placeholder="12345678" maxlength="8" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('dni')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customerProvincia" class="block mb-2 font-semibold">Provincia *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map-marker"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="customerProvincia" formControlName="province" [options]="provinces" optionLabel="label" optionValue="value" placeholder="Seleccionar provincia"
+                        class="w-full" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('province')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customerLocalidad" class="block mb-2 font-semibold">Localidad *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map-marker"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerLocalidad" type="text" pInputText formControlName="city" class="w-full" placeholder="Localidad" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('city')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customerCodigoPostal" class="block mb-2 font-semibold">Código Postal *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerCodigoPostal" type="text" pInputText formControlName="postalCode" class="w-full" placeholder="1234" maxlength="5" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('postalCode')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-8">
+                <label for="customerDireccion" class="block mb-2 font-semibold">Dirección *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-home"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerDireccion" type="text" pInputText formControlName="address" class="w-full" placeholder="Calle y número" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('address')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-4">
+                <label for="customerPisoDepto" class="block mb-2 font-semibold">Piso/Depto</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-building"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerPisoDepto" type="text" pInputText formControlName="floorApartment" class="w-full" placeholder="Piso 2, Depto A" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('floorApartment')"></app-error-helper>
+            </div>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showCustomerDialog = false" [disabled]="customerLoading" />
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveCustomer()" [disabled]="!customerForm.valid || customerLoading" [loading]="customerLoading" />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Customer Details Dialog -->
+<p-dialog [(visible)]="showCustomerDetailsDialog" modal="true" styleClass="w-full md:w-7" [draggable]="false" [resizable]="false" [closable]="true" header="Detalles del Cliente"
+    (onHide)="showCustomerDetailsDialog = false">
+
+    <div *ngIf="selectedCustomer" class="flex flex-column gap-4">
+        <!-- Customer Information -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-user mr-2"></i>Información Personal
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-user text-primary mr-2"></i>
+                            <span class="font-semibold">Nombre:</span>
+                            <span class="ml-2">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-envelope text-primary mr-2"></i>
+                            <span class="font-semibold">Email:</span>
+                            <span class="ml-2">{{ selectedCustomer.email }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-phone text-primary mr-2"></i>
+                            <span class="font-semibold">Teléfono:</span>
+                            <span class="ml-2">{{ selectedCustomer.phone }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-id-card text-primary mr-2"></i>
+                            <span class="font-semibold">DNI:</span>
+                            <span class="ml-2">{{ selectedCustomer.dni }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map-marker text-primary mr-2"></i>
+                            <span class="font-semibold">Provincia:</span>
+                            <span class="ml-2">{{ selectedCustomer.province }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map-marker text-primary mr-2"></i>
+                            <span class="font-semibold">Localidad:</span>
+                            <span class="ml-2">{{ selectedCustomer.city }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map text-primary mr-2"></i>
+                            <span class="font-semibold">Código Postal:</span>
+                            <span class="ml-2">{{ selectedCustomer.postalCode }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-home text-primary mr-2"></i>
+                            <span class="font-semibold">Dirección:</span>
+                            <span class="ml-2">{{ selectedCustomer.address }}</span>
+                            <span *ngIf="selectedCustomer.floorApartment" class="ml-1">({{ selectedCustomer.floorApartment }})</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Statistics -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-chart-bar mr-2"></i>Estadísticas del Cliente
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-shopping-cart text-2xl text-primary mb-2 block"></i>
+                        <div class="text-xl font-bold text-primary">{{ getCustomerOrderCount(selectedCustomer.id) }}</div>
+                        <div class="text-sm text-600">Total de Pedidos</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-dollar text-2xl text-green-500 mb-2 block"></i>
+                        <div class="text-xl font-bold text-green-500">{{ getCustomerTotalSpent(selectedCustomer.id) | currency:'ARS':'symbol':'1.0-0' }}</div>
+                        <div class="text-sm text-600">Total Gastado</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-chart-line text-2xl text-blue-500 mb-2 block"></i>
+                        <div class="text-xl font-bold text-blue-500">{{ getCustomerTotalSpent(selectedCustomer.id) / (getCustomerOrderCount(selectedCustomer.id) || 1) |
+                            currency:'ARS':'symbol':'1.0-0' }}</div>
+                        <div class="text-sm text-600">Ticket Promedio</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Orders -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-list mr-2"></i>Historial de Pedidos
+            </h3>
+            <div *ngIf="getCustomerOrders(selectedCustomer.id).length > 0; else noOrders" class="flex flex-column gap-2">
+                <div *ngFor="let order of getCustomerOrders(selectedCustomer.id)" class="surface-100 p-3 border-round">
+                    <div class="flex justify-content-between align-items-center">
+                        <div class="flex flex-column">
+                            <span class="font-semibold text-primary">#{{ order.id }}</span>
+                            <span class="text-sm text-600">{{ order.date | date:'dd/MM/yyyy HH:mm' }}</span>
+                            <span class="text-sm">{{ order.items.length }} productos</span>
+                        </div>
+                        <div class="flex flex-column align-items-end">
+                            <span class="font-bold text-primary">{{ order.total | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            <p-tag [value]="getOrderStatusLabel(order.status)" [severity]="getOrderStatusSeverity(order.status)" [rounded]="true" size="small"></p-tag>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noOrders>
+                <div class="text-center py-4">
+                    <i class="pi pi-shopping-cart text-4xl text-300 mb-2 block"></i>
+                    <p class="text-600">Este cliente aún no tiene pedidos registrados</p>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Editar Cliente" icon="pi pi-pencil" [outlined]="true" (onClick)="editCustomer(selectedCustomer!)" />
+            <p-button label="Cerrar" icon="pi pi-times" (onClick)="showCustomerDetailsDialog = false" />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Order Dialog -->
+<p-dialog [(visible)]="showOrderDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true"
+    [header]="editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'" (onHide)="showOrderDialog = false">
+
+    <form [formGroup]="orderForm" class="flex flex-column gap-4">
+        <!-- Order Header -->
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="orderId" class="block mb-2 font-semibold">ID del Pedido *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-shopping-cart"></i>
+                    </p-inputgroup-addon>
+                    <input id="orderId" type="text" pInputText formControlName="id" class="w-full" placeholder="ORD-001" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('id')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="orderFecha" class="block mb-2 font-semibold">Fecha *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-calendar"></i>
+                    </p-inputgroup-addon>
+                    <p-datepicker id="orderFecha" formControlName="date" class="w-full" dateFormat="dd/mm/yy" [showIcon]="true" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('date')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Customer Selection -->
+        <div class="grid">
+            <div class="col-12">
+                <label for="orderCliente" class="block mb-2 font-semibold">Cliente *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-users"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="orderCliente" formControlName="customerId" [options]="customersWithFullName" optionLabel="fullName" optionValue="id" placeholder="Seleccionar cliente"
+                        class="w-full" (onChange)="onCustomerChange()">
+                        <ng-template pTemplate="item" let-customer>
+                            <div class="flex align-items-center">
+                                <i class="pi pi-user mr-2"></i>
+                                <span>{{ customer.name }} {{ customer.lastName }}</span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="selectedItem" let-customer>
+                            <div class="flex align-items-center">
+                                <i class="pi pi-user mr-2"></i>
+                                <span>{{ customer.name }} {{ customer.lastName }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('customerId')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="grid">
+            <div class="col-12">
+                <h3 class="text-lg font-semibold mb-3">
+                    <i class="pi pi-map-marker mr-2"></i>Dirección de Envío
+                </h3>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-8">
+                <label for="orderShippingAddress" class="block mb-2 font-semibold">Dirección *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-home"></i>
+                    </p-inputgroup-addon>
+                    <input id="orderShippingAddress" type="text" pInputText formControlName="shippingAddress" class="w-full" placeholder="Calle y número" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('shippingAddress')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-4">
+                <label for="orderShippingFloorApartment" class="block mb-2 font-semibold">Piso/Depto</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-building"></i>
+                    </p-inputgroup-addon>
+                    <input id="orderShippingFloorApartment" type="text" pInputText formControlName="shippingFloorApartment" class="w-full" placeholder="Piso 2, Depto A" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('shippingFloorApartment')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-4">
+                <label for="orderShippingCity" class="block mb-2 font-semibold">Localidad *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map-marker"></i>
+                    </p-inputgroup-addon>
+                    <input id="orderShippingCity" type="text" pInputText formControlName="shippingCity" class="w-full" placeholder="Localidad" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('shippingCity')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-4">
+                <label for="orderShippingProvince" class="block mb-2 font-semibold">Provincia *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map-marker"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="orderShippingProvince" formControlName="shippingProvince" [options]="provinces" optionLabel="label" optionValue="value"
+                        placeholder="Seleccionar provincia" class="w-full" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('shippingProvince')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-4">
+                <label for="orderShippingPostalCode" class="block mb-2 font-semibold">Código Postal *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-map"></i>
+                    </p-inputgroup-addon>
+                    <input id="orderShippingPostalCode" type="text" pInputText formControlName="shippingPostalCode" class="w-full" placeholder="1234" maxlength="5" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('shippingPostalCode')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="grid">
+            <div class="col-12">
+                <h3 class="text-lg font-semibold mb-3">Productos del Pedido</h3>
+                <div formArrayName="items" class="flex flex-column gap-3">
+                    <div *ngFor="let item of orderItemsArray.controls; let i = index" [formGroupName]="i" class="surface-card p-3 border-round">
+                        <div class="grid">
+                            <div class="col-12 md:col-3">
+                                <label class="block mb-2 font-semibold">Producto *</label>
+                                <p-select formControlName="productId" [options]="products" optionLabel="name" optionValue="id" placeholder="Seleccionar producto" class="w-full"
+                                    (onChange)="onProductChange(i)" />
+                            </div>
+                            <div class="col-12 md:col-2">
+                                <label class="block mb-2 font-semibold">Cantidad *</label>
+                                <p-inputnumber formControlName="quantity" class="w-full" [min]="1" [showButtons]="true" (onInput)="onItemChange()" />
+                            </div>
+                            <div class="col-12 md:col-2">
+                                <label class="block mb-2 font-semibold">Precio Unitario *</label>
+                                <p-inputnumber formControlName="unitPrice" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
+                            </div>
+                            <div class="col-12 md:col-2">
+                                <label class="block mb-2 font-semibold">Descuento Unitario</label>
+                                <p-inputnumber formControlName="productDiscount" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
+                            </div>
+                            <div class="col-12 md:col-2">
+                                <label class="block mb-2 font-semibold">Precio Final</label>
+                                <div class="p-inputnumber w-full" style="pointer-events: none;">
+                                    <input type="text" [value]="getItemFinalPrice(i) | currency:'ARS':'symbol':'1.0-0'" class="w-full p-2 border-round" readonly />
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-1">
+                                <label class="block mb-2 font-semibold">Acciones</label>
+                                <p-button icon="pi pi-trash" severity="danger" size="small" (onClick)="removeOrderItem(i)" [rounded]="true" />
+                            </div>
+                        </div>
+
+                        <!-- Item Summary -->
+                        <div class="surface-100 p-3 border-round mt-2">
+                            <div class="grid">
+                                <div class="col-12 md:col-3">
+                                    <div class="text-sm text-600">Precio Original:</div>
+                                    <div class="font-semibold">{{ getItemGrossSubtotal(i) | currency:'ARS':'symbol':'1.0-0' }}</div>
+                                </div>
+                                <div class="col-12 md:col-3">
+                                    <div class="text-sm text-600">Descuento Total:</div>
+                                    <div class="font-semibold text-red-500">-{{ getItemTotalDiscount(i) | currency:'ARS':'symbol':'1.0-0' }}</div>
+                                </div>
+                                <div class="col-12 md:col-3">
+                                    <div class="text-sm text-600">Subtotal Item:</div>
+                                    <div class="font-semibold text-primary">{{ getItemSubtotal(i) | currency:'ARS':'symbol':'1.0-0' }}</div>
+                                </div>
+                                <div class="col-12 md:col-3">
+                                    <div class="text-sm text-600">Descuento %:</div>
+                                    <div class="font-semibold text-green-600">{{ getItemDiscountPercentage(i) }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p-button label="Agregar Producto" icon="pi pi-plus" (onClick)="addOrderItem()" [outlined]="true" [rounded]="true" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupon Section -->
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="orderCoupon" class="block mb-2 font-semibold">Cupón de Descuento</label>
+                <div class="flex gap-2">
+                    <p-inputgroup class="flex-1">
+                        <p-inputgroup-addon>
+                            <i class="pi pi-ticket"></i>
+                        </p-inputgroup-addon>
+                        <input id="orderCoupon" type="text" pInputText formControlName="couponCode" class="w-full" placeholder="Ingresa el código del cupón" />
+                    </p-inputgroup>
+                    <p-button label="Aplicar" icon="pi pi-check" (onClick)="validateAndApplyCoupon()" [loading]="couponLoading" [disabled]="!orderForm.get('couponCode')?.value" />
+                </div>
+
+                <!-- Applied Coupon Information -->
+                <div *ngIf="selectedCoupon" class="mt-3 surface-100 p-3 border-round">
+                    <div class="flex align-items-center justify-content-between mb-3">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-ticket text-green-500"></i>
+                            <span class="font-semibold text-green-700">Cupón Aplicado:</span>
+                        </div>
+                        <div class="flex align-items-center gap-2">
+                            <p-tag [value]="selectedCoupon.code" severity="success" [rounded]="true"></p-tag>
+                            <p-button icon="pi pi-times" severity="danger" size="small" (onClick)="clearCoupon()" [rounded]="true" pTooltip="Remover cupón"></p-button>
+                        </div>
+                    </div>
+
+                    <!-- Discount Percentage Highlight -->
+                    <div class="text-center mb-3 p-3 surface-200 border-round">
+                        <div class="text-2xl font-bold text-green-600">
+                            -{{ getDiscountPercentage() }}%
+                        </div>
+                        <div class="text-sm text-600">Descuento Aplicado</div>
+                    </div>
+
+                    <div class="grid">
+                        <div class="col-12 md:col-6">
+                            <div class="flex flex-column gap-1">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-percentage text-blue-500"></i>
+                                    <span class="text-sm font-semibold">Tipo de Descuento:</span>
+                                    <span class="text-sm">{{ selectedCoupon.discountType === 'percentage' ? 'Porcentaje' : 'Monto Fijo' }}</span>
+                                </div>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-dollar text-blue-500"></i>
+                                    <span class="text-sm font-semibold">Valor del Cupón:</span>
+                                    <span class="text-sm font-bold text-primary">
+                                        {{ selectedCoupon.discountType === 'percentage' ? selectedCoupon.discountValue + '%' : '$' + selectedCoupon.discountValue.toLocaleString('es-AR') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6">
+                            <div class="flex flex-column gap-1">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-dollar text-green-500"></i>
+                                    <span class="text-sm font-semibold">Ahorro Real:</span>
+                                    <span class="text-sm font-bold text-green-600">
+                                        -${{ orderForm.get('couponDiscount')?.value?.toLocaleString('es-AR') || '0' }}
+                                    </span>
+                                </div>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-calendar text-blue-500"></i>
+                                    <span class="text-sm font-semibold">Válido hasta:</span>
+                                    <span class="text-sm">{{ selectedCoupon.validTo | date:'dd/MM/yyyy' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="selectedCoupon.description" class="mt-2 p-2 surface-200 border-round">
+                        <i class="pi pi-info-circle text-blue-500 mr-1"></i>
+                        <span class="text-sm text-600">{{ selectedCoupon.description }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="grid">
+            <div class="col-12 md:col-3">
+                <label for="orderSubtotal" class="block mb-2 font-semibold">Subtotal *</label>
+                <p-inputnumber id="orderSubtotal" formControlName="subtotal" class="w-full" mode="currency" currency="ARS" [min]="0" [readonly]="true" />
+                <app-error-helper [control]="orderForm.get('subtotal')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-3">
+                <label for="orderDescuento" class="block mb-2 font-semibold">Descuento Cupón</label>
+                <p-inputnumber id="orderDescuento" formControlName="couponDiscount" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
+            </div>
+
+            <div class="col-12 md:col-3">
+                <label for="orderEnvio" class="block mb-2 font-semibold">Envío</label>
+                <p-inputnumber id="orderEnvio" formControlName="shippingPrice" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
+            </div>
+
+            <div class="col-12 md:col-3">
+                <label for="orderTotal" class="block mb-2 font-semibold">Total *</label>
+                <p-inputnumber id="orderTotal" formControlName="total" class="w-full" mode="currency" currency="ARS" [min]="0" [readonly]="true" />
+                <app-error-helper [control]="orderForm.get('total')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Tax Display -->
+        <div class="grid">
+            <div class="col-12">
+                <div class="surface-100 p-3 border-round">
+                    <div class="flex justify-content-between align-items-center">
+                        <span class="font-semibold">IVA (21%):</span>
+                        <span class="font-bold text-primary">{{ getCurrentTaxAmount() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Status and Payment -->
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="orderEstado" class="block mb-2 font-semibold">Estado *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-info-circle"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="orderEstado" formControlName="status" [options]="orderStatusOptions" optionLabel="label" optionValue="value" placeholder="Seleccionar estado"
+                        class="w-full" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('status')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="orderMetodoPago" class="block mb-2 font-semibold">Método de Pago *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-credit-card"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="orderMetodoPago" formControlName="paymentMethod" [options]="paymentMethodOptions" optionLabel="label" optionValue="value" placeholder="Seleccionar método"
+                        class="w-full" />
+                </p-inputgroup>
+                <app-error-helper [control]="orderForm.get('paymentMethod')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="grid">
+            <div class="col-12">
+                <label for="orderNotas" class="block mb-2 font-semibold">Notas</label>
+                <textarea pTextarea id="orderNotas" formControlName="notes" class="w-full" rows="3" placeholder="Notas adicionales del pedido"></textarea>
+            </div>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showOrderDialog = false" [disabled]="orderLoading" />
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveOrder()" [disabled]="!orderForm.valid || orderLoading" [loading]="orderLoading" />
+        </div>
+    </ng-template>
+</p-dialog>

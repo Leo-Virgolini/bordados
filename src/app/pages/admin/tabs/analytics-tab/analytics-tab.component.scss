@@ -1,0 +1,274 @@
+// // Analytics Tab specific styles
+// .analytics-grid {
+//     .chart-card {
+//         border-radius: 1rem;
+//         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+//         transition: transform 0.2s ease;
+        
+//         &:hover {
+//             transform: translateY(-2px);
+//         }
+//     }
+    
+//     .chart-header {
+//         display: flex;
+//         align-items: center;
+//         gap: 0.5rem;
+        
+//         .chart-icon {
+//             color: var(--primary-color);
+//             font-size: 1.25rem;
+//         }
+        
+//         .chart-title {
+//             font-size: 1.125rem;
+//             font-weight: 600;
+//             margin: 0;
+//             color: var(--text-color);
+//         }
+//     }
+    
+//     .chart-container {
+//         height: 300px;
+//         position: relative;
+        
+//         &.large {
+//             height: 400px;
+//         }
+//     }
+// }
+
+// // Chart loading states
+// .chart-loading {
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     height: 100%;
+//     min-height: 300px;
+    
+//     .loading-spinner {
+//         color: var(--primary-color);
+//     }
+// }
+
+// // Summary cards
+// .analytics-summary {
+//     .summary-card {
+//         border-radius: 1rem;
+//         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+//         transition: all 0.2s ease;
+        
+//         &:hover {
+//             transform: translateY(-2px);
+//             box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
+//         }
+//     }
+    
+//     .summary-content {
+//         display: flex;
+//         align-items: center;
+//         justify-content: space-between;
+        
+//         .summary-info {
+//             .summary-label {
+//                 display: block;
+//                 color: var(--text-color-secondary);
+//                 font-weight: 500;
+//                 margin-bottom: 0.75rem;
+//                 font-size: 0.875rem;
+//             }
+            
+//             .summary-value {
+//                 color: var(--text-color);
+//                 font-weight: bold;
+//                 font-size: 1.5rem;
+//                 line-height: 1.2;
+//             }
+//         }
+        
+//         .summary-icon {
+//             width: 2.5rem;
+//             height: 2.5rem;
+//             border-radius: 50%;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             font-size: 1.25rem;
+//         }
+//     }
+// }
+
+// // Chart customization
+// .chart-customization {
+//     .chart-options {
+//         display: flex;
+//         gap: 1rem;
+//         margin-bottom: 1rem;
+        
+//         .chart-option {
+//             padding: 0.5rem 1rem;
+//             border-radius: 0.5rem;
+//             background: var(--surface-100);
+//             border: 1px solid var(--surface-border);
+//             cursor: pointer;
+//             transition: all 0.2s ease;
+            
+//             &:hover {
+//                 background: var(--surface-200);
+//             }
+            
+//             &.active {
+//                 background: var(--primary-color);
+//                 color: white;
+//                 border-color: var(--primary-color);
+//             }
+//         }
+//     }
+// }
+
+// // Responsive adjustments
+// @media (max-width: 1200px) {
+//     .analytics-grid {
+//         .chart-container {
+//             height: 250px;
+            
+//             &.large {
+//                 height: 300px;
+//             }
+//         }
+//     }
+// }
+
+// @media (max-width: 768px) {
+//     .analytics-grid {
+//         .chart-card {
+//             margin-bottom: 1rem;
+//         }
+        
+//         .chart-container {
+//             height: 200px;
+            
+//             &.large {
+//                 height: 250px;
+//             }
+//         }
+//     }
+    
+//     .analytics-summary {
+//         .summary-content {
+//             flex-direction: column;
+//             text-align: center;
+//             gap: 1rem;
+            
+//             .summary-icon {
+//                 order: -1;
+//             }
+//         }
+//     }
+    
+//     .chart-customization {
+//         .chart-options {
+//             flex-wrap: wrap;
+//             gap: 0.5rem;
+            
+//             .chart-option {
+//                 flex: 1;
+//                 min-width: 120px;
+//                 text-align: center;
+//             }
+//         }
+//     }
+// }
+
+// // Chart tooltips
+// .chart-tooltip {
+//     background: var(--surface-card);
+//     border: 1px solid var(--surface-border);
+//     border-radius: 0.5rem;
+//     padding: 0.75rem;
+//     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    
+//     .tooltip-title {
+//         font-weight: 600;
+//         color: var(--text-color);
+//         margin-bottom: 0.5rem;
+//     }
+    
+//     .tooltip-content {
+//         color: var(--text-color-secondary);
+//         font-size: 0.875rem;
+//     }
+// }
+
+// // Chart legends
+// .chart-legend {
+//     display: flex;
+//     flex-wrap: wrap;
+//     gap: 1rem;
+//     margin-top: 1rem;
+    
+//     .legend-item {
+//         display: flex;
+//         align-items: center;
+//         gap: 0.5rem;
+        
+//         .legend-color {
+//             width: 1rem;
+//             height: 1rem;
+//             border-radius: 0.25rem;
+//         }
+        
+//         .legend-label {
+//             font-size: 0.875rem;
+//             color: var(--text-color-secondary);
+//         }
+//     }
+// }
+
+// // Performance optimizations
+// .chart-performance {
+//     .chart-container {
+//         will-change: transform;
+        
+//         canvas {
+//             max-width: 100%;
+//             height: auto;
+//         }
+//     }
+// }
+
+// // Dark mode support
+// @media (prefers-color-scheme: dark) {
+//     .analytics-grid {
+//         .chart-card {
+//             background: var(--surface-card);
+//             border: 1px solid var(--surface-border);
+//         }
+//     }
+    
+//     .chart-tooltip {
+//         background: var(--surface-card);
+//         border-color: var(--surface-border);
+//     }
+// }
+
+// // Print styles
+// @media print {
+//     .analytics-grid {
+//         .chart-card {
+//             break-inside: avoid;
+//             page-break-inside: avoid;
+//         }
+        
+//         .chart-container {
+//             height: 200px;
+//         }
+//     }
+    
+//     .analytics-summary {
+//         .summary-card {
+//             break-inside: avoid;
+//             page-break-inside: avoid;
+//         }
+//     }
+// } 

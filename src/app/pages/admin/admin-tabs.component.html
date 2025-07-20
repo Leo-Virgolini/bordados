@@ -1,0 +1,69 @@
+<main class="surface-ground p-3">
+    <!-- Header with Navigation and Logout -->
+    <div class="flex justify-content-between align-items-center mb-4">
+        <p-button label="Volver al Inicio" icon="pi pi-arrow-left" routerLink="/" [outlined]="true" [rounded]="true" severity="primary" />
+        <div class="flex align-items-center gap-2">
+            <span class="text-sm text-600">Admin: {{ currentUser?.email }}</span>
+            <p-button label="Cerrar Sesión" icon="pi pi-sign-out" (onClick)="logout()" [outlined]="true" [rounded]="true" severity="danger" />
+        </div>
+    </div>
+
+    <!-- Header -->
+    <section class="text-center mb-4">
+        <h1 class="flex align-items-center justify-content-center text-4xl font-bold text-primary-900 mb-2">
+            <i class="pi pi-cog text-primary mr-3 text-4xl"></i>Panel de Administración
+        </h1>
+        <p class="text-lg text-color-secondary">Gestioná colores de hilados, tipos de productos y inventario</p>
+    </section>
+
+    <!-- Main Content -->
+    <p-tabs [(value)]="activeTabIndex">
+        <p-tablist>
+            <p-tab value="0">
+                <i class="pi pi-pencil mr-2"></i>Personalización
+            </p-tab>
+            <p-tab value="1">
+                <i class="pi pi-shopping-bag mr-2"></i>Productos
+            </p-tab>
+            <p-tab value="2">
+                <i class="pi pi-chart-line mr-2"></i>Ventas
+            </p-tab>
+            <p-tab value="3">
+                <i class="pi pi-chart-bar mr-2"></i>Analytics
+            </p-tab>
+            <p-tab value="4">
+                <i class="pi pi-cog mr-2"></i>Configuración
+            </p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <!-- Customization Tab Panel -->
+            <p-tabpanel value="0">
+                <app-customization-tab></app-customization-tab>
+            </p-tabpanel>
+
+            <!-- Products Tab Panel -->
+            <p-tabpanel value="1">
+                <app-products-tab></app-products-tab>
+            </p-tabpanel>
+
+            <!-- Sales Tab Panel -->
+            <p-tabpanel value="2">
+                <app-sales-tab></app-sales-tab>
+            </p-tabpanel>
+
+            <!-- Analytics Tab Panel -->
+            <p-tabpanel value="3">
+                <app-analytics-tab></app-analytics-tab>
+            </p-tabpanel>
+
+            <!-- Settings Tab Panel -->
+            <p-tabpanel value="4">
+                <app-settings-tab></app-settings-tab>
+            </p-tabpanel>
+
+        </p-tabpanels>
+    </p-tabs>
+
+</main>
+
+<p-toast />

@@ -1,0 +1,137 @@
+<p-card class="border-round-xl shadow-3 p-3 mb-4">
+    <ng-template #header>
+        <div class="flex justify-content-between align-items-center">
+            <h3 class="text-lg font-bold m-0">
+                <i class="pi pi-dollar mr-2"></i>Configuración de Precios
+            </h3>
+        </div>
+    </ng-template>
+
+    <form [formGroup]="priceForm" class="flex flex-column gap-4">
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="secondColorPrice" class="block mb-2 font-semibold">Precio por segundo color *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-dollar"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="secondColorPrice" formControlName="secondColorPrice" class="w-full" placeholder="0" [min]="0" [max]="99999" [showButtons]="true"
+                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="100" mode="currency" currency="ARS" />
+                </p-inputgroup>
+                <app-error-helper [control]="priceForm.get('secondColorPrice')"></app-error-helper>
+                <small class="text-color-secondary">Este precio se aplicará a todos los colores cuando se seleccione un segundo color</small>
+            </div>
+        </div>
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveSecondColorPrice()" [disabled]="!priceForm.get('secondColorPrice')?.valid || hiladoLoading"
+                [loading]="hiladoLoading" />
+        </div>
+    </form>
+</p-card>
+
+<p-card class="border-round-xl shadow-3 p-3">
+    <ng-template #header>
+        <div class="flex justify-content-between align-items-center">
+            <h2 class="text-xl font-bold m-0">
+                <i class="pi pi-palette mr-2"></i>Gestión de Colores de Hilados
+            </h2>
+            <p-button label="Nuevo Color" icon="pi pi-plus" [raised]="true" (onClick)="openHiladoDialog()" />
+        </div>
+    </ng-template>
+
+    <p-table [value]="hiladosColors" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} colores"
+        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm">
+
+        <ng-template #header>
+            <tr>
+                <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="code">Código <p-sortIcon field="code"></p-sortIcon></th>
+                <th pSortableColumn="stock">Stock <p-sortIcon field="stock"></p-sortIcon></th>
+                <th pSortableColumn="active">Estado <p-sortIcon field="active"></p-sortIcon></th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-hilado>
+            <tr>
+                <td>
+                    <div class="flex align-items-center gap-2">
+                        <div class="w-2rem h-2rem border-round border-2 border-500" [style.background-color]="hilado.code"></div>
+                        <span class="font-semibold">{{ hilado.name }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex align-items-center gap-2">
+                        <div class="w-1rem h-1rem border-round border-2 border-500" [style.background-color]="hilado.code"></div>
+                        <code>{{ hilado.code }}</code>
+                    </div>
+                </td>
+                <td>
+                    <p-tag [value]="hilado.stock.toString()" [severity]="getStockStatus(hilado.stock).severity" [rounded]="true" />
+                </td>
+                <td>
+                    <p-tag [value]="hilado.active ? 'Activo' : 'Inactivo'" [severity]="hilado.active ? 'success' : 'danger'" [rounded]="true" />
+                </td>
+                <td>
+                    <div class="flex gap-2">
+                        <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="openHiladoDialog(hilado)" />
+                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="deleteHilado(hilado)" />
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+<!-- Hilado Color Dialog -->
+<p-dialog [(visible)]="showHiladoDialog" modal="true" styleClass="w-full md:w-6" [draggable]="false" [resizable]="false" [closable]="true"
+    [header]="editingHilado ? 'Editar Color de Hilado' : 'Nuevo Color de Hilado'" (onHide)="showHiladoDialog = false">
+
+    <form [formGroup]="hiladoForm" class="flex flex-column gap-4">
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="name" class="block mb-2 font-semibold">Nombre *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-palette"></i>
+                    </p-inputgroup-addon>
+                    <input id="name" type="text" pInputText formControlName="name" class="w-full" placeholder="Ej: Rojo Fuego" />
+                </p-inputgroup>
+                <app-error-helper [control]="hiladoForm.get('name')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="code" class="block mb-2 font-semibold">Código de Color *</label>
+                <p-colorpicker formControlName="code" class="border-3 border-500 border-round-lg shadow-2" />
+                <app-error-helper [control]="hiladoForm.get('code')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="stock" class="block mb-2 font-semibold">Stock *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-box"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="stock" formControlName="stock" class="w-full" placeholder="0" [min]="0" [max]="9999" [showButtons]="true" buttonLayout="horizontal"
+                        spinnerMode="horizontal" [step]="1" />
+                </p-inputgroup>
+                <app-error-helper [control]="hiladoForm.get('stock')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="flex align-items-center gap-2">
+            <p-checkbox formControlName="active" [binary]="true" [inputId]="'active'" />
+            <label for="active" class="cursor-pointer">Activo</label>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showHiladoDialog = false" [disabled]="hiladoLoading" />
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveHilado()" [disabled]="!hiladoForm.valid || hiladoLoading" [loading]="hiladoLoading" />
+        </div>
+    </ng-template>
+</p-dialog>

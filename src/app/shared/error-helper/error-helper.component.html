@@ -12,7 +12,7 @@
             <p-message icon="pi pi-exclamation-circle" *ngSwitchCase="'email'" severity="error" size="small" variant="simple">Email inválido.</p-message>
             <p-message icon="pi pi-exclamation-circle" *ngSwitchCase="'matDatepickerParse'" severity="error" size="small" variant="simple">Fecha inválida.</p-message>
             <p-message icon="pi pi-exclamation-circle" *ngSwitchCase="'fileSize'" severity="error" size="small" variant="simple">El tamaño de la imagen es demasiado grande.</p-message>
-            <p-message icon="pi pi-exclamation-circle" *ngSwitchDefault severity="error" size="small" variant="simple">{{error.value}}</p-message>
+            <p-message icon="pi pi-exclamation-circle" *ngSwitchDefault severity="error" size="small" variant="simple">{{error.key}} {{error.value}}</p-message>
         </span>
     </div>
 </ng-container>

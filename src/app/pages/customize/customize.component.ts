@@ -21,12 +21,14 @@ import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
 import { es } from '../../es.json'
 import { CarritoService } from '../../services/carrito.service';
-import { CarritoItem } from '../../model/carrito-item';
+import { CartItem } from '../../model/cart-item';
+import { ThreadColor } from '../../model/thread-color';
 import { Router } from '@angular/router';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { Tag } from 'primeng/tag';
-import { ProductoCustomizable } from '../../model/customizable-product';
+import { ProductCustomizable } from '../../model/product-customizable';
 import { RouterLink } from '@angular/router';
+import { HiladosService } from '../../services/hilados.service';
 
 @Component({
   selector: 'app-customize',
@@ -48,7 +50,7 @@ export class CustomizeComponent implements OnInit {
   showSizeGuide: boolean = false;
 
   maxImageSize: number = 10485760; // 10 MB
-  precioSegundoColor: number = 1500;
+  precioSegundoColor: number = 0;
 
   tiposPrenda = [
     { label: 'Remera', value: 'remera', precio: 700, image: 'remera_blanca' },
@@ -96,13 +98,13 @@ export class CustomizeComponent implements OnInit {
     { label: 'Gris', value: 'gris', hex: '#9E9E9E' }
   ];
 
-  coloresHilado = [
-    { label: 'Rojo', value: 'rojo', hex: '#C62828' },
-    { label: 'Verde', value: 'verde', hex: '#388E3C' },
-    { label: 'Blanco', value: 'blanco', hex: '#F5F5F5' },
-    { label: 'Negro', value: 'negro', hex: '#212121' },
-    { label: 'Azul', value: 'azul', hex: '#1565C0' },
-    { label: 'Gris', value: 'gris', hex: '#9E9E9E' }
+  coloresHilado: ThreadColor[] = [
+    new ThreadColor({ id: 'rojo', name: 'Rojo', code: '#C62828', stock: 100 }),
+    new ThreadColor({ id: 'verde', name: 'Verde', code: '#388E3C', stock: 100 }),
+    new ThreadColor({ id: 'blanco', name: 'Blanco', code: '#F5F5F5', stock: 100 }),
+    new ThreadColor({ id: 'negro', name: 'Negro', code: '#212121', stock: 100 }),
+    new ThreadColor({ id: 'azul', name: 'Azul', code: '#1565C0', stock: 100 }),
+    new ThreadColor({ id: 'gris', name: 'Gris', code: '#9E9E9E', stock: 100 })
   ]
 
   cantidades = [
@@ -119,12 +121,13 @@ export class CustomizeComponent implements OnInit {
   ];
 
   constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder, private confirmationService: ConfirmationService,
-    private carritoService: CarritoService, private router: Router
+    private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService
   ) {
   }
 
   ngOnInit(): void {
     this.initForm();
+    this.loadSecondColorPrice();
   }
 
   private initForm(): void {
@@ -140,6 +143,18 @@ export class CustomizeComponent implements OnInit {
     });
   }
 
+  loadSecondColorPrice() {
+    this.hiladosService.getSecondColorPrice().subscribe({
+      next: (price: number) => {
+        this.precioSegundoColor = price;
+      },
+      error: (error: any) => {
+        console.error('Error loading second color price:', error);
+        // Keep the default value if there's an error
+      }
+    });
+  }
+
   confirmar(): void {
     this.confirmationService.confirm({
       header: 'Confirmación',
@@ -147,8 +162,8 @@ export class CustomizeComponent implements OnInit {
         '<strong>Prenda:</strong> ' + this.tiposPrenda.find(p => p.value === this.formulario.get('tipo')?.value)?.label +
         '<br/><strong>Talle:</strong> ' + this.talles.find(p => p.value === this.formulario.get('talle')?.value)?.label +
         '<br/><strong>Color de prenda:</strong> ' + this.coloresPrendas.find(p => p.value === this.formulario.get('colorPrenda')?.value)?.label +
-        '<br/><strong>Color del hilado:</strong> ' + this.coloresHilado.find(p => p.value === this.formulario.get('colorHilado1')?.value)?.label +
-        (this.formulario.get('usarSegundoColor')?.value ? '<br/><strong>2° Color del hilado:</strong> ' + this.coloresHilado.find(p => p.value === this.formulario.get('colorHilado2')?.value)?.label : '') +
+        '<br/><strong>Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value)?.name +
+        (this.formulario.get('usarSegundoColor')?.value ? '<br/><strong>2° Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value)?.name : '') +
         '<br/><strong>Imagen:</strong> ' + this.imageFile?.name +
         '<br/><strong>Cantidad:</strong> ' + this.cantidades.find(p => p.value === this.formulario.get('cantidad')?.value)?.label
       ,
@@ -263,8 +278,15 @@ export class CustomizeComponent implements OnInit {
 
   getLabel(controlName: string, options: any[]): string {
     const value: string | undefined = this.formulario.get(controlName)?.value;
-    const option: { label: string, value: string } | undefined = options.find(opt => opt.value === value);
 
+    // Handle ThreadColor objects
+    if (options.length > 0 && 'name' in options[0]) {
+      const option = options.find(opt => opt.id === value);
+      return option?.name || '';
+    }
+
+    // Handle regular objects with label/value
+    const option: { label: string, value: string } | undefined = options.find(opt => opt.value === value);
     return option?.label || '';
   }
 
@@ -311,47 +333,32 @@ export class CustomizeComponent implements OnInit {
   enviarPersonalizacion() {
   }
 
-  // agregarAlCarrito() {
-  //   const datos = this.formulario.value;
-
-  //   const nuevoItem: CarritoItem = {
-  //     id: crypto.randomUUID(),
-  //     tipo: this.getLabel('tipo', this.tiposPrenda),
-  //     talle: this.getLabel('talle', this.talles),
-  //     colorPrenda: this.getLabel('colorPrenda', this.coloresPrendas),
-  //     colorHilado1: this.getLabel('colorHilado1', this.coloresHilado),
-  //     colorHilado2: datos.usarSegundoColor ? this.getLabel('colorHilado2', this.coloresHilado) : undefined,
-  //     imagen: this.imageURL!,
-  //     cantidad: datos.cantidad,
-  //     precioUnitario: this.calcularPrecioUnitario(),
-  //     subtotal: this.calcularSubtotal()
-  //   };
-
-  //   this.carritoService.agregarItem(nuevoItem);
-  // }
-
   agregarAlCarrito() {
     const datos = this.formulario.value;
 
-    const productoCustomizable = new ProductoCustomizable({
+    // Find the selected ThreadColor objects
+    const threadColor1 = this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value);
+    const threadColor2 = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value) : undefined;
+
+    const productoCustomizable = new ProductCustomizable({
       id: crypto.randomUUID(),
-      nombre: this.getLabel('tipo', this.tiposPrenda),
-      descripcion: this.getLabel('tipo', this.tiposPrenda),
-      imagen: this.imageURL!,
-      precio: this.calcularPrecioUnitario(),
-      tipo: 'customizable',
-      tipoPrenda: this.getLabel('tipo', this.tiposPrenda),
-      talle: this.getLabel('talle', this.talles),
-      colorPrenda: this.getLabel('colorPrenda', this.coloresPrendas),
-      colorHilado1: this.getLabel('colorHilado1', this.coloresHilado),
-      colorHilado2: datos.usarSegundoColor ? this.getLabel('colorHilado2', this.coloresHilado) : undefined,
-      imagenPersonalizada: this.imageURL!
+      name: this.getLabel('tipo', this.tiposPrenda),
+      description: this.getLabel('tipo', this.tiposPrenda),
+      garmentType: this.getLabel('tipo', this.tiposPrenda),
+      size: this.getLabel('talle', this.talles),
+      garmentColor: this.getLabel('colorPrenda', this.coloresPrendas),
+      image: this.imageURL!,
+      price: this.calcularPrecioUnitario(),
+      type: 'personalizable',
+      threadColor1: threadColor1!,
+      threadColor2: threadColor2,
+      customImage: this.imageURL!
     });
 
-    // Create CarritoItem, passing the product and quantity
-    const nuevoItem = new CarritoItem({
-      producto: productoCustomizable,
-      cantidad: datos.cantidad
+    // Create CartItem, passing the product and quantity
+    const nuevoItem = new CartItem({
+      product: productoCustomizable,
+      quantity: datos.cantidad
     });
 
     this.carritoService.agregarItem(nuevoItem);

@@ -14,6 +14,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -46,7 +47,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.initForm();
   }
@@ -76,8 +78,8 @@ export class LoginComponent {
     setTimeout(() => {
       const { email, password, rememberMe } = this.loginForm.value;
 
-      // Mock authentication - replace with real auth service
-      if (email === 'admin@bordados.com' && password === '123456') {
+      // Use AuthService for authentication
+      if (this.authService.login(email, password, rememberMe)) {
         this.messageService.add({
           severity: 'success',
           summary: 'Inicio de sesión exitoso',
@@ -85,18 +87,9 @@ export class LoginComponent {
           life: 3000
         });
 
-        // Store auth state
-        if (rememberMe) {
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userEmail', email);
-        } else {
-          sessionStorage.setItem('isLoggedIn', 'true');
-          sessionStorage.setItem('userEmail', email);
-        }
-
         // Navigate to admin
         setTimeout(() => {
-          this.router.navigate(['/admin-products']);
+          this.router.navigate(['/admin']);
         }, 1000);
       } else {
         this.messageService.add({

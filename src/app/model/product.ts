@@ -1,26 +1,26 @@
-import { ProductoBase } from "./producto-base";
+import { ProductBase } from './product-base';
 
-export class Producto extends ProductoBase {
+export class Product extends ProductBase {
 
     stock!: number;
     tags!: string[];
-    categoria!: string;
+    category!: string;
     rating!: number;
-    descuento!: number;
-    esNuevo!: boolean;
-    esDestacado!: boolean;
+    discount!: number;
+    isNew!: boolean;
+    isFeatured!: boolean;
 
-    constructor(init?: Partial<Producto>) {
+    constructor(init?: Partial<Product>) {
         super();
-        this.tipo = 'bordado';
+        this.type = 'bordado';
         Object.assign(this, init);
     }
 
-    get estado(): string {
-        if (this.esNuevo && this.esDestacado) return 'Nuevo y Destacado';
-        if (this.esNuevo) return 'Nuevo';
-        if (this.esDestacado) return 'Destacado';
-        return 'Regular';
+    get status(): string {
+        if (this.isNew && this.isFeatured) return 'Nuevo y Destacado';
+        if (this.isNew) return 'Nuevo';
+        if (this.isFeatured) return 'Destacado';
+        return 'Normal';
     }
 
 }

@@ -1,0 +1,254 @@
+// // Sales Tab specific styles
+// .sales-summary {
+//     .summary-card {
+//         border-radius: 1rem;
+//         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+//         transition: transform 0.2s ease;
+        
+//         &:hover {
+//             transform: translateY(-2px);
+//         }
+//     }
+    
+//     .summary-icon {
+//         width: 2.5rem;
+//         height: 2.5rem;
+//         border-radius: 50%;
+//         display: flex;
+//         align-items: center;
+//         justify-content: center;
+//     }
+// }
+
+// .customer-management {
+//     .customer-table {
+//         .p-datatable {
+//             .p-datatable-header {
+//                 background: var(--surface-card);
+//                 border-bottom: 1px solid var(--surface-border);
+//             }
+            
+//             .p-datatable-thead > tr > th {
+//                 background: var(--surface-100);
+//                 border-bottom: 1px solid var(--surface-border);
+//                 font-weight: 600;
+//                 color: var(--text-color);
+//             }
+            
+//             .p-datatable-tbody > tr {
+//                 transition: background-color 0.2s ease;
+                
+//                 &:hover {
+//                     background-color: var(--surface-50);
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .order-management {
+//     .order-table {
+//         .p-datatable {
+//             .p-datatable-header {
+//                 background: var(--surface-card);
+//                 border-bottom: 1px solid var(--surface-border);
+//             }
+            
+//             .p-datatable-thead > tr > th {
+//                 background: var(--surface-100);
+//                 border-bottom: 1px solid var(--surface-border);
+//                 font-weight: 600;
+//                 color: var(--text-color);
+//             }
+            
+//             .p-datatable-tbody > tr {
+//                 transition: background-color 0.2s ease;
+                
+//                 &:hover {
+//                     background-color: var(--surface-50);
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// // Dialog styles
+// .sales-dialog {
+//     .dialog-content {
+//         max-height: 70vh;
+//         overflow-y: auto;
+//     }
+    
+//     .order-items {
+//         .item-card {
+//             background: var(--surface-card);
+//             border-radius: 0.5rem;
+//             padding: 1rem;
+//             margin-bottom: 1rem;
+//             border: 1px solid var(--surface-border);
+//         }
+//     }
+// }
+
+// // Form styles
+// .sales-form {
+//     .form-group {
+//         margin-bottom: 1rem;
+//     }
+    
+//     .form-label {
+//         font-weight: 600;
+//         color: var(--text-color);
+//         margin-bottom: 0.5rem;
+//         display: block;
+//     }
+    
+//     .form-control {
+//         width: 100%;
+//         border-radius: 0.375rem;
+//         border: 1px solid var(--surface-border);
+//         padding: 0.5rem 0.75rem;
+//         transition: border-color 0.2s ease;
+        
+//         &:focus {
+//             outline: none;
+//             border-color: var(--primary-color);
+//             box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+//         }
+//     }
+// }
+
+// // Status indicators
+// .status-indicator {
+//     .status-tag {
+//         font-size: 0.75rem;
+//         padding: 0.25rem 0.5rem;
+//         border-radius: 0.25rem;
+//     }
+// }
+
+// // Action buttons
+// .action-buttons {
+//     .p-button {
+//         transition: all 0.2s ease;
+        
+//         &:hover {
+//             transform: translateY(-1px);
+//         }
+//     }
+// }
+
+// // Responsive adjustments
+// @media (max-width: 768px) {
+//     .sales-summary {
+//         .summary-card {
+//             margin-bottom: 1rem;
+//         }
+//     }
+    
+//     .customer-management,
+//     .order-management {
+//         .p-datatable {
+//             font-size: 0.875rem;
+//         }
+//     }
+    
+//     .sales-dialog {
+//         .dialog-content {
+//             padding: 0.5rem;
+//         }
+//     }
+    
+//     .sales-form {
+//         .grid {
+//             grid-template-columns: 1fr;
+//         }
+//     }
+// }
+
+// // Empty state styles
+// .empty-state {
+//     text-align: center;
+//     padding: 3rem 1rem;
+    
+//     .empty-icon {
+//         font-size: 4rem;
+//         color: var(--surface-300);
+//         margin-bottom: 1rem;
+//     }
+    
+//     .empty-title {
+//         font-size: 1.25rem;
+//         font-weight: 600;
+//         color: var(--text-color-secondary);
+//         margin-bottom: 0.5rem;
+//     }
+    
+//     .empty-description {
+//         color: var(--text-color-secondary);
+//         margin-bottom: 1.5rem;
+//     }
+// }
+
+// // Customer details
+// .customer-details {
+//     .customer-info {
+//         display: flex;
+//         flex-direction: column;
+//         gap: 0.5rem;
+        
+//         .info-item {
+//             display: flex;
+//             align-items: center;
+//             gap: 0.5rem;
+            
+//             .info-label {
+//                 font-weight: 600;
+//                 color: var(--text-color-secondary);
+//                 min-width: 100px;
+//             }
+            
+//             .info-value {
+//                 color: var(--text-color);
+//             }
+//         }
+//     }
+// }
+
+// // Order items display
+// .order-items-display {
+//     .item-list {
+//         display: flex;
+//         flex-direction: column;
+//         gap: 0.5rem;
+        
+//         .item {
+//             display: flex;
+//             justify-content: space-between;
+//             align-items: center;
+//             padding: 0.5rem;
+//             background: var(--surface-50);
+//             border-radius: 0.25rem;
+            
+//             .item-info {
+//                 display: flex;
+//                 flex-direction: column;
+                
+//                 .item-name {
+//                     font-weight: 600;
+//                     color: var(--text-color);
+//                 }
+                
+//                 .item-details {
+//                     font-size: 0.875rem;
+//                     color: var(--text-color-secondary);
+//                 }
+//             }
+            
+//             .item-total {
+//                 font-weight: 600;
+//                 color: var(--primary-color);
+//             }
+//         }
+//     }
+// } 

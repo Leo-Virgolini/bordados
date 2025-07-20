@@ -34,8 +34,6 @@ export class HeaderComponent {
       ]
     },
     { label: 'Personalizar', icon: PrimeIcons.PALETTE, routerLink: '/personalizar' },
-    { label: 'Admin Productos', icon: PrimeIcons.ADDRESS_BOOK, routerLink: '/admin/productos' },
-    { label: 'Admin Personalizar', icon: PrimeIcons.ADDRESS_BOOK, routerLink: '/admin/personalizar' },
     { label: 'Contacto', icon: PrimeIcons.ENVELOPE, routerLink: '/contacto' }
   ];
 

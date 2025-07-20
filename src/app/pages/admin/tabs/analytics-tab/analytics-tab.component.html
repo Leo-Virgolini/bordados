@@ -1,0 +1,217 @@
+<div class="grid">
+    <!-- Sales Overview Charts -->
+    <div class="col-12 lg:col-6">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-chart-line mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Ventas Mensuales</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="salesChartData?.monthlySales" type="line" [data]="salesChartData.monthlySales" [options]="getChartOptions('line')"></p-chart>
+                <div *ngIf="!salesChartData?.monthlySales" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-chart-bar mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Ventas Diarias</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="salesChartData?.dailySales" type="bar" [data]="salesChartData.dailySales" [options]="getChartOptions('bar')"></p-chart>
+                <div *ngIf="!salesChartData?.dailySales" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Revenue and Customer Growth -->
+    <div class="col-12 lg:col-6">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-dollar mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Tendencia de Ingresos</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="revenueTrend" type="line" [data]="revenueTrend" [options]="getChartOptions('line')"></p-chart>
+                <div *ngIf="!revenueTrend" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-users mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Crecimiento de Clientes</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="customerGrowth" type="line" [data]="customerGrowth" [options]="getChartOptions('line', false)"></p-chart>
+                <div *ngIf="!customerGrowth" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Pie Charts -->
+    <div class="col-12 lg:col-4">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-pie-chart mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Pedidos por Estado</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="salesChartData?.salesByStatus" type="doughnut" [data]="salesChartData.salesByStatus" [options]="getChartOptions('doughnut')"></p-chart>
+                <div *ngIf="!salesChartData?.salesByStatus" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <div class="col-12 lg:col-4">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-credit-card mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Métodos de Pago</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="salesChartData?.salesByPaymentMethod" type="pie" [data]="salesChartData.salesByPaymentMethod" [options]="getChartOptions('pie')"></p-chart>
+                <div *ngIf="!salesChartData?.salesByPaymentMethod" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <div class="col-12 lg:col-4">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-box mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Stock por Categoría</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="productAnalytics" type="doughnut" [data]="productAnalytics" [options]="getChartOptions('doughnut')"></p-chart>
+                <div *ngIf="!productAnalytics" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Top Products Bar Chart -->
+    <div class="col-12">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-star mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Productos Más Vendidos</h3>
+                </div>
+            </ng-template>
+            <div style="height: 400px;">
+                <p-chart *ngIf="salesChartData?.topProducts" type="bar" [data]="salesChartData.topProducts" [options]="getChartOptions('bar', false)"></p-chart>
+                <div *ngIf="!salesChartData?.topProducts" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Customer Orders Distribution -->
+    <div class="col-12 lg:col-6">
+        <p-card class="border-round-xl shadow-3 p-3">
+            <ng-template #header>
+                <div class="flex align-items-center">
+                    <i class="pi pi-shopping-cart mr-2 text-primary"></i>
+                    <h3 class="text-lg font-semibold m-0">Distribución de Pedidos por Cliente</h3>
+                </div>
+            </ng-template>
+            <div style="height: 300px;">
+                <p-chart *ngIf="salesChartData?.customerOrders" type="bar" [data]="salesChartData.customerOrders" [options]="getChartOptions('bar', false)"></p-chart>
+                <div *ngIf="!salesChartData?.customerOrders" class="flex align-items-center justify-content-center h-full">
+                    <p-progressSpinner></p-progressSpinner>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Analytics Summary Cards -->
+    <div class="col-12 lg:col-6">
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <p-card class="border-round-xl shadow-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">Tasa de Conversión</span>
+                            <div class="text-900 font-bold text-xl">12.5%</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-percentage text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-6">
+                <p-card class="border-round-xl shadow-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">ROI Promedio</span>
+                            <div class="text-900 font-bold text-xl">245%</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-chart-line text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-6">
+                <p-card class="border-round-xl shadow-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">Tiempo Promedio de Entrega</span>
+                            <div class="text-900 font-bold text-xl">3.2 días</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-clock text-orange-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-6">
+                <p-card class="border-round-xl shadow-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">Satisfacción del Cliente</span>
+                            <div class="text-900 font-bold text-xl">4.8/5</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-star text-purple-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+    </div>
+</div>

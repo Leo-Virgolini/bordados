@@ -41,18 +41,21 @@
                                         <div class="flex flex-column md:flex-row align-items-center justify-content-center gap-4">
                                             <!-- Product Image -->
                                             <div class="flex flex-column align-items-center flex-shrink-0 gap-3">
-                                                <p-image [src]="item.producto.imagen" [alt]="item.producto.nombre"
-                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" />
-                                                <p-button icon="pi pi-trash" (onClick)="eliminar(item.producto.id)" severity="danger" size="large" />
+                                                <p-image [src]="item.product.image" [alt]="item.product.name" imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" />
+                                                <p-button icon="pi pi-trash" (onClick)="eliminar(item.product.id)" severity="danger" size="large" />
                                             </div>
                                             <!-- Product Details -->
                                             <div class="flex-1">
                                                 <div class="flex flex-column gap-3">
                                                     <!-- Product Title -->
                                                     <div>
-                                                        <h3 class="text-xl font-semibold text-900 mb-2">{{ item.producto.nombre }}</h3>
-                                                        <p-tag [value]="item.producto.tipo === 'customizable' ? 'Personalizable' : 'Bordado Listo'"
-                                                            [severity]="item.producto.tipo === 'customizable' ? 'warn' : 'success'" [rounded]="true" class="mb-2" />
+                                                        <h3 class="text-xl font-semibold text-900 mb-2">{{ item.product.name }}</h3>
+                                                        <div class="flex align-items-center gap-2 mb-2">
+                                                            <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
+                                                                [severity]="item.product.type === 'personalizable' ? 'warn' : 'success'" [rounded]="true" />
+                                                            <i [class]="item.product.type === 'personalizable' ? 'pi pi-palette text-orange-500' : 'pi pi-check-circle text-green-500'" 
+                                                               class="text-lg"></i>
+                                                        </div>
                                                     </div>
 
                                                     <!-- Product Specifications -->
@@ -61,27 +64,25 @@
                                                             <div class="flex flex-column gap-2">
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-tag text-primary"></i>
-                                                                    <span class="text-600">Talle: <span class="font-semibold text-900">{{ hasProp(item.producto, 'talle') ?
-                                                                            $any(item.producto).talle : '-' }}</span></span>
+                                                                    <span class="text-600">Talle: <span class="font-semibold text-900">{{ item.product.size || '-' }}</span></span>
                                                                 </div>
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-palette text-primary"></i>
-                                                                    <span class="text-600">Color de prenda: <span class="font-semibold text-900">{{ hasProp(item.producto, 'colorPrenda') ?
-                                                                            $any(item.producto).colorPrenda : '-' }}</span></span>
+                                                                    <span class="text-600">Color de prenda: <span class="font-semibold text-900">{{ item.product.garmentColor || '-'
+                                                                            }}</span></span>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-12 md:col-6" *ngIf="item.producto.tipo === 'customizable'">
+                                                        <div class="col-12 md:col-6" *ngIf="item.product.type === 'personalizable'">
                                                             <div class="flex flex-column gap-2">
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-circle-fill text-primary"></i>
-                                                                    <span class="text-600">Hilado 1: <span class="font-semibold text-900">{{ hasProp(item.producto, 'colorHilado1') ?
-                                                                            $any(item.producto).colorHilado1 : '-' }}</span></span>
+                                                                    <span class="text-600">Hilado 1: <span class="font-semibold text-900">{{ getThreadColorName(item.product, 1)
+                                                                            }}</span></span>
                                                                 </div>
-                                                                <div class="flex align-items-center gap-2"
-                                                                    *ngIf="hasProp(item.producto, 'colorHilado2') && $any(item.producto).colorHilado2">
+                                                                <div class="flex align-items-center gap-2" *ngIf="hasSecondThreadColor(item.product)">
                                                                     <i class="pi pi-circle-fill text-primary"></i>
-                                                                    <span class="text-600">Hilado 2: <span class="font-semibold text-900">{{ $any(item.producto).colorHilado2
+                                                                    <span class="text-600">Hilado 2: <span class="font-semibold text-900">{{ getThreadColorName(item.product, 2)
                                                                             }}</span></span>
                                                                 </div>
                                                             </div>
@@ -93,7 +94,7 @@
                                                         <div class="flex align-items-center gap-4">
                                                             <div class="text-center">
                                                                 <div class="text-600 text-sm">Precio Unitario</div>
-                                                                <div class="text-xl font-bold text-primary">{{ item.producto.precio | currency:'ARS':'symbol':'1.0-0' }}</div>
+                                                                <div class="text-xl font-bold text-primary">{{ item.product.price | currency:'ARS':'symbol':'1.0-0' }}</div>
                                                             </div>
 
                                                             <div class="flex align-items-center gap-2">
@@ -155,9 +156,8 @@
 
                                 <div class="flex justify-content-between align-items-center">
                                     <span class="text-600"><i class="pi pi-truck text-primary"></i> Envío</span>
-                                    <p-tag [value]="getShippingText()" [icon]="getShippingIcon()" [severity]="getShippingSeverity()" badgeSize="xlarge" 
-                                        [class]="isShippingFree() ? 'text-green-500 font-semibold' : 'text-blue-500 font-semibold'" [rounded]="true"
-                                        style="margin-right: -0.5rem;" />
+                                    <p-tag [value]="getShippingText()" [icon]="getShippingIcon()" [severity]="getShippingSeverity()" badgeSize="xlarge"
+                                        [class]="isShippingFree() ? 'text-green-500 font-semibold' : 'text-blue-500 font-semibold'" [rounded]="true" style="margin-right: -0.5rem;" />
                                 </div>
 
                                 <p-divider></p-divider>
