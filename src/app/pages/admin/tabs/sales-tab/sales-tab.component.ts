@@ -373,6 +373,10 @@ export class SalesTabComponent implements OnInit {
                         if (index !== -1) {
                             this.customers[index] = customer;
                         }
+                        // Update selectedCustomer if it's the same customer being edited
+                        if (this.selectedCustomer && this.selectedCustomer.id === customer.id) {
+                            this.selectedCustomer = customer;
+                        }
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Actualizado',
@@ -396,6 +400,10 @@ export class SalesTabComponent implements OnInit {
                 this.ordersService.createCustomer(formValue).subscribe({
                     next: (newCustomer) => {
                         this.customers.push(newCustomer);
+                        // Update selectedCustomer if we want to show the newly created customer
+                        if (this.showCustomerDetailsDialog) {
+                            this.selectedCustomer = newCustomer;
+                        }
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Creado',
@@ -856,6 +864,10 @@ export class SalesTabComponent implements OnInit {
                     if (index !== -1) {
                         this.orders[index] = order;
                     }
+                    // Update selectedOrder if it's the same order being edited
+                    if (this.selectedOrder && this.selectedOrder.id === order.id) {
+                        this.selectedOrder = order;
+                    }
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Actualizado',
@@ -884,6 +896,11 @@ export class SalesTabComponent implements OnInit {
                     // Update coupon usage if a coupon was applied
                     if (this.selectedCoupon && formValue.couponCode) {
                         this.updateCouponUsage(this.selectedCoupon);
+                    }
+
+                    // Update selectedOrder if we want to show the newly created order
+                    if (this.showOrderDetailsDialog) {
+                        this.selectedOrder = newOrder;
                     }
 
                     this.messageService.add({
