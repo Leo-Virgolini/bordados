@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, delay } from 'rxjs';
 import { Customer } from '../model/customer';
 import { Order, OrderItem } from '../model/order';
 import { SalesSummary } from '../model/sales-summary';
@@ -7,7 +7,7 @@ import { SalesSummary } from '../model/sales-summary';
 @Injectable({
     providedIn: 'root'
 })
-export class SalesService {
+export class OrdersService {
     private orders: Order[] = [
         new Order({
             id: 'ORD-001',
@@ -32,14 +32,16 @@ export class SalesService {
                     productId: '1',
                     quantity: 2,
                     unitPrice: 8500,
-                    productDiscount: 1700, // Product discount
-                    subtotal: 15300
+                    productDiscount: 1700, // Product discount per unit
+                    subtotal: 13600, // (8500 * 2) - (1700 * 2) = 17000 - 3400 = 13600
+                    color: 'Blanco',
+                    size: 'M'
                 })
             ],
-            subtotal: 15300,
+            subtotal: 13600,
             couponDiscount: 0,
             shippingPrice: 1500,
-            total: 16800,
+            total: 15100,
             status: 'entregado',
             paymentMethod: 'mercadopago',
             notes: 'Entregar en horario de tarde',
@@ -74,7 +76,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 15000,
                     productDiscount: 0,
-                    subtotal: 15000
+                    subtotal: 15000,
+                    color: 'Gris',
+                    size: 'L'
                 }),
                 new OrderItem({
                     id: 'ITEM-003',
@@ -82,7 +86,9 @@ export class SalesService {
                     quantity: 3,
                     unitPrice: 6500,
                     productDiscount: 0,
-                    subtotal: 19500
+                    subtotal: 19500,
+                    color: 'Blanco',
+                    size: 'L'
                 })
             ],
             subtotal: 34500,
@@ -120,8 +126,10 @@ export class SalesService {
                     productId: '3',
                     quantity: 1,
                     unitPrice: 18000,
-                    productDiscount: 1800,
-                    subtotal: 16200
+                    productDiscount: 1800, // Product discount per unit
+                    subtotal: 16200, // 18000 - 1800 = 16200
+                    color: 'Negro',
+                    size: 'M'
                 })
             ],
             subtotal: 16200,
@@ -161,7 +169,9 @@ export class SalesService {
                     quantity: 2,
                     unitPrice: 7500,
                     productDiscount: 0,
-                    subtotal: 15000
+                    subtotal: 15000,
+                    color: 'Negro',
+                    size: 'S'
                 }),
                 new OrderItem({
                     id: 'ITEM-006',
@@ -169,7 +179,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 12000,
                     productDiscount: 0,
-                    subtotal: 12000
+                    subtotal: 12000,
+                    color: 'Gris',
+                    size: 'L'
                 })
             ],
             subtotal: 27000,
@@ -210,7 +222,9 @@ export class SalesService {
                     quantity: 3,
                     unitPrice: 8500,
                     productDiscount: 0,
-                    subtotal: 25500
+                    subtotal: 25500,
+                    color: 'Blanco',
+                    size: 'L'
                 }),
                 new OrderItem({
                     id: 'ITEM-008',
@@ -218,7 +232,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 18000,
                     productDiscount: 0,
-                    subtotal: 18000
+                    subtotal: 18000,
+                    color: 'Negro',
+                    size: 'XL'
                 })
             ],
             subtotal: 43500,
@@ -259,7 +275,9 @@ export class SalesService {
                     quantity: 2,
                     unitPrice: 15000,
                     productDiscount: 0,
-                    subtotal: 30000
+                    subtotal: 30000,
+                    color: 'Gris',
+                    size: 'M'
                 }),
                 new OrderItem({
                     id: 'ITEM-010',
@@ -267,7 +285,9 @@ export class SalesService {
                     quantity: 2,
                     unitPrice: 6500,
                     productDiscount: 0,
-                    subtotal: 13000
+                    subtotal: 13000,
+                    color: 'Negro',
+                    size: 'M'
                 })
             ],
             subtotal: 43000,
@@ -308,7 +328,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 7500,
                     productDiscount: 0,
-                    subtotal: 7500
+                    subtotal: 7500,
+                    color: 'Negro',
+                    size: 'M'
                 }),
                 new OrderItem({
                     id: 'ITEM-012',
@@ -316,7 +338,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 12000,
                     productDiscount: 0,
-                    subtotal: 12000
+                    subtotal: 12000,
+                    color: 'Gris',
+                    size: 'XL'
                 }),
                 new OrderItem({
                     id: 'ITEM-013',
@@ -324,7 +348,9 @@ export class SalesService {
                     quantity: 1,
                     unitPrice: 8500,
                     productDiscount: 0,
-                    subtotal: 8500
+                    subtotal: 8500,
+                    color: 'Blanco',
+                    size: 'S'
                 })
             ],
             subtotal: 28000,
@@ -453,10 +479,10 @@ export class SalesService {
     createOrder(order: Omit<Order, 'id'>): Observable<Order> {
         const newOrder = new Order({
             ...order,
-            id: `ORD-${Date.now().toString().slice(-6)}`
+            id: this.generateId()
         });
         this.orders.push(newOrder);
-        return of(newOrder);
+        return of(newOrder).pipe(delay(500));
     }
 
     updateOrder(order: Order): Observable<Order> {
@@ -534,4 +560,13 @@ export class SalesService {
 
         return of(csvContent);
     }
+
+    private generateId(): string {
+        const maxId = this.orders
+            .map(o => Number(o.id))
+            .filter(id => !isNaN(id))
+            .reduce((max, id) => Math.max(max, id), 0);
+        return (maxId + 1).toString();
+    }
+
 } 

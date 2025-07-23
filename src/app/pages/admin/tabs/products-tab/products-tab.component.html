@@ -24,20 +24,12 @@
                 <th pSortableColumn="price" class="text-center">
                     Precio <p-sortIcon field="price"></p-sortIcon>
                 </th>
-                <th pSortableColumn="stock" class="text-center">
-                    Stock <p-sortIcon field="stock"></p-sortIcon>
-                </th>
+                <th class="text-center">Stock por Color/Talle</th>
                 <th pSortableColumn="category" class="text-center">
                     Categoría <p-sortIcon field="category"></p-sortIcon>
                 </th>
                 <th pSortableColumn="garmentType" class="text-center">
                     Tipo de Prenda <p-sortIcon field="garmentType"></p-sortIcon>
-                </th>
-                <th pSortableColumn="size" class="text-center">
-                    Talle <p-sortIcon field="size"></p-sortIcon>
-                </th>
-                <th pSortableColumn="garmentColor" class="text-center">
-                    Color <p-sortIcon field="garmentColor"></p-sortIcon>
                 </th>
                 <th pSortableColumn="rating" class="text-center">
                     Rating <p-sortIcon field="rating"></p-sortIcon>
@@ -57,20 +49,12 @@
                 <th class="text-center">
                     <p-columnFilter type="numeric" field="price" display="menu"></p-columnFilter>
                 </th>
-                <th class="text-center">
-                    <p-columnFilter type="numeric" field="stock" display="menu"></p-columnFilter>
-                </th>
+                <th class="text-center"></th>
                 <th class="text-center">
                     <p-columnFilter type="text" field="category" display="menu"></p-columnFilter>
                 </th>
                 <th class="text-center">
                     <p-columnFilter type="text" field="garmentType" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="size" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="garmentColor" display="menu"></p-columnFilter>
                 </th>
                 <th class="text-center">
                     <p-columnFilter type="numeric" field="rating" display="menu"></p-columnFilter>
@@ -93,7 +77,7 @@
                     </div>
                 </td>
                 <td class="text-center">
-                    <p-image [src]="product.image" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" preview />
+                    <p-image [src]="getProductImage(product)" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" preview />
                 </td>
                 <td class="text-center">
                     <div class="flex flex-column align-items-center">
@@ -103,9 +87,24 @@
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="flex align-items-center justify-content-center gap-2">
-                        <span class="font-semibold">{{ product.stock }}</span>
-                        <p-tag [value]="getProductStockStatus(product.stock).value" [severity]="getProductStockStatus(product.stock).severity" [rounded]="true"></p-tag>
+                    <div class="flex flex-column gap-1 align-items-center">
+                        <div *ngFor="let variant of product.variants?.slice(0, 3)" class="flex flex-column gap-1 align-items-center">
+                            <div class="flex align-items-center gap-1">
+                                <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(variant.color)"></div>
+                                <span class="text-xs font-semibold">{{ variant.color }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 justify-content-center">
+                                <div *ngFor="let sizeStock of variant.sizes" class="flex flex-column align-items-center surface-50 p-1 border-round">
+                                    <span class="text-xs font-bold">{{ sizeStock.size }}</span>
+                                    <span class="text-xs" [class]="sizeStock.stock === 0 ? 'text-red-500' : sizeStock.stock <= 5 ? 'text-orange-500' : 'text-green-500'">
+                                        {{ sizeStock.stock }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="(product.variants?.length || 0) > 3" class="flex align-items-center gap-1">
+                            <p-tag [value]="'+' + ((product.variants?.length || 0) - 3) + ' colores más'" severity="info" [rounded]="true" size="small"></p-tag>
+                        </div>
                     </div>
                 </td>
                 <td class="text-center">
@@ -113,15 +112,6 @@
                 </td>
                 <td class="text-center">
                     <span class="font-semibold text-900">{{ product.garmentType }}</span>
-                </td>
-                <td class="text-center">
-                    <p-tag [value]="product.size" severity="warn" [rounded]="true"></p-tag>
-                </td>
-                <td class="text-center">
-                    <div class="flex align-items-center justify-content-center gap-2">
-                        <div class="w-2rem h-2rem border-round border-1 border-gray-300" [style.background-color]="getColorValue(product.garmentColor)"></div>
-                        <span class="font-semibold">{{ product.garmentColor }}</span>
-                    </div>
                 </td>
                 <td class="text-center">
                     <div class="flex align-items-center justify-content-center gap-2">
@@ -172,14 +162,15 @@
 
     <div class="dialog-content-wrapper">
         <form [formGroup]="productForm" class="flex flex-column gap-4">
-            <div class="grid">
+            <!-- Only show ID field if editing -->
+            <div class="grid" *ngIf="editingProduct">
                 <div class="col-12">
                     <label for="productId" class="block mb-2 font-semibold">ID *</label>
                     <p-inputgroup>
                         <p-inputgroup-addon>
                             <i class="pi pi-hashtag"></i>
                         </p-inputgroup-addon>
-                        <input id="productId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del producto" />
+                        <input id="productId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del producto" [disabled]="true" />
                     </p-inputgroup>
                     <app-error-helper [control]="productForm.get('id')"></app-error-helper>
                 </div>
@@ -232,19 +223,41 @@
                             <i class="pi pi-dollar"></i>
                         </p-inputgroup-addon>
                         <p-inputnumber id="productPrice" formControlName="price" class="w-full" mode="currency" currency="ARS" locale="es-AR" [minFractionDigits]="0"
-                            [maxFractionDigits]="0" placeholder="0"></p-inputnumber>
+                            [maxFractionDigits]="0" placeholder="0" [showButtons]="true" [step]="100"></p-inputnumber>
                     </p-inputgroup>
                     <app-error-helper [control]="productForm.get('price')"></app-error-helper>
                 </div>
                 <div class="col-6">
-                    <label for="productStock" class="block mb-2 font-semibold">Stock *</label>
+                    <label for="productDiscount" class="block mb-2 font-semibold">Descuento (%)</label>
                     <p-inputgroup>
                         <p-inputgroup-addon>
-                            <i class="pi pi-box"></i>
+                            <i class="pi pi-percentage"></i>
                         </p-inputgroup-addon>
-                        <p-inputnumber id="productStock" formControlName="stock" class="w-full" [min]="0" [showButtons]="true" placeholder="0"></p-inputnumber>
+                        <p-inputnumber id="productDiscount" formControlName="discount" class="w-full" [min]="0" [max]="100" suffix="%" placeholder="0" [showButtons]="true"></p-inputnumber>
                     </p-inputgroup>
-                    <app-error-helper [control]="productForm.get('stock')"></app-error-helper>
+                    <app-error-helper [control]="productForm.get('discount')"></app-error-helper>
+                </div>
+            </div>
+
+            <!-- Discounted Price and Final Price Section -->
+            <div class="grid mb-3">
+                <div class="col-12">
+                    <div class="surface-100 p-3 border-round flex flex-column md:flex-row align-items-center gap-4">
+                        <div class="flex align-items-center gap-2">
+                            <span class="text-600">Precio original:</span>
+                            <span class="font-bold">{{ productForm.get('price')?.value | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        </div>
+                        <div class="flex align-items-center gap-2">
+                            <span class="text-600">Descuento:</span>
+                            <span class="font-bold text-green-600">{{ productForm.get('discount')?.value || 0 }}%</span>
+                        </div>
+                        <div class="flex align-items-center gap-2">
+                            <span class="text-600">Precio final:</span>
+                            <span class="font-bold text-primary">
+                                {{ (productForm.get('price')?.value * (1 - (productForm.get('discount')?.value || 0) / 100)) | currency:'ARS':'symbol':'1.0-0' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -266,15 +279,15 @@
                         <p-inputgroup-addon>
                             <i class="pi pi-star"></i>
                         </p-inputgroup-addon>
-                        <p-inputnumber id="productRating" formControlName="rating" class="w-full" [min]="0" [max]="5" [minFractionDigits]="1" [maxFractionDigits]="1"
-                            placeholder="0.0"></p-inputnumber>
+                        <p-inputnumber id="productRating" formControlName="rating" class="w-full" [min]="0" [max]="5" [minFractionDigits]="1" [maxFractionDigits]="1" placeholder="0.0"
+                            [showButtons]="true"></p-inputnumber>
                     </p-inputgroup>
                     <app-error-helper [control]="productForm.get('rating')"></app-error-helper>
                 </div>
             </div>
 
             <div class="grid">
-                <div class="col-6">
+                <div class="col-12">
                     <label for="productGarmentType" class="block mb-2 font-semibold">Tipo de Prenda *</label>
                     <p-inputgroup>
                         <p-inputgroup-addon>
@@ -285,45 +298,89 @@
                     </p-inputgroup>
                     <app-error-helper [control]="productForm.get('garmentType')"></app-error-helper>
                 </div>
-                <div class="col-6">
-                    <label for="productSize" class="block mb-2 font-semibold">Talle *</label>
-                    <p-inputgroup>
-                        <p-inputgroup-addon>
-                            <i class="pi pi-list"></i>
-                        </p-inputgroup-addon>
-                        <p-select id="productSize" formControlName="size" [options]="availableSizes" optionLabel="label" optionValue="value" placeholder="Seleccionar talle" class="w-full"
-                            appendTo="body"></p-select>
-                    </p-inputgroup>
-                    <app-error-helper [control]="productForm.get('size')"></app-error-helper>
+            </div>
+
+            <!-- Variants Section -->
+            <div class="grid">
+                <div class="col-12">
+                    <div class="surface-50 p-3 border-round">
+                        <h4 class="font-semibold mb-3 flex align-items-center gap-2">
+                            <i class="pi pi-palette text-primary"></i>
+                            Variantes del Producto
+                        </h4>
+
+                        <!-- Add Variant Button -->
+                        <div class="flex justify-content-between align-items-center mb-3">
+                            <p class="text-sm text-600 m-0">Configura los colores, talles y stock disponibles</p>
+                            <p-button label="Agregar Variante" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addVariant()" />
+                        </div>
+
+                        <!-- Variants List -->
+                        <div formArrayName="variants" class="flex flex-column gap-3">
+                            <div *ngFor="let variant of variantsArray.controls; let i = index" [formGroupName]="i" class="surface-100 p-3 border-round">
+                                <div class="flex justify-content-between align-items-center mb-2">
+                                    <h5 class="font-semibold m-0">Variante {{ i + 1 }}</h5>
+                                    <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true" (onClick)="removeVariant(i)" />
+                                </div>
+
+                                <!-- Color and Image -->
+                                <div class="grid mb-3">
+                                    <div class="col-6">
+                                        <label class="block mb-2 font-semibold">Color *</label>
+                                        <p-inputgroup>
+                                            <p-inputgroup-addon>
+                                                <i class="pi pi-palette"></i>
+                                            </p-inputgroup-addon>
+                                            <p-select [formControlName]="'color'" [options]="availableColors" optionLabel="label" optionValue="value" placeholder="Seleccionar color"
+                                                class="w-full" appendTo="body" />
+                                        </p-inputgroup>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="block mb-2 font-semibold">URL de Imagen</label>
+                                        <p-inputgroup>
+                                            <p-inputgroup-addon>
+                                                <i class="pi pi-image"></i>
+                                            </p-inputgroup-addon>
+                                            <input type="text" pInputText [formControlName]="'image'" class="w-full" placeholder="https://ejemplo.com/imagen.jpg" />
+                                        </p-inputgroup>
+                                    </div>
+                                </div>
+
+                                <!-- Sizes and Stock -->
+                                <div class="mb-3">
+                                    <div class="flex justify-content-between align-items-center mb-2">
+                                        <label class="font-semibold">Talles y Stock</label>
+                                        <p-button label="Agregar Talle" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addSizeToVariant(i)" />
+                                    </div>
+
+                                    <div [formArrayName]="'sizes'" class="flex flex-column gap-2">
+                                        <div *ngFor="let sizeControl of getVariantSizes(i).controls; let j = index" [formGroupName]="j" class="flex align-items-center gap-2">
+                                            <div class="flex-1">
+                                                <p-select [formControlName]="'size'" [options]="availableSizes" optionLabel="label" optionValue="value" placeholder="Talle" class="w-full"
+                                                    appendTo="body" />
+                                            </div>
+                                            <div class="flex-1">
+                                                <p-inputnumber [formControlName]="'stock'" [min]="0" placeholder="Stock" class="w-full" [showButtons]="true" />
+                                            </div>
+                                            <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true" (onClick)="removeSizeFromVariant(i, j)" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Variants Message -->
+                        <div *ngIf="variantsArray.length === 0" class="text-center py-4">
+                            <i class="pi pi-palette text-4xl text-300 mb-2 block"></i>
+                            <p class="text-500 mb-3">No hay variantes configuradas</p>
+                            <p-button label="Agregar Primera Variante" icon="pi pi-plus" [outlined]="true" (onClick)="addVariant()" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="grid">
-                <div class="col-6">
-                    <label for="productGarmentColor" class="block mb-2 font-semibold">Color *</label>
-                    <p-inputgroup>
-                        <p-inputgroup-addon>
-                            <i class="pi pi-palette"></i>
-                        </p-inputgroup-addon>
-                        <p-select id="productGarmentColor" formControlName="garmentColor" [options]="availableColors" optionLabel="label" optionValue="value"
-                            placeholder="Seleccionar color" class="w-full" appendTo="body"></p-select>
-                    </p-inputgroup>
-                    <app-error-helper [control]="productForm.get('garmentColor')"></app-error-helper>
-                </div>
-                <div class="col-6">
-                    <label for="productDiscount" class="block mb-2 font-semibold">Descuento (%)</label>
-                    <p-inputgroup>
-                        <p-inputgroup-addon>
-                            <i class="pi pi-percentage"></i>
-                        </p-inputgroup-addon>
-                        <p-inputnumber id="productDiscount" formControlName="discount" class="w-full" [min]="0" [max]="100" suffix="%" placeholder="0"></p-inputnumber>
-                    </p-inputgroup>
-                    <app-error-helper [control]="productForm.get('discount')"></app-error-helper>
-                </div>
-            </div>
-
-            <div class="grid">
-                <div class="col-6">
+                <div class="col-12">
                     <label for="productTags" class="block mb-2 font-semibold">Etiquetas</label>
                     <p-inputgroup>
                         <p-inputgroup-addon>
@@ -354,7 +411,7 @@
     </div>
 
     <ng-template pTemplate="footer">
-        <div class="flex justify-content-end gap-2">
+        <div class="flex justify-content-end gap-2 mt-2">
             <p-button label="Cancelar" (onClick)="showProductDialog = false" [outlined]="true" [rounded]="true" [disabled]="savingProduct"></p-button>
             <p-button [label]="editingProduct ? 'Actualizar' : 'Guardar'" (onClick)="saveProduct()" [disabled]="productForm.invalid || savingProduct" [rounded]="true"
                 [loading]="savingProduct">

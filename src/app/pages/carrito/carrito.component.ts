@@ -20,7 +20,7 @@ import { Image } from 'primeng/image';
   selector: 'app-carrito',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink,
     Panel, Button, InputNumber, Card, Divider, Toast, ConfirmDialog, Tag, Image],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './carrito.component.html',
   styleUrl: './carrito.component.scss'
 })
@@ -76,12 +76,13 @@ export class CarritoComponent implements OnInit {
   actualizarCantidad(item: CartItem, nuevaCantidad: number | string, inputRef: any) {
 
     const cantidad: number = typeof nuevaCantidad === 'string' ? parseInt(nuevaCantidad) : nuevaCantidad;
+    const maxStock = this.getMaxStock(item.product);
 
     // Check if quantity is valid
-    if (cantidad && cantidad > 0 && cantidad <= 100) {
+    if (cantidad && cantidad > 0 && cantidad <= maxStock) {
       this.carritoService.actualizarCantidad(item.product.id, cantidad);
-    } else if (cantidad > 100) {
-      // If quantity exceeds 100, reset the input to the previous item quantity
+    } else if (cantidad > maxStock) {
+      // If quantity exceeds max stock, reset the input to the previous item quantity
       const itemIndex = this.items.findIndex(i => i.product.id === item.product.id);
       if (itemIndex !== -1) {
         // Use the original item quantity before any changes
@@ -162,6 +163,52 @@ export class CarritoComponent implements OnInit {
 
   hasSecondThreadColor(product: any): boolean {
     return product.type === 'personalizable' && !!product.threadColor2;
+  }
+
+  // For cart items from customize flow, product.variants contains only the selected variant and size
+  getProductImage(product: any): string | undefined {
+    return product.variants?.[0]?.image;
+  }
+
+  getProductColor(product: any): string | undefined {
+    return product.variants?.[0]?.color;
+  }
+
+  getProductSize(product: any): string | undefined {
+    return product.variants?.[0]?.sizes?.[0]?.size;
+  }
+
+  getMaxStock(product: any): number {
+    if (!product.variants || product.variants.length === 0) {
+      return 1; // Default minimum
+    }
+
+    // Get the selected variant (color)
+    const selectedVariant = product.variants[0];
+    if (!selectedVariant.sizes || selectedVariant.sizes.length === 0) {
+      return 1; // Default minimum
+    }
+
+    // Get the selected size stock
+    const selectedSize = this.getProductSize(product);
+
+    // If we have a specific size, get its stock
+    if (selectedSize && selectedSize !== '-') {
+      const sizeStock = selectedVariant.sizes.find((sizeStock: any) => sizeStock.size === selectedSize);
+      if (sizeStock) {
+        return sizeStock.stock;
+      }
+    }
+
+    // Fallback: return the maximum stock across all sizes of this variant
+    let maxStock = 0;
+    selectedVariant.sizes.forEach((sizeStock: any) => {
+      if (sizeStock.stock > maxStock) {
+        maxStock = sizeStock.stock;
+      }
+    });
+
+    return maxStock > 0 ? maxStock : 1; // Return at least 1
   }
 
 }

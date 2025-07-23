@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -19,7 +19,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
-import { SalesService } from '../../../../services/sales.service';
+import { OrdersService } from '../../../../services/orders.service';
 import { Order, OrderItem } from '../../../../model/order';
 import { Customer } from '../../../../model/customer';
 import { SalesSummary } from '../../../../model/sales-summary';
@@ -88,6 +88,10 @@ export class SalesTabComponent implements OnInit {
     showCustomerDetailsDialog: boolean = false;
     selectedCustomer: Customer | null = null;
 
+    // Order Details Dialog
+    showOrderDetailsDialog: boolean = false;
+    selectedOrder: Order | null = null;
+
     // Tab Management
     activeTabIndex: number = 0;
 
@@ -141,9 +145,10 @@ export class SalesTabComponent implements OnInit {
         private fb: FormBuilder,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private salesService: SalesService,
+        private ordersService: OrdersService,
         private productsService: ProductsService,
-        private couponsService: CouponsService
+        private couponsService: CouponsService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
@@ -196,7 +201,7 @@ export class SalesTabComponent implements OnInit {
         this.customersLoading = true;
 
         // Load orders
-        this.salesService.getOrders().subscribe({
+        this.ordersService.getOrders().subscribe({
             next: (orders) => {
                 this.orders = orders;
                 this.ordersLoading = false;
@@ -212,7 +217,7 @@ export class SalesTabComponent implements OnInit {
         });
 
         // Load customers
-        this.salesService.getCustomers().subscribe({
+        this.ordersService.getCustomers().subscribe({
             next: (customers) => {
                 this.customers = customers;
                 this.customersLoading = false;
@@ -228,7 +233,7 @@ export class SalesTabComponent implements OnInit {
         });
 
         // Load sales summary
-        this.salesService.getSalesSummary().subscribe({
+        this.ordersService.getSalesSummary().subscribe({
             next: (summary) => {
                 this.salesSummary = summary;
             },
@@ -264,7 +269,6 @@ export class SalesTabComponent implements OnInit {
                 this.availableCoupons = coupons;
             },
             error: (error) => {
-                console.error('Error loading coupons:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
@@ -273,8 +277,6 @@ export class SalesTabComponent implements OnInit {
             }
         });
     }
-
-
 
     // Getters for sales summary
     get monthlySales(): number {
@@ -365,7 +367,7 @@ export class SalesTabComponent implements OnInit {
             if (this.editingCustomer) {
                 // Update existing customer
                 const updatedCustomer = { ...this.editingCustomer, ...formValue };
-                this.salesService.updateCustomer(updatedCustomer).subscribe({
+                this.ordersService.updateCustomer(updatedCustomer).subscribe({
                     next: (customer) => {
                         const index = this.customers.findIndex(c => c.id === customer.id);
                         if (index !== -1) {
@@ -391,7 +393,7 @@ export class SalesTabComponent implements OnInit {
                 });
             } else {
                 // Create new customer
-                this.salesService.createCustomer(formValue).subscribe({
+                this.ordersService.createCustomer(formValue).subscribe({
                     next: (newCustomer) => {
                         this.customers.push(newCustomer);
                         this.messageService.add({
@@ -417,28 +419,8 @@ export class SalesTabComponent implements OnInit {
     }
 
     viewCustomer(customer: Customer): void {
-        const orderCount = this.getCustomerOrderCount(customer.id);
-        const totalSpent = this.getCustomerTotalSpent(customer.id);
-
-        const customerDetails = `
-            <strong>${customer.name} ${customer.lastName}</strong><br>
-            <strong>Email:</strong> ${customer.email}<br>
-            <strong>Teléfono:</strong> ${customer.phone}<br>
-            <strong>DNI:</strong> ${customer.dni}<br>
-            <strong>Provincia:</strong> ${customer.province}<br>
-            <strong>Localidad:</strong> ${customer.city}<br>
-            <strong>Código Postal:</strong> ${customer.postalCode}<br>
-            <strong>Dirección:</strong> ${customer.address}<br>
-            ${customer.floorApartment ? `<strong>Piso/Depto:</strong> ${customer.floorApartment}<br>` : ''}
-            <strong>Pedidos:</strong> ${orderCount}<br>
-            <strong>Total Gastado:</strong> $${totalSpent.toLocaleString('es-AR')}
-        `;
-
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Detalles del Cliente',
-            detail: customerDetails
-        });
+        this.selectedCustomer = customer;
+        this.showCustomerDetailsDialog = true;
     }
 
     editCustomer(customer: Customer): void {
@@ -448,8 +430,8 @@ export class SalesTabComponent implements OnInit {
     confirmDeleteCustomer(customer: Customer): void {
         const orderCount = this.getCustomerOrderCount(customer.id);
         const message = orderCount > 0
-            ? `¿Estás seguro de eliminar al cliente "${customer.name} ${customer.lastName}"? Tiene ${orderCount} pedidos asociados.`
-            : `¿Estás seguro de eliminar al cliente "${customer.name} ${customer.lastName}"?`;
+            ? `¿Estás seguro de eliminar al cliente ID: ${customer.id} - ${customer.name} ${customer.lastName}? Tiene ${orderCount} pedido/s asociado/s.`
+            : `¿Estás seguro de eliminar al cliente ID: ${customer.id} - ${customer.name} ${customer.lastName}?`;
 
         this.confirmationService.confirm({
             message: message,
@@ -462,13 +444,13 @@ export class SalesTabComponent implements OnInit {
     }
 
     deleteCustomer(customer: Customer): void {
-        this.salesService.deleteCustomer(customer.id).subscribe({
+        this.ordersService.deleteCustomer(customer.id).subscribe({
             next: () => {
                 this.customers = this.customers.filter(c => c.id !== customer.id);
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Cliente eliminado',
-                    detail: `El cliente "${customer.name} ${customer.lastName}" ha sido eliminado correctamente`
+                    detail: `El cliente ID: ${customer.id} - ${customer.name} ${customer.lastName} ha sido eliminado correctamente`
                 });
             },
             error: (error) => {
@@ -578,6 +560,8 @@ export class SalesTabComponent implements OnInit {
             // Prepare items data for form array
             const itemsData = order.items.map(item => ({
                 productId: item.productId,
+                color: item.color || '',
+                size: item.size || '',
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 productDiscount: item.productDiscount || 0
@@ -587,8 +571,11 @@ export class SalesTabComponent implements OnInit {
             itemsData.forEach(itemData => {
                 const itemGroup = this.fb.group({
                     productId: [itemData.productId, Validators.required],
+                    color: [itemData.color],
+                    size: [itemData.size],
                     quantity: [itemData.quantity, [Validators.required, Validators.min(1)]],
-                    unitPrice: [itemData.unitPrice, [Validators.required, Validators.min(0)]]
+                    unitPrice: [itemData.unitPrice, [Validators.required, Validators.min(0)]],
+                    productDiscount: [itemData.productDiscount, [Validators.min(0)]]
                 });
                 this.orderItemsArray.push(itemGroup);
             });
@@ -598,27 +585,22 @@ export class SalesTabComponent implements OnInit {
         }
 
         // Force form update to ensure p-select components are properly bound
-        setTimeout(() => {
-            this.orderForm.updateValueAndValidity();
-            this.orderItemsArray.updateValueAndValidity();
-        }, 0);
+        this.orderForm.updateValueAndValidity();
+        this.orderItemsArray.updateValueAndValidity();
 
+        // Ensure dialog opens immediately
         this.showOrderDialog = true;
     }
 
     addOrderItem(): void {
         this.orderItemsArray.push(this.fb.group({
             productId: ['', Validators.required],
+            color: [''],
+            size: [''],
             quantity: [1, [Validators.required, Validators.min(1)]],
             unitPrice: [0, [Validators.required, Validators.min(0)]],
             productDiscount: [0, [Validators.min(0)]]
         }));
-
-        // Trigger form validation update
-        setTimeout(() => {
-            this.orderForm.updateValueAndValidity();
-            this.orderItemsArray.updateValueAndValidity();
-        }, 0);
     }
 
     removeOrderItem(index: number): void {
@@ -830,6 +812,8 @@ export class SalesTabComponent implements OnInit {
             return new OrderItem({
                 id: `ITEM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 productId: selectedProduct.id,
+                color: item.color || undefined,
+                size: item.size || undefined,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 productDiscount: item.productDiscount || 0,
@@ -866,7 +850,7 @@ export class SalesTabComponent implements OnInit {
                 ...this.editingOrder,
                 ...orderData
             });
-            this.salesService.updateOrder(updatedOrder).subscribe({
+            this.ordersService.updateOrder(updatedOrder).subscribe({
                 next: (order) => {
                     const index = this.orders.findIndex(o => o.id === order.id);
                     if (index !== -1) {
@@ -879,6 +863,7 @@ export class SalesTabComponent implements OnInit {
                     });
                     this.showOrderDialog = false;
                     this.editingOrder = null;
+                    this.selectedCoupon = null;
                     this.orderLoading = false;
                 },
                 error: (error) => {
@@ -892,7 +877,7 @@ export class SalesTabComponent implements OnInit {
             });
         } else {
             // Create new order
-            this.salesService.createOrder(orderData).subscribe({
+            this.ordersService.createOrder(orderData).subscribe({
                 next: (newOrder) => {
                     this.orders.push(newOrder);
 
@@ -908,6 +893,7 @@ export class SalesTabComponent implements OnInit {
                     });
                     this.showOrderDialog = false;
                     this.editingOrder = null;
+                    this.selectedCoupon = null;
                     this.orderLoading = false;
                 },
                 error: (error) => {
@@ -923,21 +909,91 @@ export class SalesTabComponent implements OnInit {
     }
 
     viewOrder(order: Order): void {
-        // TODO: Implement order view dialog
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Ver Pedido',
-            detail: `Detalles del pedido ${order.id} - ${order.customer.name} ${order.customer.lastName}`
-        });
+        this.selectedOrder = order;
+        this.showOrderDetailsDialog = true;
     }
 
     editOrder(order: Order): void {
-        this.openOrderDialog(order);
+        // Set the order and open dialog immediately
+        this.editingOrder = order;
+        this.showOrderDialog = true;
+
+        // Then populate the form data
+        this.populateOrderForm(order);
+    }
+
+    closeOrderDialog(): void {
+        this.showOrderDialog = false;
+        this.editingOrder = null;
+        this.selectedCoupon = null;
+    }
+
+    private populateOrderForm(order: Order): void {
+        // Clear items array first
+        while (this.orderItemsArray.length !== 0) {
+            this.orderItemsArray.removeAt(0);
+        }
+
+        // Prepare order data for form
+        const orderData = {
+            id: order.id,
+            date: order.date,
+            customerId: order.customer.id,
+            couponCode: order.couponCode || '',
+            subtotal: order.subtotal,
+            couponDiscount: order.couponDiscount,
+            shippingPrice: order.shippingPrice || 0,
+            total: order.total,
+            status: order.status,
+            paymentMethod: order.paymentMethod,
+            notes: order.notes || '',
+            // Shipping address from order
+            shippingAddress: order.shippingAddress,
+            shippingCity: order.shippingCity,
+            shippingProvince: order.shippingProvince,
+            shippingPostalCode: order.shippingPostalCode,
+            shippingFloorApartment: order.shippingFloorApartment || ''
+        };
+
+        // Set form values
+        this.orderForm.patchValue(orderData);
+
+        // If there's a coupon code, find and set the selected coupon
+        if (order.couponCode) {
+            this.couponsService.getCouponByCode(order.couponCode).subscribe(coupon => {
+                if (coupon) {
+                    this.selectedCoupon = coupon;
+                }
+            });
+        }
+
+        // Prepare items data for form array
+        const itemsData = order.items.map(item => ({
+            productId: item.productId,
+            color: item.color || '',
+            size: item.size || '',
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            productDiscount: item.productDiscount || 0
+        }));
+
+        // Create form groups for each item and add them to the array
+        itemsData.forEach(itemData => {
+            const itemGroup = this.fb.group({
+                productId: [itemData.productId, Validators.required],
+                color: [itemData.color],
+                size: [itemData.size],
+                quantity: [itemData.quantity, [Validators.required, Validators.min(1)]],
+                unitPrice: [itemData.unitPrice, [Validators.required, Validators.min(0)]],
+                productDiscount: [itemData.productDiscount, [Validators.min(0)]]
+            });
+            this.orderItemsArray.push(itemGroup);
+        });
     }
 
     confirmDeleteOrder(order: Order): void {
         this.confirmationService.confirm({
-            message: `¿Estás seguro de eliminar el pedido "${order.id}"?`,
+            message: `¿Estás seguro de eliminar el pedido ID: ${order.id} - ${order.customer.name} ${order.customer.lastName}?`,
             header: 'Confirmar eliminación',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
@@ -947,13 +1003,13 @@ export class SalesTabComponent implements OnInit {
     }
 
     deleteOrder(order: Order): void {
-        this.salesService.deleteOrder(order.id).subscribe({
+        this.ordersService.deleteOrder(order.id).subscribe({
             next: () => {
                 this.orders = this.orders.filter(o => o.id !== order.id);
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Pedido eliminado',
-                    detail: `El pedido "${order.id}" ha sido eliminado correctamente`
+                    detail: `El pedido ID: ${order.id} - ${order.customer.name} ${order.customer.lastName} ha sido eliminado correctamente`
                 });
                 // Reload sales summary
                 this.loadSalesData();
@@ -969,7 +1025,7 @@ export class SalesTabComponent implements OnInit {
     }
 
     exportOrders(): void {
-        this.salesService.exportOrders().subscribe({
+        this.ordersService.exportOrders().subscribe({
             next: (csvContent) => {
                 // Create and download CSV file
                 const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -1020,7 +1076,11 @@ export class SalesTabComponent implements OnInit {
 
     getProductName(productId: string): string {
         const product = this.products.find(p => p.id === productId);
-        return product ? product.name : 'Producto no encontrado';
+        return product?.name || `Producto ${productId}`;
+    }
+
+    getProductNameForOrderItem(item: any): string {
+        return item.getProductName(this.products);
     }
 
     // Helper methods for item calculations
@@ -1067,6 +1127,104 @@ export class SalesTabComponent implements OnInit {
             return Math.round((totalDiscount / grossSubtotal) * 100);
         }
         return 0;
+    }
+
+    getColorValue(colorName: string): string {
+        const colorMap: { [key: string]: string } = {
+            'Blanco': '#FFFFFF',
+            'Negro': '#000000',
+            'Gris': '#808080',
+            'Azul': '#0000FF',
+            'Rojo': '#FF0000',
+            'Verde': '#008000',
+            'Amarillo': '#FFFF00',
+            'Naranja': '#FFA500',
+            'Rosa': '#FFC0CB',
+            'Violeta': '#800080',
+            'Marrón': '#A52A2A',
+            'Beige': '#F5F5DC'
+        };
+        return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
+    }
+
+    getAvailableColorsForItem(itemIndex: number): { label: string, value: string }[] {
+        const item = this.orderItemsArray.at(itemIndex);
+        const productId = item.get('productId')?.value;
+
+        if (!productId) {
+            return [];
+        }
+
+        const product = this.products.find(p => p.id === productId);
+        if (!product || !product.variants) {
+            return [];
+        }
+
+        return product.variants
+            .filter(variant => {
+                // Only include variants that have at least one size with stock > 0
+                return variant.sizes?.some(sizeStock => sizeStock.stock > 0);
+            })
+            .map(variant => ({
+                label: variant.color,
+                value: variant.color
+            }));
+    }
+
+    getAvailableSizesForItem(itemIndex: number): { label: string, value: string }[] {
+        const item = this.orderItemsArray.at(itemIndex);
+        const productId = item.get('productId')?.value;
+        const selectedColor = item.get('color')?.value;
+
+        if (!productId || !selectedColor) {
+            return [];
+        }
+
+        const product = this.products.find(p => p.id === productId);
+        if (!product || !product.variants) {
+            return [];
+        }
+
+        const variant = product.variants.find(v => v.color === selectedColor);
+        if (!variant || !variant.sizes) {
+            return [];
+        }
+
+        // Order sizes from smallest to largest
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        return variant.sizes
+            .filter(sizeStock => sizeStock.stock > 0)
+            .sort((a, b) => {
+                const idxA = sizeOrder.indexOf(a.size);
+                const idxB = sizeOrder.indexOf(b.size);
+                if (idxA === -1 && idxB === -1) return a.size.localeCompare(b.size);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            })
+            .map(sizeStock => ({
+                label: sizeStock.size,
+                value: sizeStock.size
+            }));
+    }
+
+    onVariantChange(itemIndex: number): void {
+        const item = this.orderItemsArray.at(itemIndex);
+        const selectedColor = item.get('color')?.value;
+        const selectedSize = item.get('size')?.value;
+
+        // Reset size if color changed and current size is not available for new color
+        if (selectedColor && selectedSize) {
+            const availableSizes = this.getAvailableSizesForItem(itemIndex);
+            const sizeExists = availableSizes.some(size => size.value === selectedSize);
+
+            if (!sizeExists) {
+                item.get('size')?.setValue('');
+            }
+        }
+
+        // Trigger recalculation
+        this.onItemChange();
     }
 
 } 

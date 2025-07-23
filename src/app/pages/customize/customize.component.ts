@@ -29,13 +29,16 @@ import { Tag } from 'primeng/tag';
 import { ProductCustomizable } from '../../model/product-customizable';
 import { RouterLink } from '@angular/router';
 import { HiladosService } from '../../services/hilados.service';
+import { ProductsService } from '../../services/products.service';
+import { ProductSizeStock } from '../../model/product-variant';
+import { InputNumber } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-customize',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent, RouterLink,
-    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag, Dialog, TableModule
+    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag, Dialog, TableModule, InputNumber
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './customize.component.html',
   styleUrl: './customize.component.scss'
 })
@@ -48,26 +51,20 @@ export class CustomizeComponent implements OnInit {
   invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
   isLoading: boolean = false;
   showSizeGuide: boolean = false;
+  isLoadingProducts: boolean = true;
 
   maxImageSize: number = 10485760; // 10 MB
   precioSegundoColor: number = 0;
 
-  tiposPrenda = [
-    { label: 'Remera', value: 'remera', precio: 700, image: 'remera_blanca' },
-    { label: 'Remera Oversize', value: 'remera oversize', precio: 800, image: 'remera_oversize_negra' },
-    { label: 'Buzo de Frisa Cuello Redondo', value: 'buzo cuello', precio: 1000, image: 'buzo_frisa_negro' },
-    { label: 'Buzo con Capucha', value: 'buzo capucha', precio: 1200, image: 'buzo_capucha_negro' },
-    { label: 'Buzo de Frisa Oversize', value: 'buzo oversize', precio: 1500, image: 'buzo_oversize_negro' }
-  ];
+  baseProducts: ProductCustomizable[] = [];
+  availableTypes: { label: string, value: string, product: ProductCustomizable }[] = [];
+  availableColors: { label: string, value: string, image?: string }[] = [];
+  availableSizes: { label: string, value: string }[] = [];
+  selectedBaseProduct?: ProductCustomizable;
+  selectedVariant?: any;
 
-  talles = [
-    { label: 'XS', value: 'XS' },
-    { label: 'S', value: 'S' },
-    { label: 'M', value: 'M' },
-    { label: 'L', value: 'L' },
-    { label: 'XL', value: 'XL' },
-    { label: 'XXL', value: 'XXL' }
-  ];
+  coloresHilado: ThreadColor[] = [];
+  cantidades: { label: string, value: number }[] = [];
 
   // Size guide data similar to MercadoLibre
   sizeGuide = {
@@ -89,45 +86,25 @@ export class CustomizeComponent implements OnInit {
     ]
   };
 
-  coloresPrendas = [
-    { label: 'Rojo', value: 'rojo', hex: '#C62828' },
-    { label: 'Verde', value: 'verde', hex: '#388E3C' },
-    { label: 'Blanco', value: 'blanco', hex: '#F5F5F5' },
-    { label: 'Negro', value: 'negro', hex: '#212121' },
-    { label: 'Azul', value: 'azul', hex: '#1565C0' },
-    { label: 'Gris', value: 'gris', hex: '#9E9E9E' }
-  ];
-
-  coloresHilado: ThreadColor[] = [
-    new ThreadColor({ id: 'rojo', name: 'Rojo', code: '#C62828', stock: 100 }),
-    new ThreadColor({ id: 'verde', name: 'Verde', code: '#388E3C', stock: 100 }),
-    new ThreadColor({ id: 'blanco', name: 'Blanco', code: '#F5F5F5', stock: 100 }),
-    new ThreadColor({ id: 'negro', name: 'Negro', code: '#212121', stock: 100 }),
-    new ThreadColor({ id: 'azul', name: 'Azul', code: '#1565C0', stock: 100 }),
-    new ThreadColor({ id: 'gris', name: 'Gris', code: '#9E9E9E', stock: 100 })
-  ]
-
-  cantidades = [
-    { label: '1', value: 1 },
-    { label: '2', value: 2 },
-    { label: '3', value: 3 },
-    { label: '4', value: 4 },
-    { label: '5', value: 5 },
-    { label: '6', value: 6 },
-    { label: '7', value: 7 },
-    { label: '8', value: 8 },
-    { label: '9', value: 9 },
-    { label: '10', value: 10 }
-  ];
-
   constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder, private confirmationService: ConfirmationService,
-    private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService
+    private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService, private productsService: ProductsService
   ) {
   }
 
   ngOnInit(): void {
     this.initForm();
     this.loadSecondColorPrice();
+    this.loadThreadColors();
+    this.productsService.getCustomizableProducts().subscribe(products => {
+      this.baseProducts = products;
+      this.availableTypes = products.map(product => ({
+        label: this.capitalize(product.name),
+        value: product.id, // Use product ID instead of garmentType to avoid deduplication
+        product
+      }));
+      this.isLoadingProducts = false;
+      this.updateAvailableQuantities();
+    });
   }
 
   private initForm(): void {
@@ -159,9 +136,9 @@ export class CustomizeComponent implements OnInit {
     this.confirmationService.confirm({
       header: 'Confirmación',
       message:
-        '<strong>Prenda:</strong> ' + this.tiposPrenda.find(p => p.value === this.formulario.get('tipo')?.value)?.label +
-        '<br/><strong>Talle:</strong> ' + this.talles.find(p => p.value === this.formulario.get('talle')?.value)?.label +
-        '<br/><strong>Color de prenda:</strong> ' + this.coloresPrendas.find(p => p.value === this.formulario.get('colorPrenda')?.value)?.label +
+        '<strong>Prenda:</strong> ' + this.availableTypes.find(p => p.value === this.formulario.get('tipo')?.value)?.label +
+        '<br/><strong>Talle:</strong> ' + this.availableSizes.find(p => p.value === this.formulario.get('talle')?.value)?.label +
+        '<br/><strong>Color de prenda:</strong> ' + this.availableColors.find(p => p.value === this.formulario.get('colorPrenda')?.value)?.label +
         '<br/><strong>Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value)?.name +
         (this.formulario.get('usarSegundoColor')?.value ? '<br/><strong>2° Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value)?.name : '') +
         '<br/><strong>Imagen:</strong> ' + this.imageFile?.name +
@@ -213,6 +190,7 @@ export class CustomizeComponent implements OnInit {
     }
 
     colorHilado2?.updateValueAndValidity();
+    this.updateAvailableQuantities(); // Update quantities when form changes
   }
 
   eliminarImagen(event: any, removeFileCallback: any) {
@@ -291,19 +269,18 @@ export class CustomizeComponent implements OnInit {
   }
 
   getPrecio(controlName: string, options: any[]): number {
-    return options.find(opt => opt.value === this.formulario.get(controlName)?.value)?.precio || 0;
+    if (controlName === 'tipo') {
+      // For product type, get price from the product object
+      const selectedOption = options.find(opt => opt.value === this.formulario.get(controlName)?.value);
+      return selectedOption?.product?.price || 0;
+    }
+    return 0;
   }
 
   calcularPrecioUnitario(): number {
-    let base: number = 0;
-
-    const precioPrenda: number | undefined = this.tiposPrenda.find(p => p.value === this.formulario.get('tipo')?.value)?.precio;
+    let base: number = this.getSelectedPrice();
     const usarSegundoColor: boolean = this.formulario.get('usarSegundoColor')?.value;
-
-    base += precioPrenda || 0;
-    // Sumar si se usa segundo color
     if (usarSegundoColor) base += this.precioSegundoColor;
-
     return base;
   }
 
@@ -335,32 +312,38 @@ export class CustomizeComponent implements OnInit {
 
   agregarAlCarrito() {
     const datos = this.formulario.value;
-
-    // Find the selected ThreadColor objects
     const threadColor1 = this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value);
     const threadColor2 = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value) : undefined;
-
+    const selectedProductId = this.formulario.get('tipo')?.value;
+    const selectedColor = this.formulario.get('colorPrenda')?.value;
+    const selectedSize = this.formulario.get('talle')?.value;
+    const baseProduct = this.baseProducts.find(p => p.id === selectedProductId);
+    const variant = baseProduct?.variants.find(v => v.color === selectedColor);
+    const image = variant?.image || this.imageURL;
     const productoCustomizable = new ProductCustomizable({
       id: crypto.randomUUID(),
-      name: this.getLabel('tipo', this.tiposPrenda),
-      description: this.getLabel('tipo', this.tiposPrenda),
-      garmentType: this.getLabel('tipo', this.tiposPrenda),
-      size: this.getLabel('talle', this.talles),
-      garmentColor: this.getLabel('colorPrenda', this.coloresPrendas),
-      image: this.imageURL!,
+      name: baseProduct?.name || 'Producto Personalizable',
+      description: baseProduct?.description || 'Producto personalizable',
+      garmentType: baseProduct?.garmentType || 'remera',
       price: this.calcularPrecioUnitario(),
       type: 'personalizable',
+      variants: [
+        {
+          color: selectedColor,
+          image: image,
+          sizes: [
+            { size: selectedSize, stock: variant?.sizes.find(s => s.size === selectedSize)?.stock ?? 1 }
+          ]
+        }
+      ],
       threadColor1: threadColor1!,
       threadColor2: threadColor2,
       customImage: this.imageURL!
     });
-
-    // Create CartItem, passing the product and quantity
     const nuevoItem = new CartItem({
       product: productoCustomizable,
       quantity: datos.cantidad
     });
-
     this.carritoService.agregarItem(nuevoItem);
   }
 
@@ -370,6 +353,122 @@ export class CustomizeComponent implements OnInit {
 
   closeSizeGuide(): void {
     this.showSizeGuide = false;
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  onTipoPrendaChange() {
+    const productId = this.formulario.get('tipo')?.value;
+    this.selectedBaseProduct = this.baseProducts.find(p => p.id === productId);
+    this.availableColors = this.selectedBaseProduct?.variants.map(v => ({
+      label: v.color,
+      value: v.color,
+      image: v.image
+    })) || [];
+    this.formulario.get('colorPrenda')?.reset();
+    // Show all available sizes for the selected type (across all variants, unique, with stock)
+    const sizeSet = new Set<string>();
+    (this.selectedBaseProduct?.variants || []).forEach(variant => {
+      (variant.sizes || []).forEach(sizeStock => {
+        if (sizeStock.stock > 0) {
+          sizeSet.add(sizeStock.size);
+        }
+      });
+    });
+    // Order sizes from smallest to largest
+    const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    this.availableSizes = Array.from(sizeSet)
+      .sort((a, b) => {
+        const idxA = sizeOrder.indexOf(a);
+        const idxB = sizeOrder.indexOf(b);
+        if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      })
+      .map(size => ({ label: size, value: size }));
+    this.formulario.get('talle')?.reset();
+  }
+
+  onColorPrendaChange() {
+    const color = this.formulario.get('colorPrenda')?.value;
+    if (color && this.selectedBaseProduct) {
+      this.selectedVariant = this.selectedBaseProduct.variants.find(v => v.color === color);
+      this.availableSizes = (this.selectedVariant?.sizes || [])
+        .filter((s: ProductSizeStock) => s.stock > 0)
+        .sort((a: ProductSizeStock, b: ProductSizeStock) => {
+          const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+          const idxA = sizeOrder.indexOf(a.size);
+          const idxB = sizeOrder.indexOf(b.size);
+          if (idxA === -1 && idxB === -1) return a.size.localeCompare(b.size);
+          if (idxA === -1) return 1;
+          if (idxB === -1) return -1;
+          return idxA - idxB;
+        })
+        .map((s: ProductSizeStock) => ({ label: s.size, value: s.size }));
+      this.formulario.get('talle')?.reset();
+      this.updateAvailableQuantities();
+    }
+  }
+
+  updateAvailableQuantities() {
+    const selectedSize = this.formulario.get('talle')?.value;
+    const selectedColor = this.formulario.get('colorPrenda')?.value;
+
+    if (selectedSize && selectedColor && this.selectedVariant) {
+      const sizeStock = this.selectedVariant.sizes.find((s: ProductSizeStock) => s.size === selectedSize);
+      const maxStock = sizeStock?.stock || 0;
+
+      // Generate quantities from 1 to maxStock (up to 10)
+      const maxQuantity = Math.min(maxStock, 10);
+      this.cantidades = Array.from({ length: maxQuantity }, (_, i) => ({
+        label: (i + 1).toString(),
+        value: i + 1
+      }));
+
+      // Reset quantity if current value exceeds max
+      const currentQuantity = this.formulario.get('cantidad')?.value;
+      if (currentQuantity > maxQuantity) {
+        this.formulario.get('cantidad')?.setValue(1);
+      }
+    }
+  }
+
+  onTalleChange() {
+    this.updateAvailableQuantities();
+  }
+
+  getSelectedPrice(): number {
+    return this.selectedBaseProduct?.price || 0;
+  }
+
+  getSelectedImage(): string | undefined {
+    return this.selectedVariant?.image;
+  }
+
+  getColorValue(colorName: string): string {
+    const colorMap: { [key: string]: string } = {
+      'Blanco': '#F5F5F5',
+      'Negro': '#212121',
+      'Gris': '#9E9E9E',
+      'Azul': '#1565C0',
+      'Verde': '#388E3C',
+      'Rojo': '#C62828'
+    };
+    return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
+  }
+
+  getThreadColorCode(threadColorId: string): string {
+    const threadColor = this.coloresHilado.find(color => color.id === threadColorId);
+    return threadColor?.code || '#CCCCCC';
+  }
+
+  loadThreadColors() {
+    this.hiladosService.getHilados().subscribe((colors: ThreadColor[]) => {
+      this.coloresHilado = colors;
+    });
   }
 
 }

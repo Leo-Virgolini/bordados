@@ -1,65 +1,67 @@
+<p-toast></p-toast>
+
 <p-card styleClass="border-round-xl shadow-3 p-3">
     <ng-template #header>
         <div class="flex justify-content-between align-items-center">
             <h2 class="text-xl font-bold m-0">
-                <i class="pi pi-box mr-2"></i>Gestión de Tipos de Productos
+                <i class="pi pi-box mr-2"></i>Gestión de Productos Personalizables
             </h2>
-            <p-button label="Nuevo Tipo" icon="pi pi-plus" [raised]="true" (onClick)="openProductTypeDialog()" />
+            <p-button label="Nuevo Producto" icon="pi pi-plus" [raised]="true" (onClick)="openProductDialog()" />
         </div>
     </ng-template>
 
-    <p-table [value]="productTypes" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tipos"
+    <p-table [value]="customizableProducts" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
         [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm">
 
         <ng-template #header>
             <tr>
+                <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                 <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
-                <th pSortableColumn="description">Descripción <p-sortIcon field="description"></p-sortIcon></th>
+                <th>Imagen</th>
                 <th pSortableColumn="price">Precio Base <p-sortIcon field="price"></p-sortIcon></th>
-                <th>Talles Disponibles</th>
-                <th>Precio</th>
-                <th>Stock por Talle</th>
-                <th pSortableColumn="active">Estado <p-sortIcon field="active"></p-sortIcon></th>
+                <th>Variantes y Stock por Talle</th>
                 <th>Acciones</th>
             </tr>
         </ng-template>
 
-        <ng-template #body let-productType>
+        <ng-template #body let-product>
             <tr>
                 <td>
-                    <span class="font-semibold">{{ productType.name }}</span>
+                    <span class="font-bold text-primary">{{ product.id }}</span>
                 </td>
                 <td>
-                    <span class="text-sm">{{ productType.description }}</span>
-                </td>
-                <td>
-                    <span class="font-semibold text-primary">${{ productType.price | number }}</span>
-                </td>
-                <td>
-                    <div class="flex gap-1">
-                        <p-tag *ngFor="let talle of productType.sizes" [value]="talle" severity="secondary" [rounded]="true" />
+                    <div class="flex flex-column align-items-start">
+                        <span class="font-semibold">{{ product.name }}</span>
+                        <span class="text-sm text-600">{{ product.description }}</span>
+                        <p-tag [value]="product.garmentType" severity="info" [rounded]="true" size="small"></p-tag>
                     </div>
                 </td>
                 <td>
-                    <span class="font-semibold text-primary">${{ productType.price | number }}</span>
+                    <p-image [src]="getProductImage(product)" alt="{{ product.name }}" width="120" imageClass="border-round" [preview]="true" />
                 </td>
                 <td>
-                    <div class="flex flex-column gap-1">
-                        <div *ngFor="let talle of productType.sizes">
+                    <span class="font-semibold text-primary">{{ product.price | currency:'ARS':'symbol':'1.0-0' }}</span>
+                </td>
+                <td>
+                    <div class="flex flex-column gap-2">
+                        <div *ngFor="let variant of product.variants.slice(0, 3)" class="flex flex-column gap-1">
                             <div class="flex align-items-center gap-2">
-                                <span>{{ talle }}:</span>
-                                <p class="font-bold text-primary">{{productType.stock[talle]}}</p>
+                                <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(variant.color)"></div>
+                                <span class="text-sm font-semibold">{{ variant.color }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 ml-3">
+                                <span *ngFor="let size of variant.sizes" class="text-xs bg-primary-50 text-primary-700 px-2 py-1 border-round">
+                                    {{ size.size }}: {{ size.stock }}
+                                </span>
                             </div>
                         </div>
+                        <p-tag *ngIf="product.variants.length > 3" [value]="'+' + (product.variants.length - 3) + ' más'" severity="secondary" [rounded]="true" size="small"></p-tag>
                     </div>
-                </td>
-                <td>
-                    <p-tag [value]="productType.active ? 'Activo' : 'Inactivo'" [severity]="productType.active ? 'success' : 'danger'" [rounded]="true" />
                 </td>
                 <td>
                     <div class="flex gap-2">
-                        <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="openProductTypeDialog(productType)" />
-                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="deleteProductType(productType)" />
+                        <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="openProductDialog(product)" />
+                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="deleteProduct(product)" />
                     </div>
                 </td>
             </tr>
@@ -67,76 +69,144 @@
     </p-table>
 </p-card>
 
-<!-- Product Type Dialog -->
-<p-dialog [(visible)]="showProductTypeDialog" modal="true" styleClass="w-full md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
-    [header]="editingProductType ? 'Editar Tipo de Producto' : 'Nuevo Tipo de Producto'" (onHide)="showProductTypeDialog = false">
+<!-- Product Dialog -->
+<p-dialog [(visible)]="showProductDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true"
+    [header]="editingProduct ? 'Editar Producto Personalizable' : 'Nuevo Producto Personalizable'" (onHide)="showProductDialog = false">
 
-    <form [formGroup]="productTypeForm" class="flex flex-column gap-4">
+    <form [formGroup]="productForm" class="flex flex-column gap-4">
+        <!-- Basic Information -->
         <div class="grid">
             <div class="col-12 md:col-6">
-                <label for="name" class="block mb-2 font-semibold">Nombre *</label>
+                <label for="productId" class="block mb-2 font-semibold">ID del Producto *</label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
                         <i class="pi pi-box"></i>
                     </p-inputgroup-addon>
-                    <input id="name" type="text" pInputText formControlName="name" class="w-full" placeholder="Ej: Remera Básica" />
+                    <input id="productId" type="text" pInputText formControlName="id" class="w-full" placeholder="Ej: CUST-001" />
                 </p-inputgroup>
-                <app-error-helper [control]="productTypeForm.get('name')"></app-error-helper>
+                <app-error-helper [control]="productForm.get('id')"></app-error-helper>
             </div>
 
             <div class="col-12 md:col-6">
-                <label for="talles" class="block mb-2 font-semibold">Talles Disponibles *</label>
-                <p-multiselect id="sizes" formControlName="sizes" [options]="talles" placeholder="Seleccionar talles" class="w-full" (onChange)="onSizesChange($event)" />
-                <app-error-helper [control]="productTypeForm.get('sizes')"></app-error-helper>
+                <label for="productName" class="block mb-2 font-semibold">Nombre *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-tag"></i>
+                    </p-inputgroup-addon>
+                    <input id="productName" type="text" pInputText formControlName="name" class="w-full" placeholder="Ej: Remera Personalizable" />
+                </p-inputgroup>
+                <app-error-helper [control]="productForm.get('name')"></app-error-helper>
             </div>
         </div>
 
         <div class="grid">
             <div class="col-12 md:col-6">
-                <label for="description" class="block mb-2 font-semibold">Descripción *</label>
-                <textarea id="description" pInputTextarea formControlName="description" rows="3" class="w-full" placeholder="Descripción del tipo de producto"></textarea>
-                <app-error-helper [control]="productTypeForm.get('description')"></app-error-helper>
+                <label for="productDescription" class="block mb-2 font-semibold">Descripción *</label>
+                <textarea id="productDescription" pInputTextarea formControlName="description" rows="3" class="w-full" placeholder="Descripción del producto personalizable"></textarea>
+                <app-error-helper [control]="productForm.get('description')"></app-error-helper>
             </div>
 
             <div class="col-12 md:col-6">
-                <label for="price" class="block mb-2 font-semibold">Precio Base *</label>
+                <label for="productGarmentType" class="block mb-2 font-semibold">Tipo de Prenda *</label>
+                <p-select id="productGarmentType" formControlName="garmentType" [options]="garmentTypes" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo de prenda"
+                    class="w-full" />
+                <app-error-helper [control]="productForm.get('garmentType')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="productPrice" class="block mb-2 font-semibold">Precio Base *</label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
                         <i class="pi pi-dollar"></i>
                     </p-inputgroup-addon>
-                    <p-inputnumber id="price" formControlName="price" class="w-full" placeholder="0" [min]="0" [max]="999999" mode="currency" currency="ARS" />
+                    <p-inputnumber id="productPrice" formControlName="price" class="w-full" placeholder="0" [min]="0" [max]="999999" mode="currency" currency="ARS" />
                 </p-inputgroup>
-                <app-error-helper [control]="productTypeForm.get('price')"></app-error-helper>
+                <app-error-helper [control]="productForm.get('price')"></app-error-helper>
             </div>
         </div>
 
-        <!-- Stock por Talle -->
-        <div *ngIf="productTypeForm.get('sizes')?.value?.length > 0">
-            <h3 class="text-lg font-semibold">Stock por Talle</h3>
-            <div formGroupName="stock" class="grid">
-                <div *ngFor="let talle of productTypeForm.get('sizes')?.value" class="col-12 md:col-6 lg:col-4">
-                    <div class="surface-card p-3 border-round">
-                        <h4 class="text-md font-semibold mb-2">{{ talle }}</h4>
-                        <div>
-                            <label class="block mb-1 text-sm">Stock</label>
-                            <p-inputnumber [formControl]="getStockControl(talle)" [min]="0" [max]="9999" class="w-full" [showButtons]="true" buttonLayout="horizontal"
-                                spinnerMode="horizontal" [step]="1" />
+        <!-- Variants Section -->
+        <div class="grid">
+            <div class="col-12">
+                <div class="surface-50 p-3 border-round">
+                    <h4 class="font-semibold mb-3 flex align-items-center gap-2">
+                        <i class="pi pi-palette text-primary"></i>
+                        Variantes del Producto
+                    </h4>
+
+                    <!-- Add Variant Button -->
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <p class="text-sm text-600 m-0">Configura los colores, talles y stock disponibles</p>
+                        <p-button label="Agregar Variante" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addVariant()" />
+                    </div>
+
+                    <!-- Variants List -->
+                    <div formArrayName="variants" class="flex flex-column gap-3">
+                        <div *ngFor="let variant of variantsArray.controls; let i = index" [formGroupName]="i" class="surface-100 p-3 border-round">
+                            <div class="flex justify-content-between align-items-center mb-2">
+                                <h5 class="font-semibold m-0">Variante {{ i + 1 }}</h5>
+                                <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true" (onClick)="removeVariant(i)" />
+                            </div>
+
+                            <!-- Color and Image -->
+                            <div class="grid mb-3">
+                                <div class="col-6">
+                                    <label class="block mb-2 font-semibold">Color *</label>
+                                    <p-inputgroup>
+                                        <p-inputgroup-addon>
+                                            <i class="pi pi-palette"></i>
+                                        </p-inputgroup-addon>
+                                        <p-select [formControlName]="'color'" [options]="availableColors" optionLabel="label" optionValue="value" placeholder="Seleccionar color"
+                                            class="w-full" appendTo="body" />
+                                    </p-inputgroup>
+                                </div>
+                                <div class="col-6">
+                                    <label class="block mb-2 font-semibold">URL de Imagen</label>
+                                    <p-inputgroup>
+                                        <p-inputgroup-addon>
+                                            <i class="pi pi-image"></i>
+                                        </p-inputgroup-addon>
+                                        <input type="text" pInputText [formControlName]="'image'" class="w-full" placeholder="https://ejemplo.com/imagen.jpg" />
+                                    </p-inputgroup>
+                                </div>
+                            </div>
+
+                            <!-- Sizes and Stock -->
+                            <div class="mb-3">
+                                <div class="flex justify-content-between align-items-center mb-2">
+                                    <label class="font-semibold">Talles y Stock</label>
+                                    <p-button label="Agregar Talle" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addSizeToVariant(i)" />
+                                </div>
+
+                                <div [formArrayName]="'sizes'" class="flex flex-column gap-2">
+                                    <div *ngFor="let sizeControl of getVariantSizes(i).controls; let j = index" [formGroupName]="j" class="flex align-items-center gap-2">
+                                        <div class="col-4">
+                                            <p-select [formControl]="getSizeControl(i, j)" [options]="availableSizes" optionLabel="label" optionValue="value" placeholder="Talle"
+                                                class="w-full" />
+                                        </div>
+                                        <div class="col-4">
+                                            <p-inputnumber [formControl]="getStockControl(i, j)" [min]="0" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
+                                                [step]="1" placeholder="Stock" class="w-full" />
+                                        </div>
+                                        <div class="col-2">
+                                            <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true" (onClick)="removeSizeFromVariant(i, j)" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="flex align-items-center gap-2">
-            <p-checkbox formControlName="active" [binary]="true" [inputId]="'active'" />
-            <label for="active" class="cursor-pointer">Activo</label>
-        </div>
     </form>
 
     <ng-template #footer>
-        <div class="flex justify-content-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showProductTypeDialog = false" [disabled]="productTypeLoading" />
-            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveProductType()" [disabled]="!productTypeForm.valid || productTypeLoading" [loading]="productTypeLoading" />
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showProductDialog = false" [disabled]="productLoading" />
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveProduct()" [disabled]="!productForm.valid || productLoading" [loading]="productLoading" />
         </div>
     </ng-template>
 </p-dialog>

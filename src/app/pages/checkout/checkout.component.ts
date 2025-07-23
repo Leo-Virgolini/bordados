@@ -47,7 +47,7 @@ import { Dialog } from 'primeng/dialog';
     Select,
     Dialog
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss'
 })
@@ -70,6 +70,7 @@ export class CheckoutComponent implements OnInit {
   selectedCoupon: DiscountCoupon | null = null;
   couponLoading: boolean = false;
   couponDiscount: number = 0;
+  showCouponInput: boolean = false;
   transferData: string = 'CBU: 00000000000000000000000000000000\n' +
     'Alias: alias.alias.alias\n' +
     'Banco: Banco Galicia';
@@ -370,12 +371,20 @@ export class CheckoutComponent implements OnInit {
     this.couponDiscount = 0;
     this.checkoutForm.get('couponCode')?.setValue('');
     this.calculateTotals();
-
     this.messageService.add({
       severity: 'info',
       summary: 'Cupón removido',
-      detail: 'El cupón ha sido removido del pedido'
+      detail: 'El cupón ha sido removido del pedido',
+      life: 3000
     });
+  }
+
+  toggleCouponInput(): void {
+    this.showCouponInput = !this.showCouponInput;
+    if (!this.showCouponInput) {
+      // Clear the coupon code when hiding the input
+      this.checkoutForm.get('couponCode')?.setValue('');
+    }
   }
 
   getCouponDisplayValue(coupon: DiscountCoupon): string {
@@ -499,6 +508,10 @@ export class CheckoutComponent implements OnInit {
         life: 5000
       });
     }
+  }
+
+  getProductImage(product: any): string | undefined {
+    return product.variants?.[0]?.image;
   }
 
 }

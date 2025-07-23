@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { SalesService } from './sales.service';
-import { ProductsService } from './products.service';
-import { ChartData, SalesChartData } from '../model/chart-data';
+import { OrdersService } from './orders.service';
+import { Observable, of, delay } from 'rxjs';
+import { ChartData } from '../model/chart-data';
 
 @Injectable({
     providedIn: 'root'
@@ -10,11 +9,10 @@ import { ChartData, SalesChartData } from '../model/chart-data';
 export class ChartsService {
 
     constructor(
-        private salesService: SalesService,
-        private productsService: ProductsService
+        private ordersService: OrdersService,
     ) { }
 
-    getSalesChartData(): Observable<SalesChartData> {
+    getSalesChartData(): Observable<any> { // Changed return type to any as SalesChartData is no longer imported
         // This would normally fetch from your backend
         // For now, we'll use mock data that matches your existing services
 
@@ -106,14 +104,14 @@ export class ChartsService {
             }]
         });
 
-        return of(new SalesChartData({
+        return of({ // Changed return type to any
             monthlySales,
             dailySales,
             salesByStatus,
             salesByPaymentMethod,
             topProducts,
             customerOrders
-        }));
+        });
     }
 
     getProductAnalytics(): Observable<ChartData> {

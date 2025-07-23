@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { ProductType } from '../model/product-type';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -32,13 +33,13 @@ export class ProductTypesService {
         return of(this.productTypes);
     }
 
-    createProductType(productType: Omit<ProductType, 'id'>): Observable<ProductType> {
+    createProductType(productType: ProductType): Observable<ProductType> {
         const newProductType = new ProductType({
             ...productType,
-            id: Date.now().toString()
+            id: this.generateId()
         });
         this.productTypes.push(newProductType);
-        return of(newProductType);
+        return of(newProductType).pipe(delay(500));
     }
 
     updateProductType(productType: ProductType): Observable<ProductType> {
@@ -62,6 +63,14 @@ export class ProductTypesService {
     getProductTypeById(id: string): Observable<ProductType | undefined> {
         const productType = this.productTypes.find(pt => pt.id === id);
         return of(productType);
+    }
+
+    private generateId(): string {
+        const maxId = this.productTypes
+            .map(pt => Number(pt.id))
+            .filter(id => !isNaN(id))
+            .reduce((max, id) => Math.max(max, id), 0);
+        return (maxId + 1).toString();
     }
 
 } 

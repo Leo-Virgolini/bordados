@@ -239,6 +239,8 @@
                             <th class="text-center">Cliente</th>
                             <th class="text-center">Dirección de Envío</th>
                             <th class="text-center">Productos</th>
+                            <th class="text-center">Cupón</th>
+                            <th class="text-center">Envío</th>
                             <th pSortableColumn="total" class="text-center">
                                 Total <p-sortIcon field="total"></p-sortIcon>
                             </th>
@@ -260,6 +262,7 @@
                             <th class="text-center">
                                 <p-columnFilter type="text" field="customer" display="menu"></p-columnFilter>
                             </th>
+                            <th class="text-center"></th>
                             <th class="text-center"></th>
                             <th class="text-center"></th>
                             <th class="text-center">
@@ -305,13 +308,39 @@
                             </td>
                             <td class="text-center">
                                 <div class="flex flex-column gap-1">
-                                    <div *ngFor="let item of order.items.slice(0, 2)" class="text-sm">
+                                    <div *ngFor="let item of order.items" class="text-sm">
                                         <span class="font-semibold">{{ item.quantity }}x</span> {{ getProductName(item.productId) }}
-                                    </div>
-                                    <div *ngIf="order.items.length > 2" class="text-sm text-500">
-                                        +{{ order.items.length - 2 }} más...
+                                        <span class="text-500">&#64; ${{ item.unitPrice.toLocaleString('es-AR') }}</span>
+                                        <!-- Variant Information -->
+                                        <div class="flex align-items-center gap-2 mt-2" *ngIf="item.color || item.size">
+                                            <div *ngIf="item.color" class="flex align-items-center gap-1">
+                                                <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(item.color)"></div>
+                                                <span class="text-sm font-semibold">{{ item.color }}</span>
+                                            </div>
+                                            <div *ngIf="item.size" class="flex align-items-center gap-1">
+                                                <i class="pi pi-tag text-primary text-xs"></i>
+                                                <span class="text-sm font-semibold">T: {{ item.size }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </td>
+                            <td class="text-center">
+                                <div *ngIf="order.couponCode; else noCoupon" class="flex flex-column align-items-center">
+                                    <p-tag [value]="order.couponCode" severity="success" [rounded]="true" size="small"></p-tag>
+                                    <span class="text-sm text-green-600">-{{ order.couponDiscount | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+                                <ng-template #noCoupon>
+                                    <span class="text-400 text-sm">Sin cupón</span>
+                                </ng-template>
+                            </td>
+                            <td class="text-center">
+                                <div *ngIf="order.shippingPrice > 0; else freeShipping" class="flex flex-column align-items-center">
+                                    <span class="font-semibold text-orange-600">{{ order.shippingPrice | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+                                <ng-template #freeShipping>
+                                    <p-tag value="Gratis" severity="success" [rounded]="true" size="small"></p-tag>
+                                </ng-template>
                             </td>
                             <td class="text-center">
                                 <span class="font-bold text-primary">{{ order.total | currency:'ARS':'symbol':'1.0-0' }}</span>
@@ -337,7 +366,7 @@
 
                     <ng-template #emptymessage>
                         <tr>
-                            <td colspan="9" class="text-center py-6">
+                            <td colspan="11" class="text-center py-6">
                                 <i class="pi pi-shopping-cart text-6xl text-300 mb-3 block"></i>
                                 <h3 class="text-xl font-semibold text-600 mb-2">No hay pedidos</h3>
                                 <p class="text-500 mb-4">Los pedidos aparecerán aquí cuando se realicen ventas</p>
@@ -488,130 +517,193 @@
 </p-dialog>
 
 <!-- Customer Details Dialog -->
-<p-dialog [(visible)]="showCustomerDetailsDialog" modal="true" styleClass="w-full md:w-7" [draggable]="false" [resizable]="false" [closable]="true" header="Detalles del Cliente"
-    (onHide)="showCustomerDetailsDialog = false">
-
-    <div *ngIf="selectedCustomer" class="flex flex-column gap-4">
+<p-dialog 
+    [(visible)]="showCustomerDetailsDialog" 
+    [modal]="true" 
+    [style]="{width: '50rem'}" 
+    [draggable]="false" 
+    [resizable]="false"
+    header="Detalles del Cliente"
+    [closable]="true">
+    
+    <div class="surface-ground p-4" *ngIf="selectedCustomer">
         <!-- Customer Information -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card p-4 border-round mb-4">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-user mr-2"></i>Información Personal
             </h3>
             <div class="grid">
                 <div class="col-12 md:col-6">
-                    <div class="flex flex-column gap-2">
-                        <div class="flex align-items-center">
-                            <i class="pi pi-user text-primary mr-2"></i>
-                            <span class="font-semibold">Nombre:</span>
-                            <span class="ml-2">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-envelope text-primary mr-2"></i>
-                            <span class="font-semibold">Email:</span>
-                            <span class="ml-2">{{ selectedCustomer.email }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-phone text-primary mr-2"></i>
-                            <span class="font-semibold">Teléfono:</span>
-                            <span class="ml-2">{{ selectedCustomer.phone }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-id-card text-primary mr-2"></i>
-                            <span class="font-semibold">DNI:</span>
-                            <span class="ml-2">{{ selectedCustomer.dni }}</span>
-                        </div>
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Nombre Completo</span>
+                        <span class="font-bold text-900">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
                     </div>
                 </div>
                 <div class="col-12 md:col-6">
-                    <div class="flex flex-column gap-2">
-                        <div class="flex align-items-center">
-                            <i class="pi pi-map-marker text-primary mr-2"></i>
-                            <span class="font-semibold">Provincia:</span>
-                            <span class="ml-2">{{ selectedCustomer.province }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-map-marker text-primary mr-2"></i>
-                            <span class="font-semibold">Localidad:</span>
-                            <span class="ml-2">{{ selectedCustomer.city }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-map text-primary mr-2"></i>
-                            <span class="font-semibold">Código Postal:</span>
-                            <span class="ml-2">{{ selectedCustomer.postalCode }}</span>
-                        </div>
-                        <div class="flex align-items-center">
-                            <i class="pi pi-home text-primary mr-2"></i>
-                            <span class="font-semibold">Dirección:</span>
-                            <span class="ml-2">{{ selectedCustomer.address }}</span>
-                            <span *ngIf="selectedCustomer.floorApartment" class="ml-1">({{ selectedCustomer.floorApartment }})</span>
-                        </div>
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Email</span>
+                        <span class="text-900">{{ selectedCustomer.email }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Teléfono</span>
+                        <span class="text-900">{{ selectedCustomer.phone }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">DNI</span>
+                        <span class="text-900">{{ selectedCustomer.dni }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="surface-card p-4 border-round mb-4">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-map-marker mr-2"></i>Dirección
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Provincia</span>
+                        <span class="text-900">{{ selectedCustomer.province }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Localidad</span>
+                        <span class="text-900">{{ selectedCustomer.city }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Código Postal</span>
+                        <span class="text-900">{{ selectedCustomer.postalCode }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Dirección</span>
+                        <span class="text-900">{{ selectedCustomer.address }}</span>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="selectedCustomer.floorApartment">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Piso/Departamento</span>
+                        <span class="text-900">{{ selectedCustomer.floorApartment }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Customer Statistics -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card p-4 border-round mb-4">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-chart-bar mr-2"></i>Estadísticas del Cliente
             </h3>
             <div class="grid">
                 <div class="col-12 md:col-4">
                     <div class="text-center p-3 surface-100 border-round">
-                        <i class="pi pi-shopping-cart text-2xl text-primary mb-2 block"></i>
-                        <div class="text-xl font-bold text-primary">{{ getCustomerOrderCount(selectedCustomer.id) }}</div>
-                        <div class="text-sm text-600">Total de Pedidos</div>
+                        <i class="pi pi-shopping-cart text-2xl text-blue-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Total de Pedidos</div>
+                        <div class="text-xl font-bold text-blue-500">{{ getCustomerOrderCount(selectedCustomer.id) }}</div>
                     </div>
                 </div>
                 <div class="col-12 md:col-4">
                     <div class="text-center p-3 surface-100 border-round">
                         <i class="pi pi-dollar text-2xl text-green-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Total Gastado</div>
                         <div class="text-xl font-bold text-green-500">{{ getCustomerTotalSpent(selectedCustomer.id) | currency:'ARS':'symbol':'1.0-0' }}</div>
-                        <div class="text-sm text-600">Total Gastado</div>
                     </div>
                 </div>
                 <div class="col-12 md:col-4">
                     <div class="text-center p-3 surface-100 border-round">
-                        <i class="pi pi-chart-line text-2xl text-blue-500 mb-2 block"></i>
-                        <div class="text-xl font-bold text-blue-500">{{ getCustomerTotalSpent(selectedCustomer.id) / (getCustomerOrderCount(selectedCustomer.id) || 1) |
-                            currency:'ARS':'symbol':'1.0-0' }}</div>
-                        <div class="text-sm text-600">Ticket Promedio</div>
+                        <i class="pi pi-chart-line text-2xl text-purple-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Ticket Promedio</div>
+                        <div class="text-xl font-bold text-purple-500">
+                            {{ getCustomerOrderCount(selectedCustomer.id) > 0 ? ((getCustomerTotalSpent(selectedCustomer.id) / getCustomerOrderCount(selectedCustomer.id)) | currency:'ARS':'symbol':'1.0-0') : '$0' }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Customer Orders -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card p-4 border-round" *ngIf="getCustomerOrders(selectedCustomer.id).length > 0">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-list mr-2"></i>Historial de Pedidos
             </h3>
-            <div *ngIf="getCustomerOrders(selectedCustomer.id).length > 0; else noOrders" class="flex flex-column gap-2">
-                <div *ngFor="let order of getCustomerOrders(selectedCustomer.id)" class="surface-100 p-3 border-round">
-                    <div class="flex justify-content-between align-items-center">
-                        <div class="flex flex-column">
-                            <span class="font-semibold text-primary">#{{ order.id }}</span>
-                            <span class="text-sm text-600">{{ order.date | date:'dd/MM/yyyy HH:mm' }}</span>
-                            <span class="text-sm">{{ order.items.length }} productos</span>
-                        </div>
-                        <div class="flex flex-column align-items-end">
+            <p-table [value]="getCustomerOrders(selectedCustomer.id)" [paginator]="true" [rows]="5" 
+                     [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pedidos"
+                     [tableStyle]="{'min-width': '40rem'}" styleClass="p-datatable-sm">
+                
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center">ID Pedido</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Método de Pago</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-order>
+                    <tr>
+                        <td class="text-center">
+                            <span class="font-bold text-primary">{{ order.id }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-600">{{ order.date | date:'dd/MM/yyyy' }}</span>
+                        </td>
+                        <td class="text-center">
+                            <p-tag [value]="getOrderStatusLabel(order.status)" [severity]="getOrderStatusSeverity(order.status)" [rounded]="true"></p-tag>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-600">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
+                        </td>
+                        <td class="text-center">
                             <span class="font-bold text-primary">{{ order.total | currency:'ARS':'symbol':'1.0-0' }}</span>
-                            <p-tag [value]="getOrderStatusLabel(order.status)" [severity]="getOrderStatusSeverity(order.status)" [rounded]="true" size="small"></p-tag>
-                        </div>
-                    </div>
-                </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="flex gap-2 justify-content-center">
+                                <p-button icon="pi pi-eye" (onClick)="viewOrder(order)" [rounded]="true" size="small" pTooltip="Ver Pedido">
+                                </p-button>
+                                <p-button icon="pi pi-pencil" (onClick)="editOrder(order)" [rounded]="true" size="small" pTooltip="Editar Pedido">
+                                </p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center p-4">
+                            <div class="flex flex-column align-items-center">
+                                <i class="pi pi-shopping-cart text-4xl text-400 mb-3"></i>
+                                <span class="text-600">No hay pedidos para mostrar</span>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- No Orders Message -->
+        <div class="surface-card p-4 border-round" *ngIf="getCustomerOrders(selectedCustomer.id).length === 0">
+            <div class="text-center p-4">
+                <i class="pi pi-shopping-cart text-4xl text-400 mb-3 block"></i>
+                <h3 class="text-lg font-semibold text-600 mb-2">Sin Pedidos</h3>
+                <p class="text-500">Este cliente aún no ha realizado ningún pedido.</p>
             </div>
-            <ng-template #noOrders>
-                <div class="text-center py-4">
-                    <i class="pi pi-shopping-cart text-4xl text-300 mb-2 block"></i>
-                    <p class="text-600">Este cliente aún no tiene pedidos registrados</p>
-                </div>
-            </ng-template>
         </div>
     </div>
 
-    <ng-template #footer>
-        <div class="flex justify-content-end gap-2">
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2 mt-3">
             <p-button label="Editar Cliente" icon="pi pi-pencil" [outlined]="true" (onClick)="editCustomer(selectedCustomer!)" />
             <p-button label="Cerrar" icon="pi pi-times" (onClick)="showCustomerDetailsDialog = false" />
         </div>
@@ -620,7 +712,7 @@
 
 <!-- Order Dialog -->
 <p-dialog [(visible)]="showOrderDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true"
-    [header]="editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'" (onHide)="showOrderDialog = false">
+    [header]="editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'" (onHide)="closeOrderDialog()">
 
     <form [formGroup]="orderForm" class="flex flex-column gap-4">
         <!-- Order Header -->
@@ -752,10 +844,20 @@
                 <div formArrayName="items" class="flex flex-column gap-3">
                     <div *ngFor="let item of orderItemsArray.controls; let i = index" [formGroupName]="i" class="surface-card p-3 border-round">
                         <div class="grid">
-                            <div class="col-12 md:col-3">
+                            <div class="col-12 md:col-2">
                                 <label class="block mb-2 font-semibold">Producto *</label>
                                 <p-select formControlName="productId" [options]="products" optionLabel="name" optionValue="id" placeholder="Seleccionar producto" class="w-full"
                                     (onChange)="onProductChange(i)" />
+                            </div>
+                            <div class="col-12 md:col-2">
+                                <label class="block mb-2 font-semibold">Color</label>
+                                <p-select formControlName="color" [options]="getAvailableColorsForItem(i)" optionLabel="label" optionValue="value" placeholder="Seleccionar color"
+                                    class="w-full" (onChange)="onVariantChange(i)" />
+                            </div>
+                            <div class="col-12 md:col-1">
+                                <label class="block mb-2 font-semibold">Talle</label>
+                                <p-select formControlName="size" [options]="getAvailableSizesForItem(i)" optionLabel="label" optionValue="value" placeholder="Seleccionar talle"
+                                    class="w-full" (onChange)="onVariantChange(i)" />
                             </div>
                             <div class="col-12 md:col-2">
                                 <label class="block mb-2 font-semibold">Cantidad *</label>
@@ -769,15 +871,24 @@
                                 <label class="block mb-2 font-semibold">Descuento Unitario</label>
                                 <p-inputnumber formControlName="productDiscount" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
                             </div>
-                            <div class="col-12 md:col-2">
-                                <label class="block mb-2 font-semibold">Precio Final</label>
-                                <div class="p-inputnumber w-full" style="pointer-events: none;">
-                                    <input type="text" [value]="getItemFinalPrice(i) | currency:'ARS':'symbol':'1.0-0'" class="w-full p-2 border-round" readonly />
-                                </div>
-                            </div>
                             <div class="col-12 md:col-1">
                                 <label class="block mb-2 font-semibold">Acciones</label>
                                 <p-button icon="pi pi-trash" severity="danger" size="small" (onClick)="removeOrderItem(i)" [rounded]="true" />
+                            </div>
+                        </div>
+
+                        <!-- Variant Display -->
+                        <div class="surface-50 p-2 border-round mt-2" *ngIf="item.get('color')?.value || item.get('size')?.value">
+                            <div class="flex align-items-center gap-2">
+                                <span class="text-sm font-semibold">Variante seleccionada:</span>
+                                <div *ngIf="item.get('color')?.value" class="flex align-items-center gap-1">
+                                    <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(item.get('color')?.value)"></div>
+                                    <span class="text-sm">{{ item.get('color')?.value }}</span>
+                                </div>
+                                <div *ngIf="item.get('size')?.value" class="flex align-items-center gap-1">
+                                    <i class="pi pi-tag text-primary text-xs"></i>
+                                    <span class="text-sm">T: {{ item.get('size')?.value }}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -887,38 +998,53 @@
         </div>
 
         <!-- Order Summary -->
-        <div class="grid">
-            <div class="col-12 md:col-3">
-                <label for="orderSubtotal" class="block mb-2 font-semibold">Subtotal *</label>
-                <p-inputnumber id="orderSubtotal" formControlName="subtotal" class="w-full" mode="currency" currency="ARS" [min]="0" [readonly]="true" />
-                <app-error-helper [control]="orderForm.get('subtotal')"></app-error-helper>
-            </div>
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-calculator mr-2"></i>Resumen del Pedido
+            </h3>
 
-            <div class="col-12 md:col-3">
-                <label for="orderDescuento" class="block mb-2 font-semibold">Descuento Cupón</label>
-                <p-inputnumber id="orderDescuento" formControlName="couponDiscount" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
-            </div>
-
-            <div class="col-12 md:col-3">
-                <label for="orderEnvio" class="block mb-2 font-semibold">Envío</label>
-                <p-inputnumber id="orderEnvio" formControlName="shippingPrice" class="w-full" mode="currency" currency="ARS" [min]="0" (onInput)="onItemChange()" />
-            </div>
-
-            <div class="col-12 md:col-3">
-                <label for="orderTotal" class="block mb-2 font-semibold">Total *</label>
-                <p-inputnumber id="orderTotal" formControlName="total" class="w-full" mode="currency" currency="ARS" [min]="0" [readonly]="true" />
-                <app-error-helper [control]="orderForm.get('total')"></app-error-helper>
-            </div>
-        </div>
-
-        <!-- Tax Display -->
-        <div class="grid">
-            <div class="col-12">
-                <div class="surface-100 p-3 border-round">
-                    <div class="flex justify-content-between align-items-center">
-                        <span class="font-semibold">IVA (21%):</span>
-                        <span class="font-bold text-primary">{{ getCurrentTaxAmount() | currency:'ARS':'symbol':'1.0-0' }}</span>
+            <div class="grid">
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-dollar text-2xl text-blue-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Subtotal</div>
+                        <div class="text-xl font-bold text-blue-500">{{ orderForm.get('subtotal')?.value | currency:'ARS':'symbol':'1.0-0' }}</div>
                     </div>
+                </div>
+
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-ticket text-2xl text-green-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Descuento Cupón</div>
+                        <div class="text-xl font-bold text-green-500">-{{ orderForm.get('couponDiscount')?.value | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-truck text-2xl text-orange-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Envío</div>
+                        <div class="text-xl font-bold text-orange-500">{{ orderForm.get('shippingPrice')?.value | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-chart-bar text-2xl text-purple-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Total</div>
+                        <div class="text-xl font-bold text-purple-500">{{ orderForm.get('total')?.value | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Display -->
+            <div class="surface-100 p-3 border-round mt-3">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-percentage text-blue-500"></i>
+                        <span class="font-semibold">IVA (21%):</span>
+                    </div>
+                    <span class="font-bold text-primary text-lg">{{ getCurrentTaxAmount() | currency:'ARS':'symbol':'1.0-0' }}</span>
                 </div>
             </div>
         </div>
@@ -960,9 +1086,280 @@
     </form>
 
     <ng-template #footer>
-        <div class="flex justify-content-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showOrderDialog = false" [disabled]="orderLoading" />
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="closeOrderDialog()" [disabled]="orderLoading" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveOrder()" [disabled]="!orderForm.valid || orderLoading" [loading]="orderLoading" />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Order Details Dialog -->
+<p-dialog [(visible)]="showOrderDetailsDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true" header="Detalles del Pedido"
+    (onHide)="showOrderDetailsDialog = false">
+
+    <div *ngIf="selectedOrder" class="flex flex-column gap-4">
+        <!-- Order Header Information -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-shopping-cart mr-2"></i>Información del Pedido
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-3">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-shopping-cart text-primary mr-2"></i>
+                            <span class="font-semibold">ID del Pedido:</span>
+                            <span class="ml-2 font-bold text-primary">#{{ selectedOrder.id }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-calendar text-primary mr-2"></i>
+                            <span class="font-semibold">Fecha:</span>
+                            <span class="ml-2">{{ selectedOrder.date | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-clock text-primary mr-2"></i>
+                            <span class="font-semibold">Hora:</span>
+                            <span class="ml-2">{{ selectedOrder.date | date:'HH:mm' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-info-circle text-primary mr-2"></i>
+                            <span class="font-semibold">Estado:</span>
+                            <span class="ml-2">
+                                <p-tag [value]="getOrderStatusLabel(selectedOrder.status)" [severity]="getOrderStatusSeverity(selectedOrder.status)" [rounded]="true" size="small"></p-tag>
+                            </span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-credit-card text-primary mr-2"></i>
+                            <span class="font-semibold">Pago:</span>
+                            <span class="ml-2">
+                                <p-tag [value]="getPaymentMethodLabel(selectedOrder.paymentMethod)" severity="info" [rounded]="true" size="small"></p-tag>
+                            </span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-dollar text-primary mr-2"></i>
+                            <span class="font-semibold">Total:</span>
+                            <span class="ml-2 font-bold text-primary text-lg">{{ selectedOrder.total | currency:'ARS':'symbol':'1.0-0' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-user text-primary mr-2"></i>
+                            <span class="font-semibold">Cliente:</span>
+                            <span class="ml-2 cursor-pointer text-primary hover:text-primary-600" (click)="openCustomerDetailsDialog(selectedOrder.customer)"
+                                pTooltip="Hacer clic para ver detalles del cliente">
+                                {{ selectedOrder.customer.name }} {{ selectedOrder.customer.lastName }}
+                            </span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-envelope text-primary mr-2"></i>
+                            <span class="font-semibold">Email:</span>
+                            <span class="ml-2">{{ selectedOrder.customer.email }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-phone text-primary mr-2"></i>
+                            <span class="font-semibold">Teléfono:</span>
+                            <span class="ml-2">{{ selectedOrder.customer.phone }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-map-marker mr-2"></i>Dirección de Envío
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-8">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-home text-primary mr-2"></i>
+                            <span class="font-semibold">Dirección:</span>
+                            <span class="ml-2">{{ selectedOrder.shippingAddress }}</span>
+                            <span *ngIf="selectedOrder.shippingFloorApartment" class="ml-1">({{ selectedOrder.shippingFloorApartment }})</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map-marker text-primary mr-2"></i>
+                            <span class="font-semibold">Localidad:</span>
+                            <span class="ml-2">{{ selectedOrder.shippingCity }}, {{ selectedOrder.shippingProvince }}</span>
+                        </div>
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map text-primary mr-2"></i>
+                            <span class="font-semibold">Código Postal:</span>
+                            <span class="ml-2">{{ selectedOrder.shippingPostalCode }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="flex flex-column gap-2">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-truck text-primary mr-2"></i>
+                            <span class="font-semibold">Envío:</span>
+                            <span class="ml-2" *ngIf="selectedOrder.shippingPrice > 0; else freeShipping">
+                                {{ selectedOrder.shippingPrice | currency:'ARS':'symbol':'1.0-0' }}
+                            </span>
+                            <ng-template #freeShipping>
+                                <p-tag value="Gratis" severity="success" [rounded]="true" size="small"></p-tag>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-list mr-2"></i>Productos del Pedido
+            </h3>
+            <div class="flex flex-column gap-3">
+                <div *ngFor="let item of selectedOrder.items" class="surface-100 p-3 border-round">
+                    <div class="grid">
+                        <div class="col-12 md:col-4">
+                            <div class="flex flex-column">
+                                <span class="font-semibold text-primary">{{ getProductName(item.productId) }}</span>
+                                <span class="text-sm text-600">ID: {{ item.productId }}</span>
+                                <!-- Variant Information -->
+                                <div class="flex align-items-center gap-2 mt-2" *ngIf="item.color || item.size">
+                                    <div *ngIf="item.color" class="flex align-items-center gap-1">
+                                        <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(item.color)"></div>
+                                        <span class="text-sm font-semibold">{{ item.color }}</span>
+                                    </div>
+                                    <div *ngIf="item.size" class="flex align-items-center gap-1">
+                                        <i class="pi pi-tag text-primary text-xs"></i>
+                                        <span class="text-sm font-semibold">T: {{ item.size }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-2">
+                            <div class="flex flex-column">
+                                <span class="text-sm text-600">Cantidad</span>
+                                <span class="font-semibold">{{ item.quantity }}x</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-2">
+                            <div class="flex flex-column">
+                                <span class="text-sm text-600">Precio Unitario</span>
+                                <span class="font-semibold">${{ item.unitPrice.toLocaleString('es-AR') }}</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-2">
+                            <div class="flex flex-column">
+                                <span class="text-sm text-600">Descuento Unitario</span>
+                                <span class="font-semibold text-red-500" *ngIf="item.productDiscount > 0; else noDiscount">
+                                    -${{ item.productDiscount.toLocaleString('es-AR') }}
+                                </span>
+                                <ng-template #noDiscount>
+                                    <span class="text-400">Sin descuento</span>
+                                </ng-template>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-2">
+                            <div class="flex flex-column">
+                                <span class="text-sm text-600">Subtotal</span>
+                                <span class="font-bold text-primary">${{ ((item.unitPrice - (item.productDiscount || 0)) * item.quantity).toLocaleString('es-AR') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupon Information -->
+        <div class="surface-card p-4 border-round" *ngIf="selectedOrder.couponCode">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-ticket mr-2"></i>Cupón Aplicado
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="flex align-items-center gap-2">
+                        <p-tag [value]="selectedOrder.couponCode" severity="success" [rounded]="true"></p-tag>
+                        <span class="font-semibold text-green-700">Cupón de Descuento</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-dollar text-green-500"></i>
+                        <span class="font-semibold">Descuento Aplicado:</span>
+                        <span class="font-bold text-green-600">
+                            -{{ selectedOrder.couponDiscount | currency:'ARS':'symbol':'1.0-0' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="surface-card p-4 border-round">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-calculator mr-2"></i>Resumen del Pedido
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-dollar text-2xl text-blue-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Subtotal</div>
+                        <div class="text-xl font-bold text-blue-500">{{ selectedOrder.subtotal | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-ticket text-2xl text-green-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Descuento Cupón</div>
+                        <div class="text-xl font-bold text-green-500">-{{ selectedOrder.couponDiscount | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-truck text-2xl text-orange-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Envío</div>
+                        <div class="text-xl font-bold text-orange-500">{{ selectedOrder.shippingPrice | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="text-center p-3 surface-100 border-round">
+                        <i class="pi pi-chart-bar text-2xl text-purple-500 mb-2 block"></i>
+                        <div class="text-sm text-600 mb-1">Total</div>
+                        <div class="text-xl font-bold text-purple-500">{{ selectedOrder.total | currency:'ARS':'symbol':'1.0-0' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Information -->
+            <div class="surface-100 p-3 border-round mt-3">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-percentage text-blue-500"></i>
+                        <span class="font-semibold">IVA (21%):</span>
+                    </div>
+                    <span class="font-bold text-primary text-lg">{{ (selectedOrder.subtotal * 0.21) | currency:'ARS':'symbol':'1.0-0' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="surface-card p-4 border-round" *ngIf="selectedOrder.notes">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-comment mr-2"></i>Notas del Pedido
+            </h3>
+            <div class="surface-100 p-3 border-round">
+                <p class="m-0 text-600">{{ selectedOrder.notes }}</p>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Editar Pedido" icon="pi pi-pencil" [outlined]="true" (onClick)="editOrder(selectedOrder!)" />
+            <p-button label="Cerrar" icon="pi pi-times" (onClick)="showOrderDetailsDialog = false" />
         </div>
     </ng-template>
 </p-dialog>

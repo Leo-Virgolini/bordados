@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
@@ -57,7 +57,7 @@ import { CartItem } from '../../model/cart-item';
         InputGroupAddon,
         InputNumber
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [],
     templateUrl: './products-sale.component.html',
     styleUrl: './products-sale.component.scss'
 })
@@ -65,6 +65,7 @@ export class ProductsSaleComponent implements OnInit {
 
     // Form
     filtersForm!: FormGroup;
+    productSelectionForm!: FormGroup;
 
     // Products data
     allProducts: Product[] = [];
@@ -72,7 +73,6 @@ export class ProductsSaleComponent implements OnInit {
     displayedProducts: Product[] = [];
     isLoading: boolean = false;
     selectedProduct: Product | null = null;
-    selectedQuantity: number = 1;
     loadingProducts: Set<string> = new Set(); // Track which products are being added to cart
 
     // Pagination
@@ -131,11 +131,17 @@ export class ProductsSaleComponent implements OnInit {
             searchTerm: [''],
             selectedCategories: [[]],
             selectedTags: [[]],
-            priceRange: [[0, 50000]],
+            priceRange: [[0, 150000]],
             selectedSort: ['name-asc'],
             showOnlyNew: [false],
             showOnlyFeatured: [false],
             minStock: [0]
+        });
+
+        this.productSelectionForm = this.fb.group({
+            selectedColor: [''],
+            selectedSize: [''],
+            selectedQuantity: [1, [Validators.required, Validators.min(1)]]
         });
 
         // Subscribe to form changes
@@ -204,7 +210,7 @@ export class ProductsSaleComponent implements OnInit {
         }
 
         // Stock filter
-        filtered = filtered.filter(product => product.stock >= formValue.minStock);
+        filtered = filtered.filter(product => this.getDisplayedVariantStock(product) >= formValue.minStock);
 
         // Sort products
         this.sortProducts(filtered, formValue.selectedSort);
@@ -295,7 +301,12 @@ export class ProductsSaleComponent implements OnInit {
 
     addToCart(event: Event, product: Product): void {
         this.selectedProduct = product;
-        this.selectedQuantity = 1; // Reset quantity to 1 for each new product
+        // Reset form values
+        this.productSelectionForm.patchValue({
+            selectedColor: '',
+            selectedSize: '',
+            selectedQuantity: 1
+        });
 
         // Close any existing popup first to ensure proper repositioning
         this.confirmationService.close();
@@ -313,8 +324,33 @@ export class ProductsSaleComponent implements OnInit {
                 rejectIcon: 'pi pi-times',
                 rejectButtonStyleClass: 'p-button-secondary',
                 accept: () => {
+                    const selectedColor = this.productSelectionForm.get('selectedColor')?.value;
+                    const selectedSize = this.productSelectionForm.get('selectedSize')?.value;
+                    const selectedQuantity = this.productSelectionForm.get('selectedQuantity')?.value;
+
+                    // Validate color and size selection
+                    if (!selectedColor) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Color requerido',
+                            detail: 'Debes seleccionar un color',
+                            life: 3000
+                        });
+                        return;
+                    }
+
+                    if (!selectedSize) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Talle requerido',
+                            detail: 'Debes seleccionar un talle',
+                            life: 3000
+                        });
+                        return;
+                    }
+
                     // Validate quantity
-                    if (this.selectedQuantity < 1) {
+                    if (selectedQuantity < 1) {
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Cantidad inválida',
@@ -324,25 +360,26 @@ export class ProductsSaleComponent implements OnInit {
                         return;
                     }
 
-                    if (this.selectedQuantity > product.stock) {
+                    const availableStock = this.getStockForColorAndSize(product, selectedColor, selectedSize);
+                    if (selectedQuantity > availableStock) {
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Stock insuficiente',
-                            detail: `Solo hay ${product.stock} ${product.stock === 1 ? 'unidad' : 'unidades'} disponible${product.stock === 1 ? '' : 's'}`,
+                            detail: `Solo hay ${availableStock} ${availableStock === 1 ? 'unidad' : 'unidades'} disponible${availableStock === 1 ? '' : 's'} para ${selectedColor} - T: ${selectedSize}`,
                             life: 3000
                         });
                         return;
                     }
 
                     // Check if adding this quantity would exceed available stock
-                    const currentCartQuantity = this.carritoService.getCartItemQuantity(product.id);
-                    const totalQuantity = currentCartQuantity + this.selectedQuantity;
+                    const currentCartQuantity = this.carritoService.getCartItemQuantityForVariant(product.id, selectedColor, selectedSize);
+                    const totalQuantity = currentCartQuantity + selectedQuantity;
 
-                    if (totalQuantity > product.stock) {
+                    if (totalQuantity > availableStock) {
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Stock insuficiente',
-                            detail: `Ya tienes ${currentCartQuantity} en el carrito. ${currentCartQuantity === product.stock ? 'No puedes agregar más' : `Solo puedes agregar ${product.stock - currentCartQuantity} más.`}`,
+                            detail: `Ya tienes ${currentCartQuantity} x '${product.name}' ${selectedColor} - T: ${selectedSize}. ${currentCartQuantity === availableStock ? 'No puedes agregar más' : `Solo puedes agregar ${availableStock - currentCartQuantity} más.`}`,
                             life: 3000
                         });
                         return;
@@ -351,16 +388,39 @@ export class ProductsSaleComponent implements OnInit {
                     // Add loading state for this specific product
                     this.loadingProducts.add(product.id);
 
+                    // Create a product with only the selected variant and size
+                    const selectedVariant = product.variants?.find(v => v.color === selectedColor);
+                    const selectedSizeStock = selectedVariant?.sizes?.find(s => s.size === selectedSize);
+
+                    if (!selectedVariant || !selectedSizeStock) {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'No se pudo encontrar la variante seleccionada',
+                            life: 3000
+                        });
+                        return;
+                    }
+
+                    const productWithSelectedVariant = new Product({
+                        ...product,
+                        variants: [{
+                            color: selectedVariant.color,
+                            image: selectedVariant.image,
+                            sizes: [selectedSizeStock]
+                        }]
+                    });
+
                     // Simulate API call delay
                     setTimeout(() => {
                         this.carritoService.agregarItem(new CartItem({
-                            product: product,
-                            quantity: this.selectedQuantity
+                            product: productWithSelectedVariant,
+                            quantity: selectedQuantity
                         }));
                         this.messageService.add({
-                            severity: 'success',
+                            severity: 'info',
                             summary: 'Producto agregado',
-                            detail: `'${product.name}' x ${this.selectedQuantity} agregado al carrito`,
+                            detail: `'${product.name}' ${selectedColor} - T: ${selectedSize} x ${selectedQuantity} agregado al carrito`,
                             icon: 'pi pi-cart-plus',
                             life: 3000
                         });
@@ -368,12 +428,22 @@ export class ProductsSaleComponent implements OnInit {
                         // Remove loading state
                         this.loadingProducts.delete(product.id);
                         this.selectedProduct = null;
-                        this.selectedQuantity = 1;
+                        // Reset form
+                        this.productSelectionForm.patchValue({
+                            selectedColor: '',
+                            selectedSize: '',
+                            selectedQuantity: 1
+                        });
                     }, 1000); // 1 second delay to show loading
                 },
                 reject: () => {
                     this.selectedProduct = null;
-                    this.selectedQuantity = 1;
+                    // Reset form
+                    this.productSelectionForm.patchValue({
+                        selectedColor: '',
+                        selectedSize: '',
+                        selectedQuantity: 1
+                    });
                 }
             });
         }, 100); // Small delay to ensure proper repositioning
@@ -412,6 +482,142 @@ export class ProductsSaleComponent implements OnInit {
             return product.price * (1 - product.discount / 100);
         }
         return product.price;
+    }
+
+    getTotalStock(product: Product): number {
+        return product.variants?.reduce((sum, variant) =>
+            sum + (variant.sizes?.reduce((s, sz) => s + (sz.stock || 0), 0) || 0), 0
+        ) || 0;
+    }
+
+    getDisplayedVariantStock(product: Product): number {
+        const firstVariant = product.variants?.[0];
+        if (!firstVariant || !firstVariant.sizes || firstVariant.sizes.length === 0) {
+            return 0;
+        }
+
+        // Get the stock for the first size being displayed
+        return firstVariant.sizes[0].stock || 0;
+    }
+
+    getFirstColor(product: Product): string {
+        return product.variants?.[0]?.color || '-';
+    }
+
+    getFirstSize(product: Product): string {
+        return product.variants?.[0]?.sizes?.[0]?.size || '-';
+    }
+
+    getAvailableColors(product: Product): { label: string, value: string }[] {
+        return product.variants
+            ?.filter(variant => {
+                // Only include variants that have at least one size with stock > 0
+                return variant.sizes?.some(sizeStock => sizeStock.stock > 0);
+            })
+            .map(variant => ({
+                label: variant.color,
+                value: variant.color
+            })) || [];
+    }
+
+    getAvailableSizes(product: Product, color?: string): { label: string, value: string }[] {
+        console.log('getAvailableSizes called with:', { productId: product.id, color, productVariants: product.variants });
+
+        if (!color) {
+            console.log('No color provided, returning empty array');
+            return [];
+        }
+
+        const variant = product.variants?.find(v => v.color === color);
+        console.log('Found variant:', variant);
+
+        if (!variant || !variant.sizes) {
+            console.log('No variant or sizes found, returning empty array');
+            return [];
+        }
+
+        // Order sizes from smallest to largest
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        const availableSizes = variant.sizes
+            .filter(sizeStock => sizeStock.stock > 0)
+            .sort((a, b) => {
+                const idxA = sizeOrder.indexOf(a.size);
+                const idxB = sizeOrder.indexOf(b.size);
+                if (idxA === -1 && idxB === -1) return a.size.localeCompare(b.size);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            })
+            .map(sizeStock => ({
+                label: sizeStock.size,
+                value: sizeStock.size
+            }));
+
+        console.log('Available sizes for color', color, ':', availableSizes);
+        return availableSizes;
+    }
+
+    getAllAvailableSizes(product: Product): { label: string, value: string }[] {
+        if (!product.variants) {
+            return [];
+        }
+
+        // Collect all unique sizes with stock across all variants
+        const sizeSet = new Set<string>();
+        product.variants.forEach(variant => {
+            if (variant.sizes) {
+                variant.sizes.forEach(sizeStock => {
+                    if (sizeStock.stock > 0) {
+                        sizeSet.add(sizeStock.size);
+                    }
+                });
+            }
+        });
+
+        // Order sizes from smallest to largest
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        return Array.from(sizeSet)
+            .sort((a, b) => {
+                const idxA = sizeOrder.indexOf(a);
+                const idxB = sizeOrder.indexOf(b);
+                if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            })
+            .map(size => ({
+                label: size,
+                value: size
+            }));
+    }
+
+    getStockForColorAndSize(product: Product, color: string, size: string): number {
+        const variant = product.variants?.find(v => v.color === color);
+        if (!variant || !variant.sizes) {
+            return 0;
+        }
+
+        const sizeStock = variant.sizes.find(s => s.size === size);
+        return sizeStock ? sizeStock.stock : 0;
+    }
+
+    getAvailableColorsText(product: Product): string {
+        const colors = this.getAvailableColors(product);
+        return colors.length > 0 ? colors.map(c => c.label).join(', ') : 'No disponible';
+    }
+
+    getAllAvailableSizesText(product: Product): string {
+        const sizes = this.getAllAvailableSizes(product);
+        return sizes.length > 0 ? sizes.map(s => s.label).join(', ') : 'No disponible';
+    }
+
+    onColorChange() {
+        console.log('Color changed to:', this.productSelectionForm.get('selectedColor')?.value);
+        this.productSelectionForm.get('selectedSize')?.setValue(''); // Reset size selection
+        // Force change detection
+        setTimeout(() => {
+            console.log('Available sizes after color change:', this.getAvailableSizes(this.selectedProduct!, this.productSelectionForm.get('selectedColor')?.value));
+        }, 0);
     }
 
 } 

@@ -184,7 +184,7 @@ export class CouponsService {
     createCoupon(coupon: Omit<DiscountCoupon, 'id'>): Observable<DiscountCoupon> {
         const newCoupon: DiscountCoupon = {
             ...coupon,
-            id: `COUPON-${Date.now().toString().slice(-6)}`,
+            id: this.generateId(),
             currentUses: 0
         };
         this.coupons.push(newCoupon);
@@ -261,6 +261,14 @@ export class CouponsService {
             c.currentUses < c.maxUses
         );
         return of(activeCoupons);
+    }
+
+    private generateId(): string {
+        const maxId = this.coupons
+            .map(c => Number(c.id.replace(/\D/g, '')))
+            .filter(id => !isNaN(id))
+            .reduce((max, id) => Math.max(max, id), 0);
+        return (maxId + 1).toString();
     }
 
 } 

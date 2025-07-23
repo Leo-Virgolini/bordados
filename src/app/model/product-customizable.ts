@@ -8,7 +8,7 @@ export class ProductCustomizable extends ProductBase {
     customImage!: string;
 
     constructor(init?: Partial<ProductCustomizable>) {
-        super();
+        super(init);
         this.type = 'personalizable';
         Object.assign(this, init);
     }

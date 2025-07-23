@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 
 // PrimeNG Components
 import { Button } from 'primeng/button';
@@ -12,6 +13,7 @@ import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
+import { InputMask } from 'primeng/inputmask';
 import { Checkbox } from 'primeng/checkbox';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
@@ -56,6 +58,7 @@ function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
         Tag,
         InputGroup,
         InputGroupAddon,
+        InputMask,
         Checkbox,
         DatePicker,
         Select,
@@ -69,11 +72,13 @@ function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
 export class SettingsTabComponent implements OnInit {
 
     // Settings Management
-    freeShippingThreshold!: number; // Default 50,000 ARS
+    freeShippingThreshold!: number; // Free shipping threshold
+    whatsappPhone!: string; // WhatsApp number
     discountCoupons: DiscountCoupon[] = [];
 
     // Forms
     shippingForm!: FormGroup;
+    contactForm!: FormGroup;
     couponForm!: FormGroup;
 
     // Dialog states
@@ -81,6 +86,7 @@ export class SettingsTabComponent implements OnInit {
     editingCoupon: DiscountCoupon | null = null;
     couponLoading: boolean = false;
     shippingLoading: boolean = false;
+    contactLoading: boolean = false;
 
     // Coupon options
     discountTypes = [
@@ -91,6 +97,7 @@ export class SettingsTabComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private messageService: MessageService,
+        private confirmationService: ConfirmationService,
         private couponsService: CouponsService,
         private settingsService: SettingsService
     ) { }
@@ -101,18 +108,33 @@ export class SettingsTabComponent implements OnInit {
     }
 
     private loadSettings(): void {
-        // Load free shipping threshold from service
         this.settingsService.getFreeShippingThreshold().subscribe(threshold => {
             this.freeShippingThreshold = threshold;
         });
 
-        // Load discount coupons from service
+        this.settingsService.getWhatsAppPhone().subscribe(phone => {
+            this.whatsappPhone = phone;
+        });
+
         this.couponsService.getCoupons().subscribe(coupons => {
             this.discountCoupons = coupons;
         });
     }
 
     private initForms(): void {
+        // Contact settings form - strip the +54 9 prefix and formatting for the input
+        if (this.whatsappPhone) {
+            // Remove +54 9 prefix and any formatting (spaces, dashes)
+            let phoneWithoutPrefix = this.whatsappPhone.replace('+54 9 ', '').replace(/[\s-]/g, '');
+            this.contactForm = this.fb.group({
+                whatsappPhone: [phoneWithoutPrefix, [Validators.required, Validators.pattern(/^\d{10}$/)]]
+            });
+        } else {
+            this.contactForm = this.fb.group({
+                whatsappPhone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]]
+            });
+        }
+
         // Shipping settings form
         this.shippingForm = this.fb.group({
             freeShippingThreshold: [this.freeShippingThreshold, [Validators.required, Validators.min(0)]]
@@ -139,6 +161,36 @@ export class SettingsTabComponent implements OnInit {
         this.couponForm.get('validTo')?.valueChanges.subscribe(() => {
             this.couponForm.updateValueAndValidity();
         });
+    }
+
+    saveContactSettings(): void {
+        if (this.contactForm.valid) {
+            this.contactLoading = true;
+            const phoneWithoutPrefix = this.contactForm.get('whatsappPhone')?.value;
+            // Format the phone number properly for display
+            const formattedPhone = `${phoneWithoutPrefix.slice(0, 2)} ${phoneWithoutPrefix.slice(2, 6)}-${phoneWithoutPrefix.slice(6)}`;
+            const phone = `+54 9 ${formattedPhone}`;
+
+            this.settingsService.updateWhatsAppPhone(phone).subscribe({
+                next: (updatedPhone) => {
+                    this.whatsappPhone = updatedPhone;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Configuración guardada',
+                        detail: `Número de WhatsApp actualizado: ${phone}`
+                    });
+                    this.contactLoading = false;
+                },
+                error: (error) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error al guardar la configuración: ' + error.message
+                    });
+                    this.contactLoading = false;
+                }
+            });
+        }
     }
 
     saveShippingSettings(): void {
@@ -234,7 +286,7 @@ export class SettingsTabComponent implements OnInit {
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Cupón actualizado',
-                            detail: `El cupón "${coupon.code}" ha sido actualizado correctamente`
+                            detail: `El cupón ID: ${coupon.id} - ${coupon.code} ha sido actualizado correctamente`
                         });
                         this.loadSettings(); // Reload coupons
                         this.showCouponDialog = false;
@@ -277,13 +329,24 @@ export class SettingsTabComponent implements OnInit {
         }
     }
 
+    confirmDeleteCoupon(coupon: DiscountCoupon): void {
+        this.confirmationService.confirm({
+            message: `¿Estás seguro de eliminar el cupón ID: ${coupon.id} - ${coupon.code}? Esta acción no se puede deshacer.`,
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.deleteCoupon(coupon);
+            }
+        });
+    }
+
     deleteCoupon(coupon: DiscountCoupon): void {
         this.couponsService.deleteCoupon(coupon.id).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Cupón eliminado',
-                    detail: `El cupón "${coupon.code}" ha sido eliminado correctamente`
+                    detail: `El cupón ID: ${coupon.id} - ${coupon.code} ha sido eliminado correctamente`
                 });
                 this.loadSettings(); // Reload coupons
             },
@@ -350,4 +413,5 @@ export class SettingsTabComponent implements OnInit {
     isFormValid(): boolean {
         return this.couponForm.valid && !this.hasDateRangeError();
     }
+
 } 

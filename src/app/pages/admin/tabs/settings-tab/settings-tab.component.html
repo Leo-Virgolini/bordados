@@ -1,3 +1,37 @@
+<!-- Contact Settings -->
+<p-card class="border-round-xl shadow-3 p-3 mb-4">
+    <ng-template #header>
+        <div class="flex justify-content-between align-items-center">
+            <h3 class="text-lg font-bold m-0">
+                <i class="pi pi-phone mr-2"></i>Configuración de Contacto
+            </h3>
+        </div>
+    </ng-template>
+
+    <form [formGroup]="contactForm" class="flex flex-column gap-4">
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="whatsappPhone" class="block mb-2 font-semibold">Número de WhatsApp *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-whatsapp"></i>
+                    </p-inputgroup-addon>
+                    <p-inputgroup-addon class="bg-gray-100 font-semibold text-gray-600">
+                        +54 9
+                    </p-inputgroup-addon>
+                    <p-inputmask id="whatsappPhone" formControlName="whatsappPhone" styleClass="w-full" placeholder="11 1234-5678" mask="99 9999-9999" [unmask]="true" />
+                </p-inputgroup>
+                <app-error-helper [control]="contactForm.get('whatsappPhone')"></app-error-helper>
+                <small class="text-color-secondary">Número que se usará para el botón de WhatsApp</small>
+            </div>
+        </div>
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveContactSettings()" [disabled]="!contactForm.valid || contactLoading" [loading]="contactLoading" />
+        </div>
+    </form>
+</p-card>
+
 <!-- Free Shipping Settings -->
 <p-card class="border-round-xl shadow-3 p-3 mb-4">
     <ng-template #header>
@@ -102,7 +136,7 @@
                 <td>
                     <div class="flex gap-2">
                         <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="openCouponDialog(coupon)" />
-                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="deleteCoupon(coupon)" />
+                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="confirmDeleteCoupon(coupon)" />
                     </div>
                 </td>
             </tr>

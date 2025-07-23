@@ -35,11 +35,12 @@ import { AuthService } from '../../services/auth.service';
     InputGroup,
     InputGroupAddon
   ],
-  providers: [MessageService],
+  providers: [],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+
   loginForm!: FormGroup;
   isLoading = false;
   showPassword = false;
@@ -80,17 +81,9 @@ export class LoginComponent {
 
       // Use AuthService for authentication
       if (this.authService.login(email, password, rememberMe)) {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Inicio de sesión exitoso',
-          detail: 'Bienvenido al panel de administración',
-          life: 3000
-        });
-
         // Navigate to admin
-        setTimeout(() => {
-          this.router.navigate(['/admin']);
-        }, 1000);
+        this.router.navigate(['/admin'], { state: { loginSuccess: true } });
+
       } else {
         this.messageService.add({
           severity: 'error',

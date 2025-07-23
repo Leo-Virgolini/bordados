@@ -112,7 +112,11 @@ export class HiladosTabComponent implements OnInit {
         if (hilado) {
             this.hiladoForm.patchValue(hilado);
         } else {
-            this.hiladoForm.reset({ active: true, code: '#000000' });
+            this.hiladoForm.reset({
+                active: true,
+                code: '#000000',
+                stock: 500
+            });
         }
         this.showHiladoDialog = true;
     }
@@ -153,7 +157,6 @@ export class HiladosTabComponent implements OnInit {
                 // Create new
                 this.hiladosService.createHilado(formValue).subscribe({
                     next: (newHilado: ThreadColor) => {
-                        this.hiladosColors.push(newHilado);
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Creado',

@@ -1,25 +1,23 @@
+import { ProductVariant } from './product-variant';
+
 export abstract class ProductBase {
 
     id: string;
     name: string;
     description: string;
     garmentType: string;
-    size: string;
-    garmentColor: string;
-    image: string;
     price: number;
     type: 'bordado' | 'personalizable';
+    variants: ProductVariant[];
 
     constructor(init?: Partial<ProductBase>) {
         this.id = init?.id || '';
         this.name = init?.name || '';
         this.description = init?.description || '';
         this.garmentType = init?.garmentType || '';
-        this.size = init?.size || '';
-        this.garmentColor = init?.garmentColor || '';
-        this.image = init?.image || '';
         this.price = init?.price || 0;
         this.type = init?.type || 'bordado';
+        this.variants = init?.variants || [];
     }
 
     get displayName(): string {
@@ -38,7 +36,7 @@ export abstract class ProductBase {
     }
 
     validate(): boolean {
-        return !!(this.id && this.name && this.description && this.garmentType && this.size && this.garmentColor && this.image && this.price > 0);
+        return !!(this.id && this.name && this.description && this.garmentType && this.price > 0);
     }
 
     equals(other: ProductBase): boolean {
@@ -48,4 +46,5 @@ export abstract class ProductBase {
     toString(): string {
         return this.name;
     }
+
 } 

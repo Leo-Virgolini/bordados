@@ -11,20 +11,42 @@
                     <span class="font-semibold">{{ message.message }}</span>
                 </div>
 
-                <!-- Quantity Input -->
-                <div class="flex flex-column gap-2">
-                    <label for="quantity" class="font-semibold">Cantidad:</label>
-                    <p-inputgroup>
-                        <p-inputgroup-addon>
-                            <i class="pi pi-shopping-cart"></i>
-                        </p-inputgroup-addon>
-                        <p-inputnumber #quantityInput id="quantity" [(ngModel)]="selectedQuantity" [min]="1" [max]="selectedProduct?.stock || 1" [showButtons]="true"
-                            buttonLayout="horizontal" spinnerMode="horizontal" [step]="1" class="w-full" placeholder="1" [autofocus]="true" />
-                    </p-inputgroup>
-                    <small class="text-color-secondary">
-                        Stock disponible: {{ selectedProduct?.stock || 0 }} unidades
-                    </small>
-                </div>
+                <form [formGroup]="productSelectionForm" class="flex flex-column gap-2">
+                    <!-- Color Selection -->
+                    <div class="flex flex-column gap-2">
+                        <label for="color" class="font-semibold">Color:</label>
+                        <p-select formControlName="selectedColor" [options]="getAvailableColors(selectedProduct!)" optionLabel="label" optionValue="value" placeholder="Seleccionar color"
+                            class="w-full" (onChange)="onColorChange()" />
+                    </div>
+
+                    <!-- Size Selection -->
+                    <div class="flex flex-column gap-2" *ngIf="productSelectionForm.get('selectedColor')?.value">
+                        <label for="size" class="font-semibold">Talle:</label>
+                        <p-select formControlName="selectedSize" [options]="getAvailableSizes(selectedProduct!, productSelectionForm.get('selectedColor')?.value)" optionLabel="label"
+                            optionValue="value" placeholder="Seleccionar talle" class="w-full" />
+                        <small class="text-color-secondary" *ngIf="productSelectionForm.get('selectedSize')?.value">
+                            Stock disponible: {{ getStockForColorAndSize(selectedProduct!, productSelectionForm.get('selectedColor')?.value,
+                            productSelectionForm.get('selectedSize')?.value) }} unidades
+                        </small>
+                    </div>
+
+                    <!-- Quantity Input -->
+                    <div class="flex flex-column gap-2" *ngIf="productSelectionForm.get('selectedColor')?.value && productSelectionForm.get('selectedSize')?.value">
+                        <label for="quantity" class="font-semibold">Cantidad:</label>
+                        <p-inputgroup>
+                            <p-inputgroup-addon>
+                                <i class="pi pi-shopping-cart"></i>
+                            </p-inputgroup-addon>
+                            <p-inputnumber #quantityInput id="quantity" formControlName="selectedQuantity" [min]="1"
+                                [max]="getStockForColorAndSize(selectedProduct!, productSelectionForm.get('selectedColor')?.value, productSelectionForm.get('selectedSize')?.value)"
+                                [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" [step]="1" class="w-full" placeholder="1" [autofocus]="true" />
+                        </p-inputgroup>
+                        <small class="text-color-secondary">
+                            Stock disponible: {{ getStockForColorAndSize(selectedProduct!, productSelectionForm.get('selectedColor')?.value,
+                            productSelectionForm.get('selectedSize')?.value) }} unidades
+                        </small>
+                    </div>
+                </form>
             </div>
         </ng-template>
     </p-confirmpopup>
@@ -77,7 +99,7 @@
                         <!-- Price Range -->
                         <div class="col-12 md:col-3">
                             <label class="block mb-2 font-semibold">Rango de Precios</label>
-                            <p-slider formControlName="priceRange" [range]="true" [min]="0" [max]="50000" [step]="1000" />
+                            <p-slider formControlName="priceRange" [range]="true" [min]="0" [max]="150000" [step]="1000" />
                             <div class="flex justify-content-between text-xs text-color-secondary mt-2">
                                 <span>${{ filtersForm.get('priceRange')?.value[0] | number }}</span>
                                 <span>${{ filtersForm.get('priceRange')?.value[1] | number }}</span>
@@ -132,7 +154,7 @@
                         <!-- Product Image -->
                         <ng-template #header>
                             <div class="relative">
-                                <p-image [src]="product.image" [alt]="product.name" imageClass="w-full border-round-top-xl" [preview]="true" />
+                                <p-image [src]="product.variants[0]?.image" [alt]="product.name" imageClass="w-full border-round-top-xl" [preview]="true" />
 
                                 <!-- Discount Badge -->
                                 <p-tag *ngIf="product.discount > 0" [value]="'-' + product.discount + '%'" [severity]="getDiscountColor(product.discount)"
@@ -143,6 +165,9 @@
 
                                 <!-- Featured Badge -->
                                 <p-tag *ngIf="product.isFeatured" value="DESTACADO" severity="warn" class="absolute top-0 left-0 m-2" [rounded]="true" style="margin-left: 4.5rem;" />
+
+                                <!-- No Stock Badge -->
+                                <p-tag *ngIf="getDisplayedVariantStock(product) === 0" value="SIN STOCK" severity="danger" class="absolute bottom-0 left-0 m-2" [rounded]="true" />
 
                                 <!-- All products are pre-embroidered, no need for type badge -->
                             </div>
@@ -166,28 +191,22 @@
                             <!-- Product Specifications -->
                             <div class="flex flex-column gap-2 mb-3">
                                 <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-tag text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Talle: <span class="font-semibold text-900">{{ product.size }}</span></span>
+                                    <i class="pi pi-box text-primary text-sm"></i>
+                                    <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.garmentType | titlecase }}</span></span>
                                 </div>
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-palette text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Color: <span class="font-semibold text-900">{{ product.garmentColor }}</span></span>
+                                    <span class="text-600 text-sm">Colores: <span class="font-semibold text-900">{{ getAvailableColorsText(product) }}</span></span>
                                 </div>
                                 <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-box text-primary text-sm"></i>
-                                    <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.garmentType | titlecase }}</span></span>
+                                    <i class="pi pi-tag text-primary text-sm"></i>
+                                    <span class="text-600 text-sm">Talles: <span class="font-semibold text-900">{{ getAllAvailableSizesText(product) }}</span></span>
                                 </div>
                             </div>
 
                             <!-- Tags -->
                             <div class="flex flex-wrap gap-1">
                                 <p-tag *ngFor="let tag of product.tags.slice(0, 3)" [value]="tag" severity="info" [rounded]="true" styleClass="text-xs" />
-                            </div>
-
-                            <!-- Stock Status -->
-                            <div class="flex align-items-center gap-2">
-                                <p-tag [value]="getStockStatus(product.stock).value" [severity]="getStockStatus(product.stock).severity" [rounded]="true" />
-                                <span class="text-xs text-color-secondary">Stock: {{ product.stock }}</span>
                             </div>
 
                             <!-- Price -->
@@ -204,8 +223,8 @@
                             <!-- Add to Cart Button -->
                             <p-button [label]="isProductLoading(product.id) ? 'Agregando...' : 'Agregar al Carrito'"
                                 [icon]="isProductLoading(product.id) ? 'pi pi-spin pi-spinner' : 'pi pi-cart-plus'" [raised]="true" [rounded]="true"
-                                [disabled]="product.stock === 0 || isProductLoading(product.id)" [loading]="isProductLoading(product.id)" (onClick)="addToCart($event, product)"
-                                styleClass="p-button-primary" class="w-full" />
+                                [disabled]="getDisplayedVariantStock(product) === 0 || isProductLoading(product.id)" [loading]="isProductLoading(product.id)"
+                                (onClick)="addToCart($event, product)" styleClass="p-button-primary" class="w-full" />
                         </div>
                     </p-card>
                 </div>

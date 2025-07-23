@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, FormGroup as FormGroupType } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 // PrimeNG Components
@@ -128,17 +128,15 @@ export class ProductsTabComponent implements OnInit {
             description: ['', Validators.required],
             price: [0, [Validators.required, Validators.min(0)]],
             image: ['', Validators.required],
-            stock: [0, [Validators.required, Validators.min(0)]],
             category: ['', Validators.required],
             garmentType: ['', Validators.required],
-            size: ['', Validators.required],
-            garmentColor: ['', Validators.required],
             tags: [[]],
             rating: [0, [Validators.min(0), Validators.max(5)]],
             discount: [0, [Validators.min(0), Validators.max(100)]],
             isNew: [false],
             isFeatured: [false],
-            type: ['bordado']
+            type: ['bordado'],
+            variants: this.fb.array([]) // Initialize with empty variants array
         });
     }
 
@@ -163,15 +161,67 @@ export class ProductsTabComponent implements OnInit {
     openProductDialog(product?: Product) {
         this.editingProduct = product || null;
         if (product) {
-            this.productForm.patchValue(product);
+            // For editing, patch the product data but handle variants separately
+            const productData: any = { ...product };
+
+            // Set the main image to the first variant's image if available
+            if (product.variants && product.variants.length > 0 && product.variants[0].image) {
+                productData.image = product.variants[0].image;
+            }
+
+            this.productForm.patchValue(productData);
+
+            // Handle variants separately
+            if (product.variants && product.variants.length > 0) {
+                // Clear existing variants
+                while (this.variantsArray.length !== 0) {
+                    this.variantsArray.removeAt(0);
+                }
+
+                // Add each variant
+                product.variants.forEach(variant => {
+                    const variantGroup = this.fb.group({
+                        color: [variant.color, Validators.required],
+                        image: [variant.image || ''],
+                        sizes: this.fb.array([])
+                    });
+
+                    // Add sizes for this variant
+                    if (variant.sizes && variant.sizes.length > 0) {
+                        variant.sizes.forEach(sizeStock => {
+                            const sizeGroup = this.fb.group({
+                                size: [sizeStock.size, Validators.required],
+                                stock: [sizeStock.stock, [Validators.required, Validators.min(0)]]
+                            });
+                            (variantGroup.get('sizes') as FormArray).push(sizeGroup);
+                        });
+                    }
+
+                    this.variantsArray.push(variantGroup);
+                });
+            }
+
+            this.productForm.get('id')?.setValidators([Validators.required]);
+            this.productForm.get('id')?.disable();
         } else {
+            // For new products, reset with defaults
             this.productForm.reset({
                 isNew: false,
                 isFeatured: false,
                 type: 'bordado',
-                tags: []
+                tags: [],
+                image: '/prendas/remera_blanca.webp' // Default image
             });
+
+            // Clear variants
+            while (this.variantsArray.length !== 0) {
+                this.variantsArray.removeAt(0);
+            }
+
+            this.productForm.get('id')?.clearValidators();
+            this.productForm.get('id')?.enable();
         }
+        this.productForm.get('id')?.updateValueAndValidity();
         this.showProductDialog = true;
     }
 
@@ -186,7 +236,7 @@ export class ProductsTabComponent implements OnInit {
         }
 
         this.savingProduct = true;
-        const productData = this.productForm.value as Product;
+        const productData = this.productForm.getRawValue() as Product;
         const newProduct = new Product(productData);
 
         if (this.editingProduct) {
@@ -200,7 +250,7 @@ export class ProductsTabComponent implements OnInit {
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Producto actualizado',
-                        detail: `El producto "${updatedProduct.name}" ha sido actualizado correctamente`
+                        detail: `El producto ID: ${updatedProduct.id} - ${updatedProduct.name} ha sido actualizado correctamente`
                     });
                     this.showProductDialog = false;
                     this.savingProduct = false;
@@ -218,7 +268,6 @@ export class ProductsTabComponent implements OnInit {
             // Add new product
             this.productsService.createProduct(newProduct).subscribe({
                 next: (createdProduct) => {
-                    this.products.push(createdProduct);
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Producto creado',
@@ -245,7 +294,7 @@ export class ProductsTabComponent implements OnInit {
 
     confirmDeleteProduct(product: Product) {
         this.confirmationService.confirm({
-            message: `¿Estás seguro de eliminar el producto "${product.name}"?`,
+            message: `¿Estás seguro de eliminar el producto ID: ${product.id} - ${product.name}?`,
             header: 'Confirmar eliminación',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
@@ -261,7 +310,7 @@ export class ProductsTabComponent implements OnInit {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Producto eliminado',
-                    detail: `El producto "${product.name}" ha sido eliminado correctamente`
+                    detail: `El producto ID: ${product.id} - ${product.name} ha sido eliminado correctamente`
                 });
             },
             error: (error) => {
@@ -318,6 +367,96 @@ export class ProductsTabComponent implements OnInit {
             'Beige': '#F5F5DC'
         };
         return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
+    }
+
+    getProductImage(product: Product): string {
+        // Return the first variant's image, or a default image if no variants
+        return product.variants?.[0]?.image || '/assets/images/default-product.jpg';
+    }
+
+    getTotalStock(product: Product): number {
+        // Calculate total stock across all variants and sizes
+        return product.variants?.reduce((total, variant) => {
+            return total + (variant.sizes?.reduce((sum, size) => sum + (size.stock || 0), 0) || 0);
+        }, 0) || 0;
+    }
+
+    // Getter for variants FormArray
+    get variantsArray(): FormArray {
+        return this.productForm.get('variants') as FormArray;
+    }
+
+    // Add a new variant
+    addVariant(): void {
+        const variantGroup = this.fb.group({
+            color: ['', Validators.required],
+            image: [''],
+            sizes: this.fb.array([])
+        });
+        this.variantsArray.push(variantGroup);
+    }
+
+    // Remove a variant
+    removeVariant(index: number): void {
+        this.variantsArray.removeAt(index);
+    }
+
+    // Get sizes FormArray for a specific variant
+    getVariantSizes(variantIndex: number): FormArray {
+        return this.variantsArray.at(variantIndex).get('sizes') as FormArray;
+    }
+
+    // Add a size to a specific variant
+    addSizeToVariant(variantIndex: number): void {
+        const sizeGroup = this.fb.group({
+            size: ['', Validators.required],
+            stock: [0, [Validators.required, Validators.min(0)]]
+        });
+        this.getVariantSizes(variantIndex).push(sizeGroup);
+    }
+
+    // Remove a size from a specific variant
+    removeSizeFromVariant(variantIndex: number, sizeIndex: number): void {
+        this.getVariantSizes(variantIndex).removeAt(sizeIndex);
+    }
+
+    showVariantsDetails(product: Product): void {
+        // Create a detailed message showing all variants
+        let detailsMessage = `<div class="flex flex-column gap-3">`;
+        detailsMessage += `<h4 class="font-semibold mb-2">${product.name} - Variantes Detalladas</h4>`;
+
+        product.variants?.forEach((variant, index) => {
+            detailsMessage += `<div class="surface-50 p-3 border-round">`;
+            detailsMessage += `<div class="flex align-items-center gap-2 mb-2">`;
+            detailsMessage += `<div class="w-1rem h-1rem border-circle border-1 border-gray-300" style="background-color: ${this.getColorValue(variant.color)}"></div>`;
+            detailsMessage += `<span class="font-semibold">${variant.color}</span>`;
+            detailsMessage += `</div>`;
+
+            if (variant.sizes && variant.sizes.length > 0) {
+                detailsMessage += `<div class="flex flex-wrap gap-2">`;
+                variant.sizes.forEach(sizeStock => {
+                    const stockClass = sizeStock.stock === 0 ? 'text-red-500' : sizeStock.stock <= 5 ? 'text-orange-500' : 'text-green-500';
+                    detailsMessage += `<div class="flex flex-column align-items-center surface-100 p-2 border-round">`;
+                    detailsMessage += `<span class="font-bold text-sm">${sizeStock.size}</span>`;
+                    detailsMessage += `<span class="text-sm ${stockClass}">${sizeStock.stock} unidades</span>`;
+                    detailsMessage += `</div>`;
+                });
+                detailsMessage += `</div>`;
+            }
+            detailsMessage += `</div>`;
+        });
+
+        detailsMessage += `</div>`;
+
+        this.confirmationService.confirm({
+            message: detailsMessage,
+            header: 'Detalles de Variantes',
+            icon: 'pi pi-info-circle',
+            acceptLabel: 'Cerrar',
+            acceptIcon: 'pi pi-check',
+            acceptButtonStyleClass: 'p-button-primary',
+            rejectVisible: false
+        });
     }
 
 } 

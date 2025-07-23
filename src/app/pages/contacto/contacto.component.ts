@@ -29,7 +29,7 @@ import { ContactForm } from '../../model/contact-form';
         ToastModule,
         ErrorHelperComponent
     ],
-    providers: [MessageService],
+    providers: [],
     templateUrl: './contacto.component.html',
     styleUrl: './contacto.component.scss'
 })

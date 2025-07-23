@@ -8,6 +8,9 @@ export class OrderItem {
     unitPrice: number;
     productDiscount: number; // Product-specific discount amount
     subtotal: number;
+    // Variant information
+    color?: string;
+    size?: string;
 
     constructor(init?: Partial<OrderItem>) {
         this.id = init?.id || '';
@@ -16,6 +19,8 @@ export class OrderItem {
         this.unitPrice = init?.unitPrice || 0;
         this.productDiscount = init?.productDiscount || 0;
         this.subtotal = init?.subtotal || 0;
+        this.color = init?.color;
+        this.size = init?.size;
     }
 
     calculateSubtotal(): number {
@@ -58,6 +63,43 @@ export class OrderItem {
     // Helper method to get product info when needed
     getProductInfo(products: any[]): any {
         return products.find(p => p.id === this.productId);
+    }
+
+    // Enhanced method to get product with caching
+    private _cachedProduct: any = null;
+    private _lastProductFetch: number = 0;
+    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    getProductInfoWithCache(products: any[]): any {
+        const now = Date.now();
+        
+        // Return cached product if still valid
+        if (this._cachedProduct && (now - this._lastProductFetch) < this.CACHE_DURATION) {
+            return this._cachedProduct;
+        }
+
+        // Fetch and cache new product
+        this._cachedProduct = products.find(p => p.id === this.productId);
+        this._lastProductFetch = now;
+        
+        return this._cachedProduct;
+    }
+
+    // Method to get product name with fallback
+    getProductName(products: any[]): string {
+        const product = this.getProductInfoWithCache(products);
+        return product?.name || `Producto ${this.productId}`;
+    }
+
+    // Method to get product image with fallback
+    getProductImage(products: any[]): string {
+        const product = this.getProductInfoWithCache(products);
+        if (product?.variants && product.variants.length > 0) {
+            // Try to find image for the specific variant
+            const variant = product.variants.find((v: any) => v.color === this.color);
+            return variant?.image || product.variants[0].image;
+        }
+        return product?.image || '/assets/images/default-product.jpg';
     }
 }
 

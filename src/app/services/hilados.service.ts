@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { ThreadColor } from '../model/thread-color';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -30,13 +31,13 @@ export class HiladosService {
         return of(this.secondColorPrice);
     }
 
-    createHilado(hilado: Omit<ThreadColor, 'id'>): Observable<ThreadColor> {
+    createHilado(hilado: ThreadColor): Observable<ThreadColor> {
         const newHilado = new ThreadColor({
             ...hilado,
-            id: Date.now().toString()
+            id: this.generateId()
         });
         this.hilados.push(newHilado);
-        return of(newHilado);
+        return of(newHilado).pipe(delay(500));
     }
 
     updateHilado(hilado: ThreadColor): Observable<ThreadColor> {
@@ -62,4 +63,11 @@ export class HiladosService {
         return of(hilado);
     }
     
+    private generateId(): string {
+        const maxId = this.hilados
+            .map(h => Number(h.id))
+            .filter(id => !isNaN(id))
+            .reduce((max, id) => Math.max(max, id), 0);
+        return (maxId + 1).toString();
+    }
 } 

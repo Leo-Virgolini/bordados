@@ -8,7 +8,7 @@
         </div>
     </ng-template>
 </p-confirmdialog>
-<app-spinner [visible]="isLoading"></app-spinner>
+<app-spinner [visible]="isLoading || isLoadingProducts"></app-spinner>
 
 <main class="surface-ground p-3">
     <!-- Return Button inside the section, above the panel -->
@@ -24,44 +24,47 @@
                         tu prenda</h1>
                 </ng-template>
 
-                <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto">
+                <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto" [class.opacity-50]="isLoadingProducts">
                     <!-- Tipo de prenda -->
                     <div>
                         <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
-                        <p-selectbutton id="tipoPrenda" formControlName="tipo" class="w-auto" size="large" [options]="tiposPrenda" optionLabel="label" optionValue="value"
-                            aria-labelledby="basic" required>
-                            <ng-template #item let-prenda>
-                                <p-image [src]="'prendas/' + prenda.image + '.webp'" imageClass="w-full border-round-xl border-500 border-1" [pTooltip]="prenda.label"
-                                    tooltipPosition="top" />
-                                <p-badge value="{{ prenda.precio | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="xlarge" class="absolute top-0 right-0 m-2" />
+                        <p-selectbutton id="tipoPrenda" formControlName="tipo" class="w-auto" size="large" [options]="availableTypes" optionLabel="label" optionValue="value"
+                            aria-labelledby="basic" required (onChange)="onTipoPrendaChange()" [disabled]="isLoadingProducts">
+                            <ng-template #item let-type>
+                                <ng-container>
+                                    <p-image [src]="type.product.variants[0]?.image" imageClass="w-full border-round-xl border-500 border-1" [pTooltip]="type.label"
+                                        tooltipPosition="top" />
+                                    <p-badge *ngIf="type.product.price" [value]="(type.product.price | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="xlarge"
+                                        class="absolute top-0 right-0 m-2" />
+                                </ng-container>
                             </ng-template>
                         </p-selectbutton>
                         <app-error-helper [control]="formulario.get('tipo')"></app-error-helper>
                     </div>
 
-                    <!-- Talle -->
-                    <div>
-                        <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
-                        <div class="flex align-items-center gap-3">
-                            <p-selectbutton [options]="talles" class="w-auto" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                                required />
-                            <p-button label="Guía de Talles" icon="pi pi-tags" severity="info" [rounded]="true" [raised]="true" size="small" (onClick)="openSizeGuide()" />
-                        </div>
-                        <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
-                    </div>
-
                     <!-- Color de prenda -->
-                    <div>
+                    <div *ngIf="formulario.get('tipo')?.value">
                         <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda: *</label>
-                        <p-selectbutton [options]="coloresPrendas" class="w-auto" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                            required>
+                        <p-selectbutton [options]="availableColors" class="w-auto" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value"
+                            aria-labelledby="basic" required (onChange)="onColorPrendaChange()">
                             <ng-template #item let-color>
                                 <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
-                                    [ngStyle]="{'background-color': color.hex, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                    [ngStyle]="{'background-color': getColorValue(color.label), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
                                 </div>
                             </ng-template>
                         </p-selectbutton>
                         <app-error-helper [control]="formulario.get('colorPrenda')"></app-error-helper>
+                    </div>
+
+                    <!-- Talle -->
+                    <div *ngIf="formulario.get('tipo')?.value && formulario.get('colorPrenda')?.value">
+                        <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
+                        <div class="flex align-items-center gap-3">
+                            <p-selectbutton [options]="availableSizes" class="w-auto" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
+                                required (onChange)="onTalleChange()" />
+                            <p-button label="Guía de Talles" icon="pi pi-tags" severity="info" [rounded]="true" [raised]="true" size="small" (onClick)="openSizeGuide()" />
+                        </div>
+                        <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
                     </div>
 
                     <!-- 1° Color del hilado -->
@@ -82,7 +85,7 @@
                     <div>
                         <label for="usarSegundoColor" class="block mb-2 text-lg font-semibold">¿Querés usar un segundo color de hilado?</label>
                         <p-togglebutton formControlName="usarSegundoColor" (onChange)="onChange()" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
-                            aria-label="Confirmation" />
+                            aria-label="Confirmation"></p-togglebutton>
                         <p-badge *ngIf="formulario.get('usarSegundoColor')?.value" value="+{{ precioSegundoColor | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="large"
                             class="ml-2" />
                     </div>
@@ -143,10 +146,10 @@
                     </div>
 
                     <!-- Cantidad -->
-                    <div>
+                    <div *ngIf="formulario.get('talle')?.value">
                         <label for="cantidad" class="block mb-2 text-lg font-semibold">Cantidad: *</label>
-                        <p-selectbutton [options]="cantidades" class="w-auto" formControlName="cantidad" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                            required />
+                        <p-inputnumber formControlName="cantidad" [min]="1" [max]="cantidades.length > 0 ? cantidades[cantidades.length - 1].value : 10" [showButtons]="true"
+                            buttonLayout="horizontal" spinnerMode="horizontal" [step]="1" class="w-auto" placeholder="1" [autofocus]="true" />
                         <app-error-helper [control]="formulario.get('cantidad')"></app-error-helper>
                     </div>
 
@@ -159,50 +162,146 @@
             <div class="sticky" style="top: 7rem;">
                 <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
                     <ng-template #header>
-                        <h1 class="text-2xl font-bold mt-0 text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.5rem"></i> Resumen
-                            del pedido</h1>
+                        <div class="flex align-items-center justify-content-center gap-2">
+                            <i class="pi pi-receipt text-primary" style="font-size: 1.5rem"></i>
+                            <h1 class="text-2xl font-bold mt-0 mb-0 text-center">Resumen del Pedido</h1>
+                        </div>
                     </ng-template>
-                    <div class="flex flex-column gap-3">
-                        <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-ticket text-primary"></i>
-                            Prenda: <strong>{{ getLabel('tipo', tiposPrenda) }}</strong> <span class="text-sm text-green-500">({{ getPrecio('tipo', tiposPrenda) |
-                                currency:'ARS':'symbol':'1.0-0' }})</span>
+
+                    <div class="flex flex-column gap-4">
+                        <!-- Product Selection -->
+                        <div *ngIf="formulario.get('tipo')?.value" class="surface-50 border-round-lg p-3">
+                            <div class="flex align-items-center justify-content-between mb-2">
+                                <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2 mt-0">
+                                    <i class="pi pi-ticket text-primary text-lg"></i>
+                                    <span class="font-semibold text-900">Producto Seleccionado</span>
+                                </h3>
+                                <p-badge [value]="(getPrecio('tipo', availableTypes) | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="large" />
+                            </div>
+                            <div class="text-600 ml-4">{{ getLabel('tipo', availableTypes) }}</div>
                         </div>
-                        <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-tag text-primary"></i>
-                            Talle:<strong>{{ getLabel('talle', talles) }}</strong>
+
+                        <!-- Specifications -->
+                        <div class="surface-50 border-round-lg p-3">
+                            <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2 mt-0">
+                                <i class="pi pi-cog text-primary"></i>
+                                Especificaciones
+                            </h3>
+
+                            <div class="flex flex-column gap-3">
+                                <!-- Color de prenda -->
+                                <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-palette text-blue-500"></i>
+                                        <span class="text-600">Color de prenda</span>
+                                    </div>
+                                    <div class="flex align-items-center gap-2">
+                                        <div class="w-1rem h-1rem border-circle border-1 border-300"
+                                            [ngStyle]="{'background-color': getColorValue(getLabel('colorPrenda', availableColors))}"></div>
+                                        <span class="font-semibold text-900">{{ getLabel('colorPrenda', availableColors) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Talle -->
+                                <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-tag text-green-500"></i>
+                                        <span class="text-600">Talle</span>
+                                    </div>
+                                    <span class="font-semibold text-900">{{ getLabel('talle', availableSizes) }}</span>
+                                </div>
+
+                                <!-- Cantidad -->
+                                <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-box text-orange-500"></i>
+                                        <span class="text-600">Cantidad</span>
+                                    </div>
+                                    <span class="font-semibold text-900">{{ formulario.get('cantidad')?.value }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div *ngIf="formulario.get('colorPrenda')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-palette text-primary"></i>
-                            Color de prenda: <strong>{{ getLabel('colorPrenda', coloresPrendas) }}</strong>
+
+                        <!-- Thread Colors -->
+                        <div class="surface-50 border-round-lg p-3">
+                            <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2 mt-0">
+                                <i class="pi pi-palette text-purple-500"></i>
+                                Colores de Hilado
+                            </h3>
+
+                            <div class="flex flex-column gap-3">
+                                <!-- Primary thread color -->
+                                <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-circle-fill text-primary"></i>
+                                        <span class="text-600">Color principal</span>
+                                    </div>
+                                    <div class="flex align-items-center gap-2">
+                                        <div class="w-1rem h-1rem border-circle border-1 border-300"
+                                            [ngStyle]="{'background-color': getThreadColorCode(formulario.get('colorHilado1')?.value)}"></div>
+                                        <span class="font-semibold text-900">{{ getLabel('colorHilado1', coloresHilado) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Secondary thread color -->
+                                <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-circle-fill text-secondary"></i>
+                                        <span class="text-600">Color secundario</span>
+                                    </div>
+                                    <div class="flex align-items-center gap-2">
+                                        <div class="w-1rem h-1rem border-circle border-1 border-300"
+                                            [ngStyle]="{'background-color': getThreadColorCode(formulario.get('colorHilado2')?.value)}"></div>
+                                        <span class="font-semibold text-900">{{ getLabel('colorHilado2', coloresHilado) }}</span>
+                                        <p-badge [value]="(precioSegundoColor | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="large" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div *ngIf="formulario.get('colorHilado1')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-palette text-primary"></i>
-                            Color del hilado: <strong>{{ getLabel('colorHilado1', coloresHilado) }}</strong>
+
+                        <!-- Image Preview -->
+                        <div *ngIf="imageURL" class="surface-50 border-round-lg p-3">
+                            <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2">
+                                <i class="pi pi-image text-cyan-500"></i>
+                                Imagen Subida
+                            </h3>
+                            <div class="flex justify-content-center">
+                                <p-image [src]="imageURL" [alt]="imageFile?.name" width="300" imageClass="border-round border-1 border-200" [preview]="true" />
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-500">{{ imageFile?.name }}</small>
+                            </div>
                         </div>
-                        <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-palette text-primary"></i>
-                            2° Color del hilado: <strong>{{ getLabel('colorHilado2', coloresHilado) }}</strong> <span class="text-sm text-green-500">({{ precioSegundoColor |
-                                currency:'ARS':'symbol':'1.0-0' }})</span>
+
+                        <!-- Price Summary -->
+                        <div *ngIf="formulario.valid" class="surface-100 border-round-lg p-3">
+                            <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2">
+                                <i class="pi pi-dollar text-green-500"></i>
+                                Resumen de Precios
+                            </h3>
+
+                            <div class="flex flex-column gap-2">
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-600">Precio unitario</span>
+                                    <span class="font-semibold text-900">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-600">Cantidad</span>
+                                    <span class="font-semibold text-900">x {{ formulario.get('cantidad')?.value }}</span>
+                                </div>
+                                <p-divider></p-divider>
+                                <div class="flex justify-content-between align-items-center">
+                                    <span class="text-xl font-bold text-900">Total</span>
+                                    <span class="text-2xl font-bold text-green-600">{{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div *ngIf="formulario.get('cantidad')?.value" class="flex align-items-center gap-2">
-                            <i class="pi pi-box text-primary"></i>
-                            Cantidad: <strong>{{ formulario.get('cantidad')?.value }}</strong>
-                        </div>
-                        <div *ngIf="formulario.valid">
-                            <span class="text-lg text-green-500">{{ calcularPrecioUnitario() | currency:'ARS':'symbol':'1.0-0' }} x {{ formulario.get('cantidad')?.value}}</span>
-                        </div>
-                        <div *ngIf="formulario.valid" class="border-top-1 border-300 pt-2 mt-2">
-                            <p>
-                                <strong class="text-xl">Total estimado:</strong>
-                                <span class="text-3xl font-bold text-green-500"> {{ calcularSubtotal() | currency:'ARS':'symbol':'1.0-0' }} </span>
-                            </p>
-                        </div>
+
+                        <!-- Add to Cart Button -->
                         <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
-                            [loading]="isLoading" [label]="formulario.valid? 'Agregar al carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'danger'"
+                            [loading]="isLoading" [label]="formulario.valid? 'Agregar al Carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'secondary'"
                             class="w-full" />
                     </div>
-
                 </p-panel>
             </div>
         </aside>
@@ -249,8 +348,7 @@
                         <td class="text-center">{{ measurement.chest }}</td>
                         <td class="text-center">{{ measurement.length }}</td>
                         <td class="text-center">
-                            <p-tag [value]="measurement.fit" [severity]="measurement.fit === 'Ajustado' ? 'warn' : measurement.fit === 'Regular' ? 'success' : 'info'"
-                                [rounded]="true" />
+                            <p-tag [value]="measurement.fit" [severity]="measurement.fit === 'Ajustado' ? 'warn' : measurement.fit === 'Regular' ? 'success' : 'info'" [rounded]="true" />
                         </td>
                     </tr>
                 </ng-template>

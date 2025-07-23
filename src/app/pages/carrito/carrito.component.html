@@ -41,7 +41,8 @@
                                         <div class="flex flex-column md:flex-row align-items-center justify-content-center gap-4">
                                             <!-- Product Image -->
                                             <div class="flex flex-column align-items-center flex-shrink-0 gap-3">
-                                                <p-image [src]="item.product.image" [alt]="item.product.name" imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" />
+                                                <p-image [src]="getProductImage(item.product)" [alt]="item.product.name"
+                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" />
                                                 <p-button icon="pi pi-trash" (onClick)="eliminar(item.product.id)" severity="danger" size="large" />
                                             </div>
                                             <!-- Product Details -->
@@ -53,8 +54,8 @@
                                                         <div class="flex align-items-center gap-2 mb-2">
                                                             <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
                                                                 [severity]="item.product.type === 'personalizable' ? 'warn' : 'success'" [rounded]="true" />
-                                                            <i [class]="item.product.type === 'personalizable' ? 'pi pi-palette text-orange-500' : 'pi pi-check-circle text-green-500'" 
-                                                               class="text-lg"></i>
+                                                            <i [class]="item.product.type === 'personalizable' ? 'pi pi-palette text-orange-500' : 'pi pi-check-circle text-green-500'"
+                                                                class="text-lg"></i>
                                                         </div>
                                                     </div>
 
@@ -64,11 +65,12 @@
                                                             <div class="flex flex-column gap-2">
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-tag text-primary"></i>
-                                                                    <span class="text-600">Talle: <span class="font-semibold text-900">{{ item.product.size || '-' }}</span></span>
+                                                                    <span class="text-600">Talle: <span class="font-semibold text-900">{{ getProductSize(item.product) || '-'
+                                                                            }}</span></span>
                                                                 </div>
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-palette text-primary"></i>
-                                                                    <span class="text-600">Color de prenda: <span class="font-semibold text-900">{{ item.product.garmentColor || '-'
+                                                                    <span class="text-600">Color de prenda: <span class="font-semibold text-900">{{ getProductColor(item.product) || '-'
                                                                             }}</span></span>
                                                                 </div>
                                                             </div>
@@ -100,7 +102,7 @@
                                                             <div class="flex align-items-center gap-2">
                                                                 <span class="text-600 font-medium">Cantidad:</span>
                                                                 <p-inputnumber #quantityInput [formControl]="getCantidadControl(i)" [showButtons]="true" buttonLayout="horizontal"
-                                                                    [inputId]="'quantity-' + i" spinnerMode="horizontal" [min]="1" [step]="1" [max]="100"
+                                                                    [inputId]="'quantity-' + i" spinnerMode="horizontal" [min]="1" [step]="1" [max]="getMaxStock(item.product)"
                                                                     (onInput)="actualizarCantidad(item, $event.value || 1, quantityInput)" allowEmpty="false"
                                                                     inputStyleClass="w-4rem text-center font-bold text-color-secondary">
                                                                     <ng-template #incrementbuttonicon>

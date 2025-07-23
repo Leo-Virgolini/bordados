@@ -2,7 +2,6 @@ import { ProductBase } from './product-base';
 
 export class Product extends ProductBase {
 
-    stock!: number;
     tags!: string[];
     category!: string;
     rating!: number;
@@ -11,7 +10,7 @@ export class Product extends ProductBase {
     isFeatured!: boolean;
 
     constructor(init?: Partial<Product>) {
-        super();
+        super(init);
         this.type = 'bordado';
         Object.assign(this, init);
     }

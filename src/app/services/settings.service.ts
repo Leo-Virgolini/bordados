@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 
 export interface AppSettings {
     freeShippingThreshold: number;
+    whatsappPhone: string;
 }
 
 @Injectable({
@@ -11,7 +12,8 @@ export interface AppSettings {
 export class SettingsService {
 
     private appSettings: AppSettings = {
-        freeShippingThreshold: 50000
+        freeShippingThreshold: 50000,
+        whatsappPhone: '+54 9 11 1234-5678'
     };
 
     // Get all settings
@@ -36,6 +38,18 @@ export class SettingsService {
         const updatedSettings = { ...this.appSettings, ...settings };
         this.appSettings = updatedSettings;
         return of({ ...updatedSettings });
+    }
+
+    // Get WhatsApp phone number
+    getWhatsAppPhone(): Observable<string> {
+        return of(this.appSettings.whatsappPhone);
+    }
+
+    // Update WhatsApp phone number
+    updateWhatsAppPhone(phone: string): Observable<string> {
+        const updatedSettings = { ...this.appSettings, whatsappPhone: phone };
+        this.appSettings = updatedSettings;
+        return of(phone);
     }
 
 } 
