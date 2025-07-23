@@ -7,7 +7,7 @@ import { Carousel } from 'primeng/carousel';
 import { Image } from 'primeng/image';
 import { Tag } from 'primeng/tag';
 import { AnimateOnScrollModule } from 'primeng/animateonscroll';
-import { Testimonial } from '../../model/testimonial';
+import { Testimonial } from '../../models/testimonial';
 
 @Component({
   selector: 'app-home',

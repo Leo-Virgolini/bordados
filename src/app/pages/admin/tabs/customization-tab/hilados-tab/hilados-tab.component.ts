@@ -17,7 +17,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../../../../shared/error-helper/error-helper.component';
 import { HiladosService } from '../../../../../services/hilados.service';
-import { ThreadColor } from '../../../../../model/thread-color';
+import { ThreadColor } from '../../../../../models/thread-color';
 
 @Component({
     selector: 'app-hilados-tab',

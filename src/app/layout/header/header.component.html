@@ -40,11 +40,18 @@
 
                 <!-- Shopping Cart Button with Enhanced Badge -->
                 <div class="relative">
-                    <p-overlaybadge *ngIf="getCarritoSize()" [value]="getCarritoSize()" severity="danger" badgeSize="small">
-                        <p-button routerLink="/carrito" [rounded]="true" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200">
+                    <p-overlaybadge *ngIf="cartItemsDisplay()" [value]="cartItemsDisplay()" severity="danger" badgeSize="small">
+                        <p-button routerLink="/carrito" [rounded]="true" [pTooltip]="cartUniqueItems() + ' producto' + (cartUniqueItems() !== 1 ? 's' : '') + ' - ' + cartTotalFormatted()"
+                            tooltipPosition="bottom" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200">
                             <i class="pi pi-shopping-cart" style="font-size: 1.2rem"></i>
                         </p-button>
                     </p-overlaybadge>
+
+                    <!-- Fallback for empty cart -->
+                    <p-button *ngIf="!cartItemsDisplay()" routerLink="/carrito" [rounded]="true" pTooltip="Carrito vacío" tooltipPosition="bottom"
+                        styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200">
+                        <i class="pi pi-shopping-cart" style="font-size: 1.2rem"></i>
+                    </p-button>
                 </div>
 
                 <!-- Dark Mode Toggle -->

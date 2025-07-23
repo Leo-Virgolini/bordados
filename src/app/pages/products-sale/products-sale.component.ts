@@ -21,14 +21,14 @@ import { ConfirmPopup } from 'primeng/confirmpopup';
 import { Toast } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CarritoService } from '../../services/carrito.service';
-import { SortOption } from '../../model/sort-option';
+import { SortOption } from '../../models/sort-option';
 import { ProductsService } from '../../services/products.service';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { InputNumber } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
-import { Product } from '../../model/product';
-import { CartItem } from '../../model/cart-item';
+import { Product } from '../../models/product';
+import { CartItem } from '../../models/cart-item';
 
 @Component({
     selector: 'app-products-sale',

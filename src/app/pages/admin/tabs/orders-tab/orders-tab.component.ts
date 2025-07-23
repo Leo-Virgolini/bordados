@@ -20,15 +20,14 @@ import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
 import { OrdersService } from '../../../../services/orders.service';
-import { Order, OrderItem } from '../../../../model/order';
-import { Customer } from '../../../../model/customer';
-import { SalesSummary } from '../../../../model/sales-summary';
+import { Order, OrderItem } from '../../../../models/order';
+import { SalesSummary } from '../../../../models/sales-summary';
 import { ProductsService } from '../../../../services/products.service';
-import { Product } from '../../../../model/product';
+import { Product } from '../../../../models/product';
 import { CouponsService, DiscountCoupon } from '../../../../services/coupons.service';
 
 @Component({
-    selector: 'app-sales-tab',
+    selector: 'app-orders-tab',
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -43,20 +42,17 @@ import { CouponsService, DiscountCoupon } from '../../../../services/coupons.ser
         Tag,
         InputGroup,
         InputGroupAddon,
-        InputMask,
-        Textarea,
         DatePickerModule,
         ErrorHelperComponent
     ],
     providers: [],
-    templateUrl: './sales-tab.component.html',
-    styleUrl: './sales-tab.component.scss'
+    templateUrl: './orders-tab.component.html',
+    styleUrl: './orders-tab.component.scss'
 })
-export class SalesTabComponent implements OnInit {
+export class OrdersTabComponent implements OnInit {
 
     // Sales Management
     orders: Order[] = [];
-    customers: Customer[] = [];
     products: Product[] = [];
     salesSummary: SalesSummary = new SalesSummary({
         monthlySales: 0,
@@ -65,13 +61,6 @@ export class SalesTabComponent implements OnInit {
         averageTicket: 0
     });
     ordersLoading: boolean = false;
-    customersLoading: boolean = false;
-
-    // Customer Dialog
-    showCustomerDialog: boolean = false;
-    editingCustomer: Customer | null = null;
-    customerForm!: FormGroup;
-    customerLoading: boolean = false;
 
     // Order Dialog
     showOrderDialog: boolean = false;
@@ -84,44 +73,12 @@ export class SalesTabComponent implements OnInit {
     selectedCoupon: DiscountCoupon | null = null;
     couponLoading: boolean = false;
 
-    // Customer Details Dialog
-    showCustomerDetailsDialog: boolean = false;
-    selectedCustomer: Customer | null = null;
-
     // Order Details Dialog
     showOrderDetailsDialog: boolean = false;
     selectedOrder: Order | null = null;
 
     // Tab Management
     activeTabIndex: number = 0;
-
-    // Provinces for Argentina
-    provinces = [
-        { label: 'Buenos Aires', value: 'Buenos Aires' },
-        { label: 'CABA', value: 'CABA' },
-        { label: 'Catamarca', value: 'Catamarca' },
-        { label: 'Chaco', value: 'Chaco' },
-        { label: 'Chubut', value: 'Chubut' },
-        { label: 'Córdoba', value: 'Córdoba' },
-        { label: 'Corrientes', value: 'Corrientes' },
-        { label: 'Entre Ríos', value: 'Entre Ríos' },
-        { label: 'Formosa', value: 'Formosa' },
-        { label: 'Jujuy', value: 'Jujuy' },
-        { label: 'La Pampa', value: 'La Pampa' },
-        { label: 'La Rioja', value: 'La Rioja' },
-        { label: 'Mendoza', value: 'Mendoza' },
-        { label: 'Misiones', value: 'Misiones' },
-        { label: 'Neuquén', value: 'Neuquén' },
-        { label: 'Río Negro', value: 'Río Negro' },
-        { label: 'Salta', value: 'Salta' },
-        { label: 'San Juan', value: 'San Juan' },
-        { label: 'San Luis', value: 'San Luis' },
-        { label: 'Santa Cruz', value: 'Santa Cruz' },
-        { label: 'Santa Fe', value: 'Santa Fe' },
-        { label: 'Santiago del Estero', value: 'Santiago del Estero' },
-        { label: 'Tierra del Fuego', value: 'Tierra del Fuego' },
-        { label: 'Tucumán', value: 'Tucumán' }
-    ];
 
     // Order status options
     orderStatusOptions = [
@@ -159,20 +116,6 @@ export class SalesTabComponent implements OnInit {
     }
 
     private initForms(): void {
-        // Customer Form
-        this.customerForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(2)]],
-            lastName: ['', [Validators.required, Validators.minLength(2)]],
-            email: ['', [Validators.required, Validators.email]],
-            phone: ['', [Validators.required, Validators.minLength(10)]],
-            dni: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(8)]],
-            province: ['', Validators.required],
-            city: ['', [Validators.required, Validators.minLength(2)]],
-            postalCode: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(5)]],
-            address: ['', [Validators.required, Validators.minLength(5)]],
-            floorApartment: ['']
-        });
-
         // Order Form
         this.orderForm = this.fb.group({
             id: ['', Validators.required],
@@ -198,7 +141,6 @@ export class SalesTabComponent implements OnInit {
 
     private loadSalesData(): void {
         this.ordersLoading = true;
-        this.customersLoading = true;
 
         // Load orders
         this.ordersService.getOrders().subscribe({
@@ -213,22 +155,6 @@ export class SalesTabComponent implements OnInit {
                     detail: 'Error al cargar los pedidos: ' + error.message
                 });
                 this.ordersLoading = false;
-            }
-        });
-
-        // Load customers
-        this.ordersService.getCustomers().subscribe({
-            next: (customers) => {
-                this.customers = customers;
-                this.customersLoading = false;
-            },
-            error: (error) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Error al cargar los clientes: ' + error.message
-                });
-                this.customersLoading = false;
             }
         });
 
@@ -295,14 +221,6 @@ export class SalesTabComponent implements OnInit {
         return this.salesSummary.averageTicket;
     }
 
-    // Get customers with fullName for dropdown
-    get customersWithFullName() {
-        return this.customers.map(customer => ({
-            ...customer,
-            fullName: `${customer.name} ${customer.lastName}`
-        }));
-    }
-
     // Order status helpers
     getOrderStatusLabel(estado: string): string {
         const statusMap: { [key: string]: string } = {
@@ -336,165 +254,6 @@ export class SalesTabComponent implements OnInit {
             'mercadopago': 'MercadoPago'
         };
         return methodMap[metodo] || metodo;
-    }
-
-    // Customer Management Methods
-    getCustomerOrderCount(customerId: string): number {
-        return this.orders.filter(order => order.customer.id === customerId).length;
-    }
-
-    getCustomerTotalSpent(customerId: string): number {
-        return this.orders
-            .filter(order => order.customer.id === customerId)
-            .reduce((total, order) => total + order.total, 0);
-    }
-
-    openCustomerDialog(customer?: Customer): void {
-        this.editingCustomer = customer || null;
-        if (customer) {
-            this.customerForm.patchValue(customer);
-        } else {
-            this.customerForm.reset();
-        }
-        this.showCustomerDialog = true;
-    }
-
-    saveCustomer(): void {
-        if (this.customerForm.valid) {
-            this.customerLoading = true;
-            const formValue = this.customerForm.value;
-
-            if (this.editingCustomer) {
-                // Update existing customer
-                const updatedCustomer = { ...this.editingCustomer, ...formValue };
-                this.ordersService.updateCustomer(updatedCustomer).subscribe({
-                    next: (customer) => {
-                        const index = this.customers.findIndex(c => c.id === customer.id);
-                        if (index !== -1) {
-                            this.customers[index] = customer;
-                        }
-                        // Update selectedCustomer if it's the same customer being edited
-                        if (this.selectedCustomer && this.selectedCustomer.id === customer.id) {
-                            this.selectedCustomer = customer;
-                        }
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Actualizado',
-                            detail: 'Cliente actualizado correctamente'
-                        });
-                        this.showCustomerDialog = false;
-                        this.editingCustomer = null;
-                        this.customerLoading = false;
-                    },
-                    error: (error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Error al actualizar el cliente: ' + error.message
-                        });
-                        this.customerLoading = false;
-                    }
-                });
-            } else {
-                // Create new customer
-                this.ordersService.createCustomer(formValue).subscribe({
-                    next: (newCustomer) => {
-                        this.customers.push(newCustomer);
-                        // Update selectedCustomer if we want to show the newly created customer
-                        if (this.showCustomerDetailsDialog) {
-                            this.selectedCustomer = newCustomer;
-                        }
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Creado',
-                            detail: 'Cliente creado correctamente'
-                        });
-                        this.showCustomerDialog = false;
-                        this.editingCustomer = null;
-                        this.customerLoading = false;
-                    },
-                    error: (error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Error al crear el cliente: ' + error.message
-                        });
-                        this.customerLoading = false;
-                    }
-                });
-            }
-        }
-    }
-
-    viewCustomer(customer: Customer): void {
-        this.selectedCustomer = customer;
-        this.showCustomerDetailsDialog = true;
-    }
-
-    editCustomer(customer: Customer): void {
-        this.openCustomerDialog(customer);
-    }
-
-    confirmDeleteCustomer(customer: Customer): void {
-        const orderCount = this.getCustomerOrderCount(customer.id);
-        const message = orderCount > 0
-            ? `¿Estás seguro de eliminar al cliente ID: ${customer.id} - ${customer.name} ${customer.lastName}? Tiene ${orderCount} pedido/s asociado/s.`
-            : `¿Estás seguro de eliminar al cliente ID: ${customer.id} - ${customer.name} ${customer.lastName}?`;
-
-        this.confirmationService.confirm({
-            message: message,
-            header: 'Confirmar eliminación',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.deleteCustomer(customer);
-            }
-        });
-    }
-
-    deleteCustomer(customer: Customer): void {
-        this.ordersService.deleteCustomer(customer.id).subscribe({
-            next: () => {
-                this.customers = this.customers.filter(c => c.id !== customer.id);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Cliente eliminado',
-                    detail: `El cliente ID: ${customer.id} - ${customer.name} ${customer.lastName} ha sido eliminado correctamente`
-                });
-            },
-            error: (error) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Error al eliminar el cliente: ' + error.message
-                });
-            }
-        });
-    }
-
-    exportCustomers(): void {
-        // Create CSV content for customers
-        const csvContent = this.customers.map(customer =>
-            `${customer.id},${customer.name} ${customer.lastName},${customer.email},${customer.phone},${customer.dni},${customer.province},${customer.city},${customer.postalCode},${customer.address},${customer.floorApartment || ''},${this.getCustomerOrderCount(customer.id)},${this.getCustomerTotalSpent(customer.id)}`
-        ).join('\n');
-
-        // Add header
-        const header = 'ID,Nombre,Email,Teléfono,DNI,Provincia,Localidad,Código Postal,Dirección,Piso/Depto,Pedidos,Total Gastado\n';
-        const fullContent = header + csvContent;
-
-        // Create and download CSV file
-        const blob = new Blob([fullContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-        this.messageService.add({
-            severity: 'success',
-            summary: 'Exportación exitosa',
-            detail: 'Los clientes han sido exportados correctamente'
-        });
     }
 
     // Order Management Methods
@@ -657,19 +416,8 @@ export class SalesTabComponent implements OnInit {
     }
 
     onCustomerChange(): void {
-        const customerId = this.orderForm.get('customerId')?.value;
-        const selectedCustomer = this.customers.find(c => c.id === customerId);
-
-        if (selectedCustomer) {
-            // Auto-fill shipping address with customer's address
-            this.orderForm.patchValue({
-                shippingAddress: selectedCustomer.address,
-                shippingCity: selectedCustomer.city,
-                shippingProvince: selectedCustomer.province,
-                shippingPostalCode: selectedCustomer.postalCode,
-                shippingFloorApartment: selectedCustomer.floorApartment || ''
-            });
-        }
+        // This method will need to be updated when customer data is available
+        // For now, it's a placeholder
     }
 
     getCurrentTaxAmount(): number {
@@ -789,7 +537,8 @@ export class SalesTabComponent implements OnInit {
         }
 
         const formValue = this.orderForm.value;
-        const selectedCustomer = this.customers.find(c => c.id === formValue.customerId);
+        // This will need to be updated when customer data is available
+        const selectedCustomer = null;
 
         if (!selectedCustomer) {
             this.messageService.add({
@@ -1077,27 +826,10 @@ export class SalesTabComponent implements OnInit {
         console.log('Sort event:', event);
     }
 
-    // Customer Details Dialog Methods
-    openCustomerDetailsDialog(customer: Customer): void {
-        this.selectedCustomer = customer;
-        this.showCustomerDetailsDialog = true;
-    }
-
-    getCustomerOrders(customerId: string): Order[] {
-        return this.orders.filter(order => order.customer.id === customerId);
-    }
-
-    getPendingOrders(): Order[] {
-        return this.orders.filter(order => order.status === 'pendiente');
-    }
-
+    // Helper methods
     getProductName(productId: string): string {
         const product = this.products.find(p => p.id === productId);
         return product?.name || `Producto ${productId}`;
-    }
-
-    getProductNameForOrderItem(item: any): string {
-        return item.getProductName(this.products);
     }
 
     // Helper methods for item calculations

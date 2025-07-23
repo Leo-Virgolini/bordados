@@ -38,4 +38,5 @@ export class SalesSummary {
     isAboveTarget(targetSales: number): boolean {
         return this.monthlySales >= targetSales;
     }
+
 } 

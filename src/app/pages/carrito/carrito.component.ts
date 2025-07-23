@@ -1,5 +1,5 @@
 import { Component, ViewChildren, QueryList, ElementRef, OnInit } from '@angular/core';
-import { CartItem } from '../../model/cart-item';
+import { CartItem } from '../../models/cart-item';
 import { Button } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { Panel } from 'primeng/panel';
@@ -124,6 +124,18 @@ export class CarritoComponent implements OnInit {
 
   calcularTotal(): number {
     return this.items.reduce((total, item) => total + item.total, 0);
+  }
+
+  calcularTotalOriginal(): number {
+    return this.items.reduce((total, item) => total + item.originalTotal, 0);
+  }
+
+  calcularAhorroTotal(): number {
+    return this.items.reduce((total, item) => total + item.discountAmount, 0);
+  }
+
+  tieneDescuentos(): boolean {
+    return this.items.some(item => item.hasDiscount);
   }
 
   isShippingFree(): boolean {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { ThreadColor } from '../model/thread-color';
+import { ThreadColor } from '../models/thread-color';
 import { delay } from 'rxjs/operators';
 
 @Injectable({

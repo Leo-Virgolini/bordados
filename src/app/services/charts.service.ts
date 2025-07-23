@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { OrdersService } from './orders.service';
 import { Observable, of, delay } from 'rxjs';
-import { ChartData } from '../model/chart-data';
+import { ChartData } from '../models/chart-data';
 
 @Injectable({
     providedIn: 'root'

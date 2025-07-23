@@ -7,7 +7,7 @@ import { Card } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { ChartsService } from '../../../../services/charts.service';
-import { ChartData, SalesChartData } from '../../../../model/chart-data';
+import { ChartData, SalesChartData } from '../../../../models/chart-data';
 
 @Component({
     selector: 'app-analytics-tab',

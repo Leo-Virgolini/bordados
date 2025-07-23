@@ -6,11 +6,11 @@ import { AuthService } from '../services/auth.service';
   providedIn: 'root'
 })
 export class AdminGuard implements CanActivate {
-  
+
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   canActivate(): boolean {
     if (this.authService.isAdmin()) {
@@ -21,4 +21,5 @@ export class AdminGuard implements CanActivate {
       return false;
     }
   }
+
 } 

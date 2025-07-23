@@ -13,7 +13,7 @@
 
     <!-- Return to Products Button -->
     <div class="mb-4">
-        <p-button label="Volver a Productos" icon="pi pi-arrow-left" routerLink="/personalizar" [outlined]="true" [rounded]="true" severity="primary" />
+        <p-button label="Volver a Productos" icon="pi pi-arrow-left" routerLink="/productos" [outlined]="true" [rounded]="true" severity="primary" />
     </div>
     <section>
         <p-panel class="container mx-auto">
@@ -96,7 +96,16 @@
                                                         <div class="flex align-items-center gap-4">
                                                             <div class="text-center">
                                                                 <div class="text-600 text-sm">Precio Unitario</div>
-                                                                <div class="text-xl font-bold text-primary">{{ item.product.price | currency:'ARS':'symbol':'1.0-0' }}</div>
+                                                                <div class="flex flex-column align-items-center gap-1">
+                                                                    <!-- Discounted Price -->
+                                                                    <div class="text-xl font-bold text-primary">{{ item.unitPriceFormatted }}</div>
+
+                                                                    <!-- Original Price (if discounted) -->
+                                                                    <div *ngIf="item.hasDiscount" class="flex align-items-center gap-2">
+                                                                        <span class="text-sm text-500 line-through">{{ item.originalUnitPriceFormatted }}</span>
+                                                                        <p-tag [value]="'-' + item.discountPercentage + '%'" severity="danger" [rounded]="true" size="small"></p-tag>
+                                                                    </div>
+                                                                </div>
                                                             </div>
 
                                                             <div class="flex align-items-center gap-2">
@@ -118,9 +127,20 @@
                                                         <div class="flex align-items-center gap-3">
                                                             <div class="text-right">
                                                                 <div class="text-600 text-sm">Subtotal</div>
-                                                                <div class="text-2xl font-bold text-green-600">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
-                                                            </div>
+                                                                <div class="flex flex-column align-items-end gap-1">
+                                                                    <!-- Total with discount -->
+                                                                    <div class="text-2xl font-bold text-green-600">{{ item.totalFormatted }}</div>
 
+                                                                    <!-- Original total (if discounted) -->
+                                                                    <div *ngIf="item.hasDiscount" class="text-sm text-500 line-through">{{ item.originalTotal |
+                                                                        currency:'ARS':'symbol':'1.0-0' }}</div>
+
+                                                                    <!-- Savings amount -->
+                                                                    <div *ngIf="item.hasDiscount" class="text-xs text-green-600 font-semibold">
+                                                                        Ahorras: {{ item.discountAmount | currency:'ARS':'symbol':'1.0-0' }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -154,6 +174,18 @@
                                 <div class="flex justify-content-between align-items-center">
                                     <span class="text-600"><i class="pi pi-money-bill text-primary"></i> Subtotal ({{ items.length }} item{{ items.length > 1 ? 's' : '' }})</span>
                                     <span class="font-semibold">{{ calcularTotal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                </div>
+
+                                <!-- Show original total and savings if there are discounts -->
+                                <div *ngIf="tieneDescuentos()" class="flex flex-column gap-2 p-3 surface-100 border-round">
+                                    <div class="flex justify-content-between align-items-center">
+                                        <span class="text-600 text-sm">Precio original:</span>
+                                        <span class="text-500 line-through text-sm">{{ calcularTotalOriginal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                    </div>
+                                    <div class="flex justify-content-between align-items-center">
+                                        <span class="text-green-600 font-semibold text-sm">Ahorro total:</span>
+                                        <span class="text-green-600 font-bold">{{ calcularAhorroTotal() | currency:'ARS':'symbol':'1.0-0' }}</span>
+                                    </div>
                                 </div>
 
                                 <div class="flex justify-content-between align-items-center">

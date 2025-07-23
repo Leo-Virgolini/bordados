@@ -21,16 +21,16 @@ import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
 import { es } from '../../es.json'
 import { CarritoService } from '../../services/carrito.service';
-import { CartItem } from '../../model/cart-item';
-import { ThreadColor } from '../../model/thread-color';
+import { CartItem } from '../../models/cart-item';
+import { ThreadColor } from '../../models/thread-color';
 import { Router } from '@angular/router';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { Tag } from 'primeng/tag';
-import { ProductCustomizable } from '../../model/product-customizable';
+import { ProductCustomizable } from '../../models/product-customizable';
 import { RouterLink } from '@angular/router';
 import { HiladosService } from '../../services/hilados.service';
 import { ProductsService } from '../../services/products.service';
-import { ProductSizeStock } from '../../model/product-variant';
+import { ProductSizeStock } from '../../models/product-variant';
 import { InputNumber } from 'primeng/inputnumber';
 
 @Component({

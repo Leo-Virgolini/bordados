@@ -1,16 +1,29 @@
-import { StockableItem } from './stockable-item';
+export class ThreadColor {
 
-export class ThreadColor extends StockableItem {
-
+    id: string;
+    name: string;
+    active: boolean;
     code: string;
     stock: number;
 
     constructor(init?: Partial<ThreadColor>) {
-        super(init?.id || '', init?.name || '', init?.active ?? true);
+        this.id = init?.id || '';
+        this.name = init?.name || '';
+        this.active = init?.active ?? true;
         this.code = init?.code || '';
         this.stock = init?.stock || 0;
     }
 
+    // Display and key properties
+    get displayName(): string {
+        return this.name;
+    }
+
+    get key(): string {
+        return this.id;
+    }
+
+    // Stock-related getters
     get totalStock(): number {
         return this.stock;
     }
@@ -23,10 +36,45 @@ export class ThreadColor extends StockableItem {
         return this.stock === 0;
     }
 
+    get stockStatus(): string {
+        if (this.isOutOfStock) return 'Sin Stock';
+        if (this.isLowStock) return 'Stock Bajo';
+        return 'Stock Normal';
+    }
+
+    get stockStatusColor(): string {
+        if (this.isOutOfStock) return 'danger';
+        if (this.isLowStock) return 'warn';
+        return 'success';
+    }
+
+    get isActive(): boolean {
+        return this.active;
+    }
+
+    // Activation methods
+    activate(): void {
+        this.active = true;
+    }
+
+    deactivate(): void {
+        this.active = false;
+    }
+
+    toggleActive(): void {
+        this.active = !this.active;
+    }
+
+    // Validation methods
+    validate(): boolean {
+        return !!(this.id && this.name && this.active !== undefined);
+    }
+
     isValid(): boolean {
         return !!(this.name && this.code && this.stock >= 0);
     }
 
+    // Color-specific methods
     isHexColor(): boolean {
         return /^#[0-9A-F]{6}$/i.test(this.code);
     }
@@ -50,6 +98,7 @@ export class ThreadColor extends StockableItem {
         return brightness > 128 ? '#000000' : '#FFFFFF';
     }
 
+    // Stock management methods
     decreaseStock(amount: number): boolean {
         if (this.stock >= amount) {
             this.stock -= amount;
@@ -61,5 +110,14 @@ export class ThreadColor extends StockableItem {
     increaseStock(amount: number): void {
         this.stock += amount;
     }
-    
+
+    // Utility methods
+    equals(other: ThreadColor): boolean {
+        return this.id === other.id;
+    }
+
+    toString(): string {
+        return this.name;
+    }
+
 } 

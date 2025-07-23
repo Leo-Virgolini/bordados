@@ -29,12 +29,15 @@
                 <i class="pi pi-shopping-bag mr-2"></i>Productos
             </p-tab>
             <p-tab value="2">
-                <i class="pi pi-chart-line mr-2"></i>Pedidos
+                <i class="pi pi-users mr-2"></i>Clientes
             </p-tab>
             <p-tab value="3">
-                <i class="pi pi-chart-bar mr-2"></i>Analytics
+                <i class="pi pi-chart-line mr-2"></i>Pedidos
             </p-tab>
             <p-tab value="4">
+                <i class="pi pi-chart-bar mr-2"></i>Estadísticas
+            </p-tab>
+            <p-tab value="5">
                 <i class="pi pi-cog mr-2"></i>Configuración
             </p-tab>
         </p-tablist>
@@ -49,18 +52,23 @@
                 <app-products-tab></app-products-tab>
             </p-tabpanel>
 
-            <!-- Sales Tab Panel -->
+            <!-- Customers Tab Panel -->
             <p-tabpanel value="2">
-                <app-sales-tab></app-sales-tab>
+                <app-customers-tab></app-customers-tab>
+            </p-tabpanel>
+
+            <!-- Orders Tab Panel -->
+            <p-tabpanel value="3">
+                <app-orders-tab></app-orders-tab>
             </p-tabpanel>
 
             <!-- Analytics Tab Panel -->
-            <p-tabpanel value="3">
+            <p-tabpanel value="4">
                 <app-analytics-tab></app-analytics-tab>
             </p-tabpanel>
 
             <!-- Settings Tab Panel -->
-            <p-tabpanel value="4">
+            <p-tabpanel value="5">
                 <app-settings-tab></app-settings-tab>
             </p-tabpanel>
 

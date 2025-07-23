@@ -9,12 +9,13 @@ import { Toast } from 'primeng/toast';
 import { TabsModule } from 'primeng/tabs';
 import { AuthService } from '../../services/auth.service';
 import { ProductsTabComponent } from './tabs/products-tab/products-tab.component';
-import { SalesTabComponent } from './tabs/sales-tab/sales-tab.component';
+import { OrdersTabComponent } from './tabs/orders-tab/orders-tab.component';
 import { AnalyticsTabComponent } from './tabs/analytics-tab/analytics-tab.component';
-import { AdminUser } from '../../model/admin-user';
+import { AdminUser } from '../../models/admin-user';
 import { CustomizationTabComponent } from './tabs/customization-tab/customization-tab.component';
 import { SettingsTabComponent } from './tabs/settings-tab/settings-tab.component';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { CustomersTabComponent } from './tabs/customers-tab/customers-tab.component';
 
 @Component({
     selector: 'app-admin-customization',
@@ -26,10 +27,11 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
         Toast,
         ConfirmDialog,
         ProductsTabComponent,
-        SalesTabComponent,
+        OrdersTabComponent,
         CustomizationTabComponent,
         AnalyticsTabComponent,
-        SettingsTabComponent
+        SettingsTabComponent,
+        CustomersTabComponent
     ],
     providers: [],
     templateUrl: './admin-tabs.component.html',

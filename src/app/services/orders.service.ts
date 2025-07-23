@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
-import { Customer } from '../model/customer';
-import { Order, OrderItem } from '../model/order';
-import { SalesSummary } from '../model/sales-summary';
+import { Customer } from '../models/customer';
+import { Order, OrderItem } from '../models/order';
+import { SalesSummary } from '../models/sales-summary';
 
 @Injectable({
     providedIn: 'root'

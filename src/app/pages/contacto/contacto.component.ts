@@ -11,7 +11,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Textarea } from 'primeng/textarea';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
-import { ContactForm } from '../../model/contact-form';
+import { ContactForm } from '../../models/contact-form';
 
 @Component({
     selector: 'app-contacto',

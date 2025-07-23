@@ -16,11 +16,9 @@ import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { Image } from 'primeng/image';
-import { Toast } from 'primeng/toast';
 import { ErrorHelperComponent } from '../../../../../shared/error-helper/error-helper.component';
 import { ProductsService } from '../../../../../services/products.service';
-import { ProductCustomizable } from '../../../../../model/product-customizable';
-import { Product } from '../../../../../model/product';
+import { ProductCustomizable } from '../../../../../models/product-customizable';
 
 @Component({
     selector: 'app-product-types-tab',
@@ -39,7 +37,6 @@ import { Product } from '../../../../../model/product';
         Textarea,
         Select,
         Image,
-        Toast,
         ErrorHelperComponent
     ],
     providers: [],

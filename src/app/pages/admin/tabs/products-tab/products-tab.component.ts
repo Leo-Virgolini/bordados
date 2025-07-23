@@ -17,7 +17,7 @@ import { TableModule } from 'primeng/table';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
-import { Product } from '../../../../model/product';
+import { Product } from '../../../../models/product';
 import { ProductsService } from '../../../../services/products.service';
 import { Checkbox } from 'primeng/checkbox';
 import { Textarea } from 'primeng/textarea';

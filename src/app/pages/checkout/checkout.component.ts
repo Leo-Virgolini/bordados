@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Router, RouterLink } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
-import { CartItem } from '../../model/cart-item';
+import { CartItem } from '../../models/cart-item';
 import { SettingsService } from '../../services/settings.service';
 import { CouponsService, DiscountCoupon } from '../../services/coupons.service';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
