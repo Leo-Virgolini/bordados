@@ -6,11 +6,19 @@ export class ProductCustomizable extends ProductBase {
     threadColor1!: ThreadColor;
     threadColor2?: ThreadColor;
     customImage!: string;
+    customText?: string;
+    customTextColor?: ThreadColor;
 
     constructor(init?: Partial<ProductCustomizable>) {
         super(init);
         this.type = 'personalizable';
-        Object.assign(this, init);
+        if (init) {
+            this.threadColor1 = init.threadColor1 || {} as ThreadColor;
+            this.threadColor2 = init.threadColor2;
+            this.customImage = init.customImage || '';
+            this.customText = init.customText;
+            this.customTextColor = init.customTextColor;
+        }
     }
 
     // Helper methods for thread color management

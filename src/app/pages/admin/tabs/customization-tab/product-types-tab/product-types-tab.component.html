@@ -100,7 +100,7 @@
         <div class="grid">
             <div class="col-12 md:col-6">
                 <label for="productDescription" class="block mb-2 font-semibold">Descripción *</label>
-                <textarea id="productDescription" pInputTextarea formControlName="description" rows="3" class="w-full" placeholder="Descripción del producto personalizable"></textarea>
+                <textarea id="productDescription" pTextarea formControlName="description" rows="3" class="w-full" placeholder="Descripción del producto personalizable"></textarea>
                 <app-error-helper [control]="productForm.get('description')"></app-error-helper>
             </div>
 

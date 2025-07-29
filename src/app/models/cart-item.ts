@@ -1,8 +1,9 @@
-import { ProductBase } from "./product-base";
+import { Product } from "./product";
+import { ProductCustomizable } from "./product-customizable";
 
 export class CartItem {
 
-    product!: ProductBase;
+    product!: Product | ProductCustomizable;
     quantity!: number;
 
     constructor(init?: Partial<CartItem>) {
@@ -66,6 +67,72 @@ export class CartItem {
             style: 'currency',
             currency: 'ARS'
         }).format(this.originalUnitPrice);
+    }
+
+    // Helper methods to get product information
+    getProductName(): string {
+        return this.product?.name || 'Producto no disponible';
+    }
+
+    getProductImage(): string {
+        if (this.product?.type === 'personalizable' && (this.product as ProductCustomizable).customImage) {
+            return (this.product as ProductCustomizable).customImage;
+        }
+        return this.product?.variants?.[0]?.image || '';
+    }
+
+    getProductType(): string {
+        return this.product?.type || 'standard';
+    }
+
+    // For customizable products
+    getThreadColor1(): string {
+        if (this.product?.type === 'personalizable') {
+            return (this.product as ProductCustomizable).threadColor1?.name || '';
+        }
+        return '';
+    }
+
+    getThreadColor2(): string {
+        if (this.product?.type === 'personalizable') {
+            return (this.product as ProductCustomizable).threadColor2?.name || '';
+        }
+        return '';
+    }
+
+    getCustomImage(): string {
+        if (this.product?.type === 'personalizable') {
+            return (this.product as ProductCustomizable).customImage || '';
+        }
+        return '';
+    }
+
+    // Get selected variant color and size
+    getSelectedColor(): string {
+        return this.product?.variants?.[0]?.color || '';
+    }
+
+    getSelectedSize(): string {
+        return this.product?.variants?.[0]?.sizes?.[0]?.size || '';
+    }
+
+    // Get custom text information
+    getCustomText(): string {
+        if (this.product?.type === 'personalizable') {
+            return (this.product as ProductCustomizable).customText || '';
+        }
+        return '';
+    }
+
+    getCustomTextColor(): string {
+        if (this.product?.type === 'personalizable') {
+            return (this.product as ProductCustomizable).customTextColor?.name || '';
+        }
+        return '';
+    }
+
+    hasCustomText(): boolean {
+        return this.getCustomText().length > 0;
     }
 
     validate(): boolean {

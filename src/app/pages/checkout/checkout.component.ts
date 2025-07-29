@@ -7,7 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { CartItem } from '../../models/cart-item';
 import { SettingsService } from '../../services/settings.service';
-import { CouponsService, DiscountCoupon } from '../../services/coupons.service';
+import { CouponsService } from '../../services/coupons.service';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
 import { Panel } from 'primeng/panel';
 import { InputText } from 'primeng/inputtext';
@@ -23,6 +23,7 @@ import { Tag } from 'primeng/tag';
 import { Card } from 'primeng/card';
 import { Select } from 'primeng/select';
 import { Dialog } from 'primeng/dialog';
+import { Coupon } from '../../models/coupon';
 
 @Component({
   selector: 'app-checkout',
@@ -67,7 +68,7 @@ export class CheckoutComponent implements OnInit {
   freeShippingThreshold: number = 50000; // Default value, will be loaded from service
 
   // Coupon properties
-  selectedCoupon: DiscountCoupon | null = null;
+  selectedCoupon: Coupon | null = null;
   couponLoading: boolean = false;
   couponDiscount: number = 0;
   showCouponInput: boolean = false;
@@ -387,7 +388,7 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
-  getCouponDisplayValue(coupon: DiscountCoupon): string {
+  getCouponDisplayValue(coupon: Coupon): string {
     if (coupon.discountType === 'percentage') {
       return `${coupon.code} - ${coupon.discountValue}%`;
     } else {

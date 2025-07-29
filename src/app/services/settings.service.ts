@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, switchMap } from 'rxjs/operators';
 
 export interface AppSettings {
+    secondColorPrice: number;
+    customTextPrice: number;
+    shippingPrice: number;
     freeShippingThreshold: number;
-    whatsappPhone: string;
+    whatsAppPhone?: string;
 }
 
 @Injectable({
@@ -11,45 +16,64 @@ export interface AppSettings {
 })
 export class SettingsService {
 
-    private appSettings: AppSettings = {
-        freeShippingThreshold: 50000,
-        whatsappPhone: '+54 9 11 1234-5678'
-    };
+    private apiUrl = 'http://localhost:3000';
 
-    // Get all settings
+    constructor(private http: HttpClient) { }
+
     getSettings(): Observable<AppSettings> {
-        return of({ ...this.appSettings });
+        return this.http.get<AppSettings>(`${this.apiUrl}/settings`);
     }
-
-    // Get free shipping threshold
-    getFreeShippingThreshold(): Observable<number> {
-        return of(this.appSettings.freeShippingThreshold);
-    }
-
-    // Update free shipping threshold
-    updateFreeShippingThreshold(threshold: number): Observable<number> {
-        const updatedSettings = { ...this.appSettings, freeShippingThreshold: threshold };
-        this.appSettings = updatedSettings;
-        return of(threshold);
-    }
-
-    // Update multiple settings
+    
     updateSettings(settings: Partial<AppSettings>): Observable<AppSettings> {
-        const updatedSettings = { ...this.appSettings, ...settings };
-        this.appSettings = updatedSettings;
-        return of({ ...updatedSettings });
+        return this.http.get<AppSettings>(`${this.apiUrl}/settings`).pipe(
+            map(currentSettings => {
+                const updatedSettings = { ...currentSettings, ...settings };
+                return this.http.put<AppSettings>(`${this.apiUrl}/settings`, updatedSettings);
+            }),
+            switchMap(observable => observable)
+        );
     }
 
-    // Get WhatsApp phone number
+    getSecondColorPrice(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.secondColorPrice)
+        );
+    }
+
+    getCustomTextPrice(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.customTextPrice)
+        );
+    }
+
+    getShippingPrice(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.shippingPrice)
+        );
+    }
+
+    getFreeShippingThreshold(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.freeShippingThreshold)
+        );
+    }
+
     getWhatsAppPhone(): Observable<string> {
-        return of(this.appSettings.whatsappPhone);
+        return this.getSettings().pipe(
+            map(settings => settings.whatsAppPhone || '')
+        );
     }
 
-    // Update WhatsApp phone number
     updateWhatsAppPhone(phone: string): Observable<string> {
-        const updatedSettings = { ...this.appSettings, whatsappPhone: phone };
-        this.appSettings = updatedSettings;
-        return of(phone);
+        return this.updateSettings({ whatsAppPhone: phone }).pipe(
+            map(settings => settings.whatsAppPhone || '')
+        );
+    }
+
+    updateFreeShippingThreshold(threshold: number): Observable<number> {
+        return this.updateSettings({ freeShippingThreshold: threshold }).pipe(
+            map(settings => settings.freeShippingThreshold)
+        );
     }
 
 } 

@@ -5,7 +5,6 @@ export class Product extends ProductBase {
     tags!: string[];
     category!: string;
     rating!: number;
-    discount!: number;
     isNew!: boolean;
     isFeatured!: boolean;
 

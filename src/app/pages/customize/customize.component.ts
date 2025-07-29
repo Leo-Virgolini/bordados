@@ -1,21 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { Badge } from 'primeng/badge';
 import { Button } from 'primeng/button';
-import { Checkbox } from 'primeng/checkbox';
 import { PrimeNG } from 'primeng/config';
 import { Divider } from 'primeng/divider';
-import { FileRemoveEvent, FileSelectEvent, FileUpload, FileUploadEvent, FileUploadHandlerEvent, UploadEvent } from 'primeng/fileupload';
+import { FileUpload, FileUploadHandlerEvent } from 'primeng/fileupload';
 import { Image } from 'primeng/image';
-import { ProgressBar } from 'primeng/progressbar';
 import { SelectButton } from 'primeng/selectbutton';
 import { Toast } from 'primeng/toast';
 import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
 import { Panel } from 'primeng/panel';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
@@ -30,13 +27,17 @@ import { ProductCustomizable } from '../../models/product-customizable';
 import { RouterLink } from '@angular/router';
 import { HiladosService } from '../../services/hilados.service';
 import { ProductsService } from '../../services/products.service';
-import { ProductSizeStock } from '../../models/product-variant';
+import { ProductSizeStock } from '../../models/product-base';
 import { InputNumber } from 'primeng/inputnumber';
+import { InputText } from 'primeng/inputtext';
+import { InputGroup } from 'primeng/inputgroup';
+import { InputGroupAddon } from 'primeng/inputgroupaddon';
 
 @Component({
   selector: 'app-customize',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent, RouterLink,
-    Button, FileUpload, Image, Badge, Toast, ProgressBar, SelectButton, Checkbox, ToggleButton, Tooltip, Divider, Panel, ConfirmDialog, Tag, Dialog, TableModule, InputNumber
+    Button, FileUpload, Image, Badge, Toast, SelectButton, ToggleButton, Tooltip, Divider, Panel,
+    Tag, Dialog, TableModule, InputNumber, InputText, InputGroup, InputGroupAddon
   ],
   providers: [],
   templateUrl: './customize.component.html',
@@ -52,9 +53,12 @@ export class CustomizeComponent implements OnInit {
   isLoading: boolean = false;
   showSizeGuide: boolean = false;
   isLoadingProducts: boolean = true;
+  showConfirmationDialog: boolean = false;
 
   maxImageSize: number = 10485760; // 10 MB
   precioSegundoColor: number = 0;
+  precioTextoPersonalizado: number = 0;
+  maxTextLength: number = 20;
 
   baseProducts: ProductCustomizable[] = [];
   availableTypes: { label: string, value: string, product: ProductCustomizable }[] = [];
@@ -86,7 +90,7 @@ export class CustomizeComponent implements OnInit {
     ]
   };
 
-  constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder, private confirmationService: ConfirmationService,
+  constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder,
     private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService, private productsService: ProductsService
   ) {
   }
@@ -94,6 +98,7 @@ export class CustomizeComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadSecondColorPrice();
+    this.loadCustomTextPrice();
     this.loadThreadColors();
     this.productsService.getCustomizableProducts().subscribe(products => {
       this.baseProducts = products;
@@ -103,7 +108,7 @@ export class CustomizeComponent implements OnInit {
         product
       }));
       this.isLoadingProducts = false;
-      this.updateAvailableQuantities();
+      // this.updateAvailableQuantities();
     });
   }
 
@@ -115,8 +120,17 @@ export class CustomizeComponent implements OnInit {
       colorHilado1: [undefined, Validators.required],
       usarSegundoColor: [false],
       colorHilado2: [undefined],
+      usarTextoPersonalizado: [false],
+      textoPersonalizado: [undefined],
+      colorTextoPersonalizado: [undefined],
       imagen: [undefined, Validators.required],
       cantidad: [1, Validators.required]
+    });
+  }
+
+  loadThreadColors() {
+    this.hiladosService.getHilados().subscribe((colors: ThreadColor[]) => {
+      this.coloresHilado = colors;
     });
   }
 
@@ -132,65 +146,42 @@ export class CustomizeComponent implements OnInit {
     });
   }
 
-  confirmar(): void {
-    this.confirmationService.confirm({
-      header: 'Confirmación',
-      message:
-        '<strong>Prenda:</strong> ' + this.availableTypes.find(p => p.value === this.formulario.get('tipo')?.value)?.label +
-        '<br/><strong>Talle:</strong> ' + this.availableSizes.find(p => p.value === this.formulario.get('talle')?.value)?.label +
-        '<br/><strong>Color de prenda:</strong> ' + this.availableColors.find(p => p.value === this.formulario.get('colorPrenda')?.value)?.label +
-        '<br/><strong>Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value)?.name +
-        (this.formulario.get('usarSegundoColor')?.value ? '<br/><strong>2° Color del hilado:</strong> ' + this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value)?.name : '') +
-        '<br/><strong>Imagen:</strong> ' + this.imageFile?.name +
-        '<br/><strong>Cantidad:</strong> ' + this.cantidades.find(p => p.value === this.formulario.get('cantidad')?.value)?.label
-      ,
-      icon: 'pi pi-exclamation-circle',
-      acceptIcon: 'pi pi-check',
-      rejectIcon: 'pi pi-times',
-      acceptLabel: 'Confirmar',
-      rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-primary',
-      rejectButtonStyleClass: 'p-button-outlined p-button-danger',
-      accept: () => {
-        if (this.submitFormulario()) {
-          this.isLoading = true;
-          this.messageService.add({ severity: 'success', summary: 'El producto se ha agregado.', detail: 'Redirigiendo al carrito...', life: 3000, icon: 'pi pi-cart-plus' });
-          setTimeout(() => {
-            this.isLoading = false;
-            this.router.navigate(['/carrito']);
-          }, 3000);
-        }
+  loadCustomTextPrice() {
+    this.hiladosService.getCustomTextPrice().subscribe({
+      next: (price: number) => {
+        this.precioTextoPersonalizado = price;
+      },
+      error: (error: any) => {
+        console.error('Error loading custom text price:', error);
+        // Keep the default value if there's an error
       }
     });
+  }
+
+  confirmar(): void {
+    this.showConfirmationDialog = true;
+  }
+
+  confirmOrder(): void {
+    if (this.submitFormulario()) {
+      this.isLoading = true;
+      this.showConfirmationDialog = false;
+      this.messageService.add({ severity: 'success', summary: '¡Pedido confirmado!', detail: 'El producto se ha agregado al carrito. Redirigiendo...', life: 3000, icon: 'pi pi-cart-plus' });
+      setTimeout(() => {
+        this.isLoading = false;
+        this.router.navigate(['/carrito']);
+      }, 3000);
+    }
   }
 
   submitFormulario(): boolean {
     if (this.formulario.valid) {
       this.agregarAlCarrito();
-      console.log('Formulario enviado', this.formulario.value);
-      // Aquí va tu lógica de envío...
       return true;
     } else {
       this.formulario.markAllAsTouched();
       return false;
     }
-  }
-
-  onChange() {
-    const usarSegundoColor: boolean = this.formulario.get('usarSegundoColor')?.value;
-    const colorHilado2 = this.formulario.get('colorHilado2');
-
-    if (usarSegundoColor) {
-      colorHilado2?.setValidators(Validators.required);
-      colorHilado2?.markAsDirty();
-    } else {
-      colorHilado2?.clearValidators();
-      // colorHilado2?.setValue(undefined); // opcional: limpiar campo
-      colorHilado2?.reset(); // Esto deselecciona el selectbutton
-    }
-
-    colorHilado2?.updateValueAndValidity();
-    this.updateAvailableQuantities(); // Update quantities when form changes
   }
 
   eliminarImagen(event: any, removeFileCallback: any) {
@@ -207,8 +198,8 @@ export class CustomizeComponent implements OnInit {
     callback();
   }
 
-  onSelect(event: any) {
-    console.log("onSelect");
+  onImageSelect(event: any) {
+    console.log("onImageSelect");
     this.imageFile = undefined;
     this.imageURL = undefined;
 
@@ -254,6 +245,23 @@ export class CustomizeComponent implements OnInit {
     this.messageService.add({ severity: 'info', summary: 'Imagen subida', detail: '' });
   }
 
+  formatSize(bytes: number | undefined) {
+    const k = 1024;
+    const dm = 2;
+    const sizes = this.config.translation.fileSizeTypes;
+    if (bytes === 0 && sizes) {
+      return `0 ${sizes[0]}`;
+    }
+
+    if (bytes) {
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+
+      return `${formattedSize} ${sizes![i]}`;
+    }
+    return '';
+  }
+
   getLabel(controlName: string, options: any[]): string {
     const value: string | undefined = this.formulario.get(controlName)?.value;
 
@@ -280,7 +288,11 @@ export class CustomizeComponent implements OnInit {
   calcularPrecioUnitario(): number {
     let base: number = this.getSelectedPrice();
     const usarSegundoColor: boolean = this.formulario.get('usarSegundoColor')?.value;
+    const usarTextoPersonalizado: boolean = this.formulario.get('usarTextoPersonalizado')?.value;
+
     if (usarSegundoColor) base += this.precioSegundoColor;
+    if (usarTextoPersonalizado) base += this.precioTextoPersonalizado;
+
     return base;
   }
 
@@ -288,75 +300,6 @@ export class CustomizeComponent implements OnInit {
     const cantidad: number = this.formulario.get('cantidad')?.value || 1;
 
     return this.calcularPrecioUnitario() * cantidad;
-  }
-
-  formatSize(bytes: number | undefined) {
-    const k = 1024;
-    const dm = 2;
-    const sizes = this.config.translation.fileSizeTypes;
-    if (bytes === 0 && sizes) {
-      return `0 ${sizes[0]}`;
-    }
-
-    if (bytes) {
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
-
-      return `${formattedSize} ${sizes![i]}`;
-    }
-    return '';
-  }
-
-  enviarPersonalizacion() {
-  }
-
-  agregarAlCarrito() {
-    const datos = this.formulario.value;
-    const threadColor1 = this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value);
-    const threadColor2 = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value) : undefined;
-    const selectedProductId = this.formulario.get('tipo')?.value;
-    const selectedColor = this.formulario.get('colorPrenda')?.value;
-    const selectedSize = this.formulario.get('talle')?.value;
-    const baseProduct = this.baseProducts.find(p => p.id === selectedProductId);
-    const variant = baseProduct?.variants.find(v => v.color === selectedColor);
-    const image = variant?.image || this.imageURL;
-    const productoCustomizable = new ProductCustomizable({
-      id: crypto.randomUUID(),
-      name: baseProduct?.name || 'Producto Personalizable',
-      description: baseProduct?.description || 'Producto personalizable',
-      garmentType: baseProduct?.garmentType || 'remera',
-      price: this.calcularPrecioUnitario(),
-      type: 'personalizable',
-      variants: [
-        {
-          color: selectedColor,
-          image: image,
-          sizes: [
-            { size: selectedSize, stock: variant?.sizes.find(s => s.size === selectedSize)?.stock ?? 1 }
-          ]
-        }
-      ],
-      threadColor1: threadColor1!,
-      threadColor2: threadColor2,
-      customImage: this.imageURL!
-    });
-    const nuevoItem = new CartItem({
-      product: productoCustomizable,
-      quantity: datos.cantidad
-    });
-    this.carritoService.agregarItem(nuevoItem);
-  }
-
-  openSizeGuide(): void {
-    this.showSizeGuide = true;
-  }
-
-  closeSizeGuide(): void {
-    this.showSizeGuide = false;
-  }
-
-  private capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   onTipoPrendaChange() {
@@ -409,35 +352,20 @@ export class CustomizeComponent implements OnInit {
         })
         .map((s: ProductSizeStock) => ({ label: s.size, value: s.size }));
       this.formulario.get('talle')?.reset();
-      this.updateAvailableQuantities();
-    }
-  }
-
-  updateAvailableQuantities() {
-    const selectedSize = this.formulario.get('talle')?.value;
-    const selectedColor = this.formulario.get('colorPrenda')?.value;
-
-    if (selectedSize && selectedColor && this.selectedVariant) {
-      const sizeStock = this.selectedVariant.sizes.find((s: ProductSizeStock) => s.size === selectedSize);
-      const maxStock = sizeStock?.stock || 0;
-
-      // Generate quantities from 1 to maxStock (up to 10)
-      const maxQuantity = Math.min(maxStock, 10);
-      this.cantidades = Array.from({ length: maxQuantity }, (_, i) => ({
-        label: (i + 1).toString(),
-        value: i + 1
-      }));
-
-      // Reset quantity if current value exceeds max
-      const currentQuantity = this.formulario.get('cantidad')?.value;
-      if (currentQuantity > maxQuantity) {
-        this.formulario.get('cantidad')?.setValue(1);
-      }
+      this.resetCantidad();
     }
   }
 
   onTalleChange() {
-    this.updateAvailableQuantities();
+    this.resetCantidad();
+  }
+
+  resetCantidad() {
+    this.formulario.get('cantidad')?.setValue(1);
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   getSelectedPrice(): number {
@@ -465,10 +393,63 @@ export class CustomizeComponent implements OnInit {
     return threadColor?.code || '#CCCCCC';
   }
 
-  loadThreadColors() {
-    this.hiladosService.getHilados().subscribe((colors: ThreadColor[]) => {
-      this.coloresHilado = colors;
+  getCurrentStock(): number {
+    const selectedColor = this.formulario.get('colorPrenda')?.value;
+    const selectedSize = this.formulario.get('talle')?.value;
+    if (selectedColor && selectedSize && this.selectedBaseProduct) {
+      const variant = this.selectedBaseProduct.variants.find(v => v.color === selectedColor);
+      const sizeStock = variant?.sizes.find(s => s.size === selectedSize);
+      return sizeStock?.stock ?? 0;
+    }
+    return 0;
+  }
+
+  openSizeGuide(): void {
+    this.showSizeGuide = true;
+  }
+
+  closeSizeGuide(): void {
+    this.showSizeGuide = false;
+  }
+
+  agregarAlCarrito() {
+    const datos = this.formulario.value;
+    const threadColor1 = this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value);
+    const threadColor2 = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value) : undefined;
+    const customTextColor = datos.usarTextoPersonalizado ? this.coloresHilado.find(p => p.id === this.formulario.get('colorTextoPersonalizado')?.value) : undefined;
+    const selectedProductId = this.formulario.get('tipo')?.value;
+    const selectedColor = this.formulario.get('colorPrenda')?.value;
+    const selectedSize = this.formulario.get('talle')?.value;
+    const baseProduct = this.baseProducts.find(p => p.id === selectedProductId);
+    const variant = baseProduct?.variants.find(v => v.color === selectedColor);
+    const image = variant?.image || this.imageURL;
+    const productoCustomizable = new ProductCustomizable({
+      id: crypto.randomUUID(),
+      name: baseProduct?.name || 'Producto Personalizable',
+      description: baseProduct?.description || 'Producto personalizable',
+      garmentType: baseProduct?.garmentType || 'remera',
+      price: this.calcularPrecioUnitario(),
+      type: 'personalizable',
+      variants: [
+        {
+          color: selectedColor,
+          image: image,
+          sizes: [
+            { size: selectedSize, stock: variant?.sizes.find(s => s.size === selectedSize)?.stock ?? 1 }
+          ]
+        }
+      ],
+      threadColor1: threadColor1!,
+      threadColor2: threadColor2,
+      customImage: this.imageURL!,
+      customText: datos.usarTextoPersonalizado ? datos.textoPersonalizado : undefined,
+      customTextColor: customTextColor
     });
+    const nuevoItem = new CartItem({
+      product: productoCustomizable,
+      quantity: datos.cantidad
+    });
+    this.carritoService.agregarItem(nuevoItem);
   }
 
 }

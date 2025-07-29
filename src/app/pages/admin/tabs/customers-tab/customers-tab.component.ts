@@ -16,9 +16,9 @@ import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { InputMask } from 'primeng/inputmask';
 import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
-import { OrdersService } from '../../../../services/orders.service';
 import { Customer } from '../../../../models/customer';
 import { Order } from '../../../../models/order';
+import { CustomersService } from '../../../../services/customers.service';
 
 @Component({
     selector: 'app-customers-tab',
@@ -59,7 +59,7 @@ export class CustomersTabComponent implements OnInit {
     selectedCustomer: Customer | null = null;
 
     // Provinces for Argentina
-    provinces = [
+    readonly provinces: { label: string, value: string }[] = [
         { label: 'Buenos Aires', value: 'Buenos Aires' },
         { label: 'CABA', value: 'CABA' },
         { label: 'Catamarca', value: 'Catamarca' },
@@ -90,7 +90,7 @@ export class CustomersTabComponent implements OnInit {
         private fb: FormBuilder,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private ordersService: OrdersService,
+        private customersService: CustomersService,
         private cdr: ChangeDetectorRef
     ) { }
 
@@ -119,7 +119,7 @@ export class CustomersTabComponent implements OnInit {
         this.customersLoading = true;
 
         // Load customers
-        this.ordersService.getCustomers().subscribe({
+        this.customersService.getCustomers().subscribe({
             next: (customers) => {
                 this.customers = customers;
                 this.customersLoading = false;
@@ -172,7 +172,7 @@ export class CustomersTabComponent implements OnInit {
             if (this.editingCustomer) {
                 // Update existing customer
                 const updatedCustomer = { ...this.editingCustomer, ...formValue };
-                this.ordersService.updateCustomer(updatedCustomer).subscribe({
+                this.customersService.updateCustomer(updatedCustomer).subscribe({
                     next: (customer) => {
                         const index = this.customers.findIndex(c => c.id === customer.id);
                         if (index !== -1) {
@@ -202,7 +202,7 @@ export class CustomersTabComponent implements OnInit {
                 });
             } else {
                 // Create new customer
-                this.ordersService.createCustomer(formValue).subscribe({
+                this.customersService.createCustomer(formValue).subscribe({
                     next: (newCustomer) => {
                         this.customers.push(newCustomer);
                         // Update selectedCustomer if we want to show the newly created customer
@@ -257,7 +257,7 @@ export class CustomersTabComponent implements OnInit {
     }
 
     deleteCustomer(customer: Customer): void {
-        this.ordersService.deleteCustomer(customer.id).subscribe({
+        this.customersService.deleteCustomer(customer.id).subscribe({
             next: () => {
                 this.customers = this.customers.filter(c => c.id !== customer.id);
                 this.messageService.add({

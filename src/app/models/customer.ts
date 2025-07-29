@@ -2,9 +2,9 @@ export class Customer {
 
     id: string;
     name: string;
+    lastName: string;
     email: string;
     phone: string;
-    lastName: string;
     dni: string;
     province: string;
     city: string;

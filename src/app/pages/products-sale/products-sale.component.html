@@ -154,7 +154,7 @@
                         <!-- Product Image -->
                         <ng-template #header>
                             <div class="relative">
-                                <p-image [src]="product.variants[0]?.image" [alt]="product.name" imageClass="w-full border-round-top-xl" [preview]="true" />
+                                <p-image [src]="product.variants[0].image" [alt]="product.name" imageClass="w-full border-round-top-xl" [preview]="true" />
 
                                 <!-- Discount Badge -->
                                 <p-tag *ngIf="product.discount > 0" [value]="'-' + product.discount + '%'" [severity]="getDiscountColor(product.discount)"

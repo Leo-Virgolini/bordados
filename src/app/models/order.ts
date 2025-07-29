@@ -1,136 +1,195 @@
 import { Customer } from './customer';
+import { Coupon } from './coupon';
+
+export interface ProductSnapshot {
+    name: string;
+    description: string;
+    price: number;
+    discount: number;
+    garmentType: string;
+    type: string;
+    variant: {
+        color: string;
+        size: string;
+        image?: string;
+    };
+}
+
+export interface CustomerSnapshot {
+    name: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    dni: string;
+    province: string;
+    city: string;
+    postalCode: string;
+    address: string;
+    floorApartment?: string;
+}
+
+export interface CustomizationData {
+    threadColor1: string;
+    threadColor2?: string;
+    customText?: string;
+    customTextColor?: string;
+    customImage: string;
+}
 
 export class OrderItem {
-
     id: string;
-    productId: string; // Just store the product ID
+    productId: string;
+    productSnapshot: ProductSnapshot;
     quantity: number;
-    unitPrice: number;
-    productDiscount: number; // Product-specific discount amount
     subtotal: number;
-    // Variant information
-    color?: string;
-    size?: string;
+    customization?: CustomizationData;
 
     constructor(init?: Partial<OrderItem>) {
         this.id = init?.id || '';
         this.productId = init?.productId || '';
+        this.productSnapshot = init?.productSnapshot || {
+            name: '',
+            description: '',
+            price: 0,
+            discount: 0,
+            garmentType: '',
+            type: '',
+            variant: {
+                color: '',
+                image: '',
+                size: ''
+            }
+        };
         this.quantity = init?.quantity || 0;
-        this.unitPrice = init?.unitPrice || 0;
-        this.productDiscount = init?.productDiscount || 0;
         this.subtotal = init?.subtotal || 0;
-        this.color = init?.color;
-        this.size = init?.size;
+        this.customization = init?.customization;
     }
 
     calculateSubtotal(): number {
-        const grossSubtotal = this.getGrossSubtotal();
-        const totalProductDiscount = this.productDiscount * this.quantity;
-        this.subtotal = Math.max(0, grossSubtotal - totalProductDiscount);
+        const unitPrice = this.getUnitPrice();
+        this.subtotal = Math.max(0, unitPrice * this.quantity);
         return this.subtotal;
     }
 
+    getUnitPrice(): number {
+        // Use productSnapshot.price minus discount
+        const basePrice = this.productSnapshot?.price || 0;
+        const discount = this.productSnapshot?.discount || 0;
+        return Math.max(0, basePrice - discount);
+    }
+
     getGrossSubtotal(): number {
-        return this.quantity * this.unitPrice;
+        return (this.productSnapshot?.price || 0) * this.quantity;
+    }
+
+    getProductDiscount(): number {
+        // Returns per-unit discount from product snapshot
+        return this.productSnapshot?.discount || 0;
     }
 
     getProductDiscountPercentage(): number {
         const grossSubtotal = this.getGrossSubtotal();
+        const totalProductDiscount = this.getProductDiscount() * this.quantity;
         if (grossSubtotal > 0) {
-            const totalProductDiscount = this.productDiscount * this.quantity;
             return Math.round((totalProductDiscount / grossSubtotal) * 100);
         }
         return 0;
     }
 
     getFinalPrice(): number {
-        // Final price is the subtotal (after product discount)
-        return this.subtotal;
+        return this.getUnitPrice();
     }
 
-    // Helper method to validate the item
     isValid(): boolean {
-        return this.quantity > 0 && this.unitPrice >= 0 && this.productDiscount >= 0;
+        return this.productSnapshot && this.quantity > 0 && this.getUnitPrice() >= 0;
     }
 
-    // Helper method to get the effective discount amount
     getEffectiveDiscount(): number {
-        const grossSubtotal = this.getGrossSubtotal();
-        const totalProductDiscount = this.productDiscount * this.quantity;
-        return Math.min(totalProductDiscount, grossSubtotal);
+        return this.getProductDiscount() * this.quantity;
     }
 
-    // Helper method to get product info when needed
-    getProductInfo(products: any[]): any {
-        return products.find(p => p.id === this.productId);
+    // Helper methods to get product information
+    getProductName(): string {
+        return this.productSnapshot?.name || 'Producto no disponible';
     }
 
-    // Enhanced method to get product with caching
-    private _cachedProduct: any = null;
-    private _lastProductFetch: number = 0;
-    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-    getProductInfoWithCache(products: any[]): any {
-        const now = Date.now();
-        
-        // Return cached product if still valid
-        if (this._cachedProduct && (now - this._lastProductFetch) < this.CACHE_DURATION) {
-            return this._cachedProduct;
+    getProductImage(): string {
+        if (this.customization?.customImage) {
+            return this.customization.customImage;
         }
-
-        // Fetch and cache new product
-        this._cachedProduct = products.find(p => p.id === this.productId);
-        this._lastProductFetch = now;
-        
-        return this._cachedProduct;
+        return this.productSnapshot?.variant?.image || '';
     }
 
-    // Method to get product name with fallback
-    getProductName(products: any[]): string {
-        const product = this.getProductInfoWithCache(products);
-        return product?.name || `Producto ${this.productId}`;
+    getProductType(): string {
+        return this.productSnapshot?.type || 'standard';
     }
 
-    // Method to get product image with fallback
-    getProductImage(products: any[]): string {
-        const product = this.getProductInfoWithCache(products);
-        if (product?.variants && product.variants.length > 0) {
-            // Try to find image for the specific variant
-            const variant = product.variants.find((v: any) => v.color === this.color);
-            return variant?.image || product.variants[0].image;
-        }
-        return product?.image || '/assets/images/default-product.jpg';
+    // For customizable products
+    getThreadColor1(): string {
+        return this.customization?.threadColor1 || '';
+    }
+
+    getThreadColor2(): string {
+        return this.customization?.threadColor2 || '';
+    }
+
+    getCustomImage(): string {
+        return this.customization?.customImage || '';
+    }
+
+    // Get custom text information
+    getCustomText(): string {
+        return this.customization?.customText || '';
+    }
+
+    getCustomTextColor(): string {
+        return this.customization?.customTextColor || '';
+    }
+
+    hasCustomText(): boolean {
+        return this.getCustomText().length > 0;
     }
 }
 
 export class Order {
-
     id: string;
     date: Date;
-    customer: Customer;
+    customerId: string;
+    customerSnapshot: CustomerSnapshot;
     items: OrderItem[];
     couponCode?: string;
-    subtotal: number; // Subtotal after product discounts
     couponDiscount: number; // Coupon discount applied to subtotal
+    subtotal: number; // Subtotal after product discounts
     shippingPrice: number;
     total: number;
-    status: 'pendiente' | 'confirmado' | 'en_proceso' | 'despachado' | 'entregado' | 'cancelado';
     paymentMethod: 'efectivo' | 'tarjeta' | 'transferencia' | 'mercadopago';
-    notes?: string;
+    status: 'pendiente' | 'confirmado' | 'en_proceso' | 'despachado' | 'entregado' | 'cancelado';
     // Shipping address fields
     shippingAddress: string;
     shippingCity: string;
     shippingProvince: string;
     shippingPostalCode: string;
     shippingFloorApartment?: string;
+    notes?: string;
 
     constructor(init?: Partial<Order>) {
         this.id = init?.id || '';
         this.date = init?.date || new Date();
-        this.customer = init?.customer ? new Customer(init.customer) : new Customer();
+        this.customerId = init?.customerId || '';
+        this.customerSnapshot = init?.customerSnapshot || {
+            name: '',
+            lastName: '',
+            email: '',
+            phone: '',
+            dni: '',
+            province: '',
+            city: '',
+            postalCode: '',
+            address: ''
+        };
         this.items = init?.items?.map(item => new OrderItem(item)) || [];
-        this.couponCode = init?.couponCode;
         this.subtotal = init?.subtotal || 0;
+        this.couponCode = init?.couponCode;
         this.couponDiscount = init?.couponDiscount || 0;
         this.shippingPrice = init?.shippingPrice || 0;
         this.total = init?.total || 0;
@@ -168,7 +227,7 @@ export class Order {
     }
 
     getTotalProductDiscounts(): number {
-        return this.items.reduce((sum, item) => sum + (item.productDiscount * item.quantity), 0);
+        return this.items.reduce((sum, item) => sum + (item.getProductDiscount() * item.quantity), 0);
     }
 
     getCouponDiscountPercentage(): number {
@@ -196,11 +255,37 @@ export class Order {
         return Math.min(this.couponDiscount, this.subtotal);
     }
 
+    // Coupon-related methods
+    applyCoupon(coupon: Coupon): boolean {
+        if (!coupon.canBeAppliedToOrder(this.subtotal)) {
+            return false;
+        }
+
+        this.couponCode = coupon.code;
+        this.couponDiscount = coupon.calculateDiscount(this.subtotal);
+        this.calculateTotals();
+        return true;
+    }
+
+    removeCoupon(): void {
+        this.couponCode = undefined;
+        this.couponDiscount = 0;
+        this.calculateTotals();
+    }
+
+    hasCouponApplied(): boolean {
+        return !!this.couponCode && this.couponDiscount > 0;
+    }
+
+    getCouponDiscountAmount(): number {
+        return this.couponDiscount;
+    }
+
     // Helper method to get items with product information
-    getItemsWithProducts(products: any[]): any[] {
+    getItemsWithProducts(): any[] {
         return this.items.map(item => ({
             ...item,
-            product: item.getProductInfo(products)
+            productSnapshot: item.productSnapshot
         }));
     }
 
@@ -259,6 +344,53 @@ export class Order {
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - this.date.getTime());
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Customer-related methods
+    getCustomerName(): string {
+        return `${this.customerSnapshot.name} ${this.customerSnapshot.lastName}`.trim();
+    }
+
+    getCustomerEmail(): string {
+        return this.customerSnapshot.email;
+    }
+
+    getCustomerPhone(): string {
+        return this.customerSnapshot.phone;
+    }
+
+    getCustomerAddress(): string {
+        let address = this.customerSnapshot.address;
+        if (this.customerSnapshot.floorApartment) {
+            address += ` (${this.customerSnapshot.floorApartment})`;
+        }
+        return address;
+    }
+
+    getCustomerLocation(): string {
+        return `${this.customerSnapshot.city}, ${this.customerSnapshot.province} (${this.customerSnapshot.postalCode})`;
+    }
+
+    // Factory method to create order with customer
+    static createFromCustomer(customer: Customer, items: OrderItem[] = []): Order {
+        const customerSnapshot: CustomerSnapshot = {
+            name: customer.name,
+            lastName: customer.lastName,
+            email: customer.email,
+            phone: customer.phone,
+            dni: customer.dni,
+            province: customer.province,
+            city: customer.city,
+            postalCode: customer.postalCode,
+            address: customer.address,
+            floorApartment: customer.floorApartment
+        };
+
+        return new Order({
+            customerId: customer.id,
+            customerSnapshot,
+            items
+        });
     }
 
 } 

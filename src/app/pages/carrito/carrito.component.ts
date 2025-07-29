@@ -223,4 +223,20 @@ export class CarritoComponent implements OnInit {
     return maxStock > 0 ? maxStock : 1; // Return at least 1
   }
 
+  getCustomImage(item: CartItem): string {
+    return (item.product as any).customImage || '';
+  }
+
+  hasCustomText(product: any): boolean {
+    return product.type === 'personalizable' && !!product.customText;
+  }
+
+  getCustomText(product: any): string {
+    return product.type === 'personalizable' ? product.customText || '' : '';
+  }
+
+  getCustomTextColorName(product: any): string {
+    return product.type === 'personalizable' && product.customTextColor ? product.customTextColor.name || '-' : '-';
+  }
+
 }

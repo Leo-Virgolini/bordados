@@ -50,6 +50,7 @@ export class HiladosTabComponent implements OnInit {
     editingHilado: ThreadColor | null = null;
     hiladoLoading: boolean = false;
     secondColorPrice: number = 0;
+    customTextPrice: number = 0;
 
     constructor(
         private fb: FormBuilder,
@@ -61,6 +62,7 @@ export class HiladosTabComponent implements OnInit {
     ngOnInit() {
         this.loadHilados();
         this.loadSecondColorPrice();
+        this.loadCustomTextPrice();
         this.initForm();
     }
 
@@ -94,6 +96,21 @@ export class HiladosTabComponent implements OnInit {
         });
     }
 
+    private loadCustomTextPrice(): void {
+        this.hiladosService.getCustomTextPrice().subscribe({
+            next: (price: number) => {
+                this.customTextPrice = price;
+            },
+            error: (error: any) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al cargar el precio del texto personalizado: ' + error.message
+                });
+            }
+        });
+    }
+
     private initForm(): void {
         this.hiladoForm = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(2)]],
@@ -103,7 +120,8 @@ export class HiladosTabComponent implements OnInit {
         });
 
         this.priceForm = this.fb.group({
-            secondColorPrice: [this.secondColorPrice, [Validators.required, Validators.min(0)]]
+            secondColorPrice: [this.secondColorPrice, [Validators.required, Validators.min(0)]],
+            customTextPrice: [this.customTextPrice, [Validators.required, Validators.min(0)]]
         });
     }
 
@@ -212,21 +230,40 @@ export class HiladosTabComponent implements OnInit {
         return { severity: 'success', value: 'En stock' };
     }
 
-    saveSecondColorPrice(): void {
-        const price = this.priceForm.get('secondColorPrice')?.value;
-        if (price !== null && price !== undefined && price >= 0) {
+    savePrices(): void {
+        const secondColorPrice = this.priceForm.get('secondColorPrice')?.value;
+        const customTextPrice = this.priceForm.get('customTextPrice')?.value;
+
+        if ((secondColorPrice !== null && secondColorPrice !== undefined && secondColorPrice >= 0) &&
+            (customTextPrice !== null && customTextPrice !== undefined && customTextPrice >= 0)) {
             this.hiladoLoading = true;
 
             // Add a mini delay for better UX
             setTimeout(() => {
-                this.hiladosService.setSecondColorPrice(price).subscribe({
-                    next: (savedPrice: number) => {
-                        this.secondColorPrice = savedPrice;
-                        this.hiladoLoading = false;
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Configuración guardada',
-                            detail: `Precio por segundo color actualizado a ${savedPrice.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`
+                // Save both prices
+                this.hiladosService.setSecondColorPrice(secondColorPrice).subscribe({
+                    next: (savedSecondColorPrice: number) => {
+                        this.secondColorPrice = savedSecondColorPrice;
+
+                        // Save custom text price
+                        this.hiladosService.setCustomTextPrice(customTextPrice).subscribe({
+                            next: (savedCustomTextPrice: number) => {
+                                this.customTextPrice = savedCustomTextPrice;
+                                this.hiladoLoading = false;
+                                this.messageService.add({
+                                    severity: 'success',
+                                    summary: 'Configuración guardada',
+                                    detail: `Precios actualizados: Segundo color ${savedSecondColorPrice.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}, Texto personalizado ${savedCustomTextPrice.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`
+                                });
+                            },
+                            error: (error: any) => {
+                                this.hiladoLoading = false;
+                                this.messageService.add({
+                                    severity: 'error',
+                                    summary: 'Error',
+                                    detail: 'Error al guardar el precio del texto personalizado: ' + error.message
+                                });
+                            }
                         });
                     },
                     error: (error: any) => {
@@ -243,7 +280,7 @@ export class HiladosTabComponent implements OnInit {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Por favor ingrese un precio válido'
+                detail: 'Por favor ingrese precios válidos'
             });
         }
     }

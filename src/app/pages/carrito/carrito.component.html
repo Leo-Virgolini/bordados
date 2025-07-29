@@ -78,6 +78,12 @@
                                                         <div class="col-12 md:col-6" *ngIf="item.product.type === 'personalizable'">
                                                             <div class="flex flex-column gap-2">
                                                                 <div class="flex align-items-center gap-2">
+                                                                    <i class="pi pi-image text-primary"></i>
+                                                                    <span class="text-600">Imagen:</span>
+                                                                    <p-image [src]="getCustomImage(item)" [alt]="'Imagen subida'"
+                                                                        imageClass="w-3rem h-3rem object-cover border-round border-1 border-primary-300" [preview]="true" />
+                                                                </div>
+                                                                <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-circle-fill text-primary"></i>
                                                                     <span class="text-600">Hilado 1: <span class="font-semibold text-900">{{ getThreadColorName(item.product, 1)
                                                                             }}</span></span>
@@ -85,6 +91,15 @@
                                                                 <div class="flex align-items-center gap-2" *ngIf="hasSecondThreadColor(item.product)">
                                                                     <i class="pi pi-circle-fill text-primary"></i>
                                                                     <span class="text-600">Hilado 2: <span class="font-semibold text-900">{{ getThreadColorName(item.product, 2)
+                                                                            }}</span></span>
+                                                                </div>
+                                                                <div class="flex align-items-center gap-2" *ngIf="hasCustomText(item.product)">
+                                                                    <i class="pi pi-align-center text-primary"></i>
+                                                                    <span class="text-600">Texto: <span class="font-semibold text-900">"{{ getCustomText(item.product) }}"</span></span>
+                                                                </div>
+                                                                <div class="flex align-items-center gap-2" *ngIf="hasCustomText(item.product)">
+                                                                    <i class="pi pi-circle-fill text-primary"></i>
+                                                                    <span class="text-600">Color texto: <span class="font-semibold text-900">{{ getCustomTextColorName(item.product)
                                                                             }}</span></span>
                                                                 </div>
                                                             </div>

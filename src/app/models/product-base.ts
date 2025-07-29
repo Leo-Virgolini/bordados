@@ -1,4 +1,13 @@
-import { ProductVariant } from './product-variant';
+export interface ProductSizeStock {
+    size: string;
+    stock: number;
+}
+
+export interface ProductVariant {
+    color: string;
+    sizes: ProductSizeStock[];
+    image?: string; // Optional: allow different images per color
+}
 
 export abstract class ProductBase {
 
@@ -7,6 +16,7 @@ export abstract class ProductBase {
     description: string;
     garmentType: string;
     price: number;
+    discount: number;
     type: 'bordado' | 'personalizable';
     variants: ProductVariant[];
 
@@ -16,6 +26,7 @@ export abstract class ProductBase {
         this.description = init?.description || '';
         this.garmentType = init?.garmentType || '';
         this.price = init?.price || 0;
+        this.discount = init?.discount || 0;
         this.type = init?.type || 'bordado';
         this.variants = init?.variants || [];
     }

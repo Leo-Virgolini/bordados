@@ -1,3 +1,5 @@
+JSON SERVER WITH DELAY: npm install @webmasterdevlin/json-server
+
 # Bordados - Sistema de Gestión de Bordados
 
 Una aplicación web moderna para la gestión de bordados, productos personalizables, clientes y pedidos, desarrollada con Angular y PrimeNG.

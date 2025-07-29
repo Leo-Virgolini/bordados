@@ -20,8 +20,9 @@ import { TableModule } from 'primeng/table';
 import { Select } from 'primeng/select';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
 import { Message } from 'primeng/message';
-import { CouponsService, DiscountCoupon } from '../../../../services/coupons.service';
+import { CouponsService } from '../../../../services/coupons.service';
 import { SettingsService } from '../../../../services/settings.service';
+import { Coupon } from '../../../../models/coupon';
 
 // Custom validator for date range
 function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
@@ -74,7 +75,7 @@ export class SettingsTabComponent implements OnInit {
     // Settings Management
     freeShippingThreshold!: number; // Free shipping threshold
     whatsappPhone!: string; // WhatsApp number
-    discountCoupons: DiscountCoupon[] = [];
+    discountCoupons: Coupon[] = [];
 
     // Forms
     shippingForm!: FormGroup;
@@ -83,7 +84,7 @@ export class SettingsTabComponent implements OnInit {
 
     // Dialog states
     showCouponDialog: boolean = false;
-    editingCoupon: DiscountCoupon | null = null;
+    editingCoupon: Coupon | null = null;
     couponLoading: boolean = false;
     shippingLoading: boolean = false;
     contactLoading: boolean = false;
@@ -220,7 +221,7 @@ export class SettingsTabComponent implements OnInit {
         }
     }
 
-    openCouponDialog(coupon?: DiscountCoupon): void {
+    openCouponDialog(coupon?: Coupon): void {
         this.editingCoupon = coupon || null;
 
         if (coupon) {
@@ -276,10 +277,10 @@ export class SettingsTabComponent implements OnInit {
 
             if (this.editingCoupon) {
                 // Update existing coupon
-                const updatedCoupon: DiscountCoupon = {
+                const updatedCoupon = new Coupon({
                     ...this.editingCoupon,
                     ...couponData
-                };
+                });
 
                 this.couponsService.updateCoupon(updatedCoupon).subscribe({
                     next: (coupon) => {
@@ -329,7 +330,7 @@ export class SettingsTabComponent implements OnInit {
         }
     }
 
-    confirmDeleteCoupon(coupon: DiscountCoupon): void {
+    confirmDeleteCoupon(coupon: Coupon): void {
         this.confirmationService.confirm({
             message: `¿Estás seguro de eliminar el cupón ID: ${coupon.id} - ${coupon.code}? Esta acción no se puede deshacer.`,
             header: 'Confirmar eliminación',
@@ -340,7 +341,7 @@ export class SettingsTabComponent implements OnInit {
         });
     }
 
-    deleteCoupon(coupon: DiscountCoupon): void {
+    deleteCoupon(coupon: Coupon): void {
         this.couponsService.deleteCoupon(coupon.id).subscribe({
             next: () => {
                 this.messageService.add({
@@ -360,7 +361,7 @@ export class SettingsTabComponent implements OnInit {
         });
     }
 
-    getCouponStatus(coupon: DiscountCoupon): { severity: string; value: string } {
+    getCouponStatus(coupon: Coupon): { severity: string; value: string } {
         const now = new Date();
         const validFrom = new Date(coupon.validFrom);
         const validTo = new Date(coupon.validTo);
@@ -384,7 +385,7 @@ export class SettingsTabComponent implements OnInit {
         return { severity: 'success', value: 'Activo' };
     }
 
-    getDiscountDisplay(coupon: DiscountCoupon): string {
+    getDiscountDisplay(coupon: Coupon): string {
         if (coupon.discountType === 'percentage') {
             return `${coupon.discountValue}%`;
         } else {
@@ -392,17 +393,17 @@ export class SettingsTabComponent implements OnInit {
         }
     }
 
-    getUsageDisplay(coupon: DiscountCoupon): string {
+    getUsageDisplay(coupon: Coupon): string {
         return `${coupon.currentUses}/${coupon.maxUses}`;
     }
 
-    isCouponExpired(coupon: DiscountCoupon): boolean {
+    isCouponExpired(coupon: Coupon): boolean {
         const now = new Date();
         const validTo = new Date(coupon.validTo);
         return now > validTo;
     }
 
-    isCouponExhausted(coupon: DiscountCoupon): boolean {
+    isCouponExhausted(coupon: Coupon): boolean {
         return coupon.currentUses >= coupon.maxUses;
     }
 
@@ -414,4 +415,4 @@ export class SettingsTabComponent implements OnInit {
         return this.couponForm.valid && !this.hasDateRangeError();
     }
 
-} 
+}
