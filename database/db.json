@@ -1,7 +1,7 @@
 {
   "customers": [
     {
-      "id": "CUST-001",
+      "id": "1",
       "name": "María",
       "lastName": "González",
       "email": "maria.gonzalez@email.com",
@@ -15,7 +15,7 @@
       "registrationDate": "2024-01-10T00:00:00.000Z"
     },
     {
-      "id": "CUST-002",
+      "id": "2",
       "name": "Carlos",
       "lastName": "Rodríguez",
       "email": "carlos.rodriguez@email.com",
@@ -29,7 +29,7 @@
       "registrationDate": "2024-01-18T00:00:00.000Z"
     },
     {
-      "id": "CUST-003",
+      "id": "3",
       "name": "Ana",
       "lastName": "Martínez",
       "email": "ana.martinez@email.com",
@@ -42,7 +42,7 @@
       "registrationDate": "2024-01-22T00:00:00.000Z"
     },
     {
-      "id": "CUST-004",
+      "id": "4",
       "name": "Luis",
       "lastName": "Fernández",
       "email": "luis.fernandez@email.com",
@@ -56,7 +56,7 @@
       "registrationDate": "2024-01-26T00:00:00.000Z"
     },
     {
-      "id": "CUST-005",
+      "id": "5",
       "name": "Sofía",
       "lastName": "López",
       "email": "sofia.lopez@email.com",
@@ -69,7 +69,7 @@
       "registrationDate": "2024-01-29T00:00:00.000Z"
     },
     {
-      "id": "CUST-006",
+      "id": "6",
       "name": "Diego",
       "lastName": "Martínez",
       "email": "diego.martinez@email.com",
@@ -83,7 +83,7 @@
       "registrationDate": "2024-02-01T00:00:00.000Z"
     },
     {
-      "id": "CUST-007",
+      "id": "7",
       "name": "Valentina",
       "lastName": "García",
       "email": "valentina.garcia@email.com",
@@ -96,138 +96,236 @@
       "registrationDate": "2024-02-04T00:00:00.000Z"
     }
   ],
-
-  "products": [
+  "embroidedProducts": [
     {
       "id": "1",
       "name": "Remera Oversize Bordada",
       "description": "Remera oversize de algodón premium con bordado minimalista",
-      "price": 18000,
       "garmentType": "remera",
+      "price": 18000,
+      "discount": 33,
       "type": "bordado",
-      "category": "remeras",
-      "tags": ["oversize", "basico", "bordado"],
-      "rating": 4.8,
-      "discount": 29,
-      "isNew": true,
-      "isFeatured": true,
       "variants": [
         {
           "color": "Blanco",
           "image": "/prendas/remera_oversize_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 5 },
-            { "size": "M", "stock": 8 },
-            { "size": "L", "stock": 6 }
+            {
+              "size": "S",
+              "stock": 5
+            },
+            {
+              "size": "M",
+              "stock": 8
+            },
+            {
+              "size": "L",
+              "stock": 6
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/remera_oversize_negra.webp",
           "sizes": [
-            { "size": "M", "stock": 7 },
-            { "size": "L", "stock": 4 },
-            { "size": "XL", "stock": 3 }
+            {
+              "size": "M",
+              "stock": 7
+            },
+            {
+              "size": "L",
+              "stock": 4
+            },
+            {
+              "size": "XL",
+              "stock": 3
+            }
           ]
         },
         {
           "color": "Azul",
           "image": "/prendas/remera_oversize_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 0 },
-            { "size": "M", "stock": 0 },
-            { "size": "L", "stock": 0 }
+            {
+              "size": "S",
+              "stock": 0
+            },
+            {
+              "size": "M",
+              "stock": 0
+            },
+            {
+              "size": "L",
+              "stock": 0
+            }
           ]
         }
-      ]
+      ],
+      "tags": [
+        "oversize",
+        "basico",
+        "bordado"
+      ],
+      "rating": 4.8,
+      "isNew": true,
+      "isFeatured": true,
+      "image": "/prendas/remera_oversize_blanca.webp"
     },
     {
       "id": "2",
       "name": "Buzo Capucha Bordado",
       "description": "Buzo con capucha de frisa suave con bordado deportivo",
-      "price": 15000,
       "garmentType": "buzo",
-      "type": "bordado",
-      "category": "buzos",
-      "tags": ["casual", "deportivo", "bordado"],
-      "rating": 4.6,
+      "price": 15000,
       "discount": 25,
-      "isNew": false,
-      "isFeatured": true,
+      "type": "bordado",
       "variants": [
         {
           "color": "Gris",
           "image": "/prendas/buzo_capucha_gris.webp",
           "sizes": [
-            { "size": "M", "stock": 4 },
-            { "size": "L", "stock": 6 },
-            { "size": "XL", "stock": 2 }
+            {
+              "size": "M",
+              "stock": 4
+            },
+            {
+              "size": "L",
+              "stock": 6
+            },
+            {
+              "size": "XL",
+              "stock": 2
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/buzo_capucha_negro.webp",
           "sizes": [
-            { "size": "S", "stock": 3 },
-            { "size": "M", "stock": 0 },
-            { "size": "L", "stock": 4 }
+            {
+              "size": "S",
+              "stock": 3
+            },
+            {
+              "size": "M",
+              "stock": 0
+            },
+            {
+              "size": "L",
+              "stock": 4
+            }
           ]
         },
         {
           "color": "Rojo",
           "image": "/prendas/buzo_capucha_gris.webp",
           "sizes": [
-            { "size": "S", "stock": 0 },
-            { "size": "M", "stock": 0 },
-            { "size": "L", "stock": 0 },
-            { "size": "XL", "stock": 0 }
+            {
+              "size": "S",
+              "stock": 0
+            },
+            {
+              "size": "M",
+              "stock": 0
+            },
+            {
+              "size": "L",
+              "stock": 0
+            },
+            {
+              "size": "XL",
+              "stock": 0
+            }
           ]
         }
-      ]
+      ],
+      "tags": [
+        "casual",
+        "deportivo",
+        "bordado"
+      ],
+      "rating": 4.6,
+      "isNew": true,
+      "isFeatured": true,
+      "image": "/prendas/buzo_capucha_gris.webp"
     },
     {
       "id": "3",
       "name": "Remera Oversize Bordada",
       "description": "Remera oversize de algodón premium con bordado minimalista",
-      "price": 7500,
       "garmentType": "remera",
+      "price": 7500,
+      "discount": 20,
       "type": "bordado",
-      "category": "remeras",
-      "tags": ["oversize", "basico", "bordado"],
-      "rating": 4.7,
-      "discount": 15,
-      "isNew": true,
-      "isFeatured": false,
       "variants": [
         {
           "color": "Negro",
           "image": "/prendas/remera_oversize_negra.webp",
           "sizes": [
-            { "size": "M", "stock": 6 },
-            { "size": "L", "stock": 8 },
-            { "size": "XL", "stock": 4 }
+            {
+              "size": "M",
+              "stock": 6
+            },
+            {
+              "size": "L",
+              "stock": 8
+            },
+            {
+              "size": "XL",
+              "stock": 4
+            }
           ]
         },
         {
           "color": "Blanco",
           "image": "/prendas/remera_oversize_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 5 },
-            { "size": "M", "stock": 7 },
-            { "size": "L", "stock": 5 }
+            {
+              "size": "S",
+              "stock": 5
+            },
+            {
+              "size": "M",
+              "stock": 7
+            },
+            {
+              "size": "L",
+              "stock": 5
+            }
           ]
         },
         {
           "color": "Verde",
           "image": "/prendas/remera_oversize_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 0 },
-            { "size": "M", "stock": 2 },
-            { "size": "L", "stock": 0 },
-            { "size": "XL", "stock": 1 }
+            {
+              "size": "S",
+              "stock": 0
+            },
+            {
+              "size": "M",
+              "stock": 2
+            },
+            {
+              "size": "L",
+              "stock": 0
+            },
+            {
+              "size": "XL",
+              "stock": 1
+            }
           ]
         }
-      ]
+      ],
+      "tags": [
+        "oversize",
+        "basico",
+        "bordado"
+      ],
+      "rating": 4.7,
+      "isNew": true,
+      "isFeatured": false,
+      "image": "/prendas/remera_oversize_negra.webp"
     },
     {
       "id": "4",
@@ -236,8 +334,11 @@
       "price": 12000,
       "garmentType": "buzo",
       "type": "bordado",
-      "category": "buzos",
-      "tags": ["deportivo", "frisa", "bordado"],
+      "tags": [
+        "deportivo",
+        "frisa",
+        "bordado"
+      ],
       "rating": 4.5,
       "discount": 20,
       "isNew": false,
@@ -247,18 +348,36 @@
           "color": "Negro",
           "image": "/prendas/buzo_frisa_negro.webp",
           "sizes": [
-            { "size": "S", "stock": 2 },
-            { "size": "M", "stock": 5 },
-            { "size": "L", "stock": 3 }
+            {
+              "size": "S",
+              "stock": 2
+            },
+            {
+              "size": "M",
+              "stock": 5
+            },
+            {
+              "size": "L",
+              "stock": 3
+            }
           ]
         },
         {
           "color": "Gris",
           "image": "/prendas/buzo_frisa_negro.webp",
           "sizes": [
-            { "size": "M", "stock": 4 },
-            { "size": "L", "stock": 6 },
-            { "size": "XL", "stock": 2 }
+            {
+              "size": "M",
+              "stock": 4
+            },
+            {
+              "size": "L",
+              "stock": 6
+            },
+            {
+              "size": "XL",
+              "stock": 2
+            }
           ]
         }
       ]
@@ -270,8 +389,11 @@
       "price": 8500,
       "garmentType": "remera",
       "type": "bordado",
-      "category": "remeras",
-      "tags": ["basico", "algodon", "bordado"],
+      "tags": [
+        "basico",
+        "algodon",
+        "bordado"
+      ],
       "rating": 4.4,
       "discount": 10,
       "isNew": false,
@@ -281,20 +403,44 @@
           "color": "Blanco",
           "image": "/prendas/remera_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 8 },
-            { "size": "M", "stock": 10 },
-            { "size": "L", "stock": 7 },
-            { "size": "XL", "stock": 4 }
+            {
+              "size": "S",
+              "stock": 8
+            },
+            {
+              "size": "M",
+              "stock": 10
+            },
+            {
+              "size": "L",
+              "stock": 7
+            },
+            {
+              "size": "XL",
+              "stock": 4
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/remera_negra.webp",
           "sizes": [
-            { "size": "S", "stock": 6 },
-            { "size": "M", "stock": 9 },
-            { "size": "L", "stock": 5 },
-            { "size": "XL", "stock": 3 }
+            {
+              "size": "S",
+              "stock": 6
+            },
+            {
+              "size": "M",
+              "stock": 9
+            },
+            {
+              "size": "L",
+              "stock": 5
+            },
+            {
+              "size": "XL",
+              "stock": 3
+            }
           ]
         }
       ]
@@ -306,8 +452,11 @@
       "price": 18000,
       "garmentType": "buzo",
       "type": "bordado",
-      "category": "buzos",
-      "tags": ["oversize", "frisa", "bordado"],
+      "tags": [
+        "oversize",
+        "frisa",
+        "bordado"
+      ],
       "rating": 4.9,
       "discount": 30,
       "isNew": true,
@@ -317,53 +466,97 @@
           "color": "Gris",
           "image": "/prendas/buzo_oversize_gris.webp",
           "sizes": [
-            { "size": "M", "stock": 3 },
-            { "size": "L", "stock": 5 },
-            { "size": "XL", "stock": 2 }
+            {
+              "size": "M",
+              "stock": 3
+            },
+            {
+              "size": "L",
+              "stock": 5
+            },
+            {
+              "size": "XL",
+              "stock": 2
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/buzo_oversize_negro.webp",
           "sizes": [
-            { "size": "S", "stock": 2 },
-            { "size": "M", "stock": 4 },
-            { "size": "L", "stock": 3 },
-            { "size": "XL", "stock": 1 }
+            {
+              "size": "S",
+              "stock": 2
+            },
+            {
+              "size": "M",
+              "stock": 4
+            },
+            {
+              "size": "L",
+              "stock": 3
+            },
+            {
+              "size": "XL",
+              "stock": 1
+            }
           ]
         }
       ]
     }
   ],
-  
   "customizableProducts": [
     {
       "id": "7",
       "name": "Remera Personalizada",
       "description": "Remera con bordado personalizado a elección del cliente",
-      "price": 12000,
       "garmentType": "remera",
-      "type": "personalizable",
+      "price": 12000,
       "discount": 0,
+      "type": "personalizable",
       "variants": [
         {
           "color": "Blanco",
           "image": "/prendas/remera_blanca.webp",
           "sizes": [
-            { "size": "S", "stock": 10 },
-            { "size": "M", "stock": 15 },
-            { "size": "L", "stock": 12 },
-            { "size": "XL", "stock": 8 }
+            {
+              "size": "S",
+              "stock": 10
+            },
+            {
+              "size": "M",
+              "stock": 15
+            },
+            {
+              "size": "L",
+              "stock": 12
+            },
+            {
+              "size": "XL",
+              "stock": 8
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/remera_negra.webp",
           "sizes": [
-            { "size": "S", "stock": 8 },
-            { "size": "M", "stock": 12 },
-            { "size": "L", "stock": 10 },
-            { "size": "XL", "stock": 6 }
+            {
+              "size": "S",
+              "stock": 8
+            },
+            {
+              "size": "M",
+              "stock": 12
+            },
+            {
+              "size": "L",
+              "stock": 10
+            },
+            {
+              "size": "XL",
+              "stock": 6
+            }
           ]
         }
       ]
@@ -381,19 +574,164 @@
           "color": "Gris",
           "image": "/prendas/buzo_capucha_gris.webp",
           "sizes": [
-            { "size": "M", "stock": 8 },
-            { "size": "L", "stock": 10 },
-            { "size": "XL", "stock": 6 }
+            {
+              "size": "M",
+              "stock": 8
+            },
+            {
+              "size": "L",
+              "stock": 10
+            },
+            {
+              "size": "XL",
+              "stock": 6
+            }
           ]
         },
         {
           "color": "Negro",
           "image": "/prendas/buzo_capucha_negro.webp",
           "sizes": [
-            { "size": "S", "stock": 6 },
-            { "size": "M", "stock": 8 },
-            { "size": "L", "stock": 7 },
-            { "size": "XL", "stock": 4 }
+            {
+              "size": "S",
+              "stock": 6
+            },
+            {
+              "size": "M",
+              "stock": 8
+            },
+            {
+              "size": "L",
+              "stock": 7
+            },
+            {
+              "size": "XL",
+              "stock": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "name": "Remera Oversize Personalizada",
+      "description": "Remera oversize con bordado personalizado y diseño moderno",
+      "garmentType": "remera",
+      "price": 14000,
+      "discount": 0,
+      "type": "personalizable",
+      "variants": [
+        {
+          "color": "Blanco",
+          "image": "/prendas/remera_oversize_blanca.webp",
+          "sizes": [
+            {
+              "size": "S",
+              "stock": 8
+            },
+            {
+              "size": "M",
+              "stock": 12
+            },
+            {
+              "size": "L",
+              "stock": 10
+            },
+            {
+              "size": "XL",
+              "stock": 7
+            }
+          ]
+        },
+        {
+          "color": "Gris",
+          "image": "/prendas/remera_oversize_gris.webp",
+          "sizes": [
+            {
+              "size": "S",
+              "stock": 6
+            },
+            {
+              "size": "M",
+              "stock": 9
+            },
+            {
+              "size": "L",
+              "stock": 31
+            },
+            {
+              "size": "XL",
+              "stock": 5
+            }
+          ]
+        },
+        {
+          "color": "Azul",
+          "image": "/prendas/remera_oversize_azul.webp",
+          "sizes": [
+            {
+              "size": "M",
+              "stock": 7
+            },
+            {
+              "size": "L",
+              "stock": 6
+            },
+            {
+              "size": "XL",
+              "stock": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "name": "Buzo Oversize Personalizado",
+      "description": "Buzo oversize con bordado personalizado y capucha",
+      "price": 18000,
+      "garmentType": "buzo",
+      "type": "personalizable",
+      "discount": 0,
+      "variants": [
+        {
+          "color": "Negro",
+          "image": "/prendas/buzo_oversize_negro.webp",
+          "sizes": [
+            {
+              "size": "S",
+              "stock": 5
+            },
+            {
+              "size": "M",
+              "stock": 8
+            },
+            {
+              "size": "L",
+              "stock": 7
+            },
+            {
+              "size": "XL",
+              "stock": 4
+            }
+          ]
+        },
+        {
+          "color": "Gris",
+          "image": "/prendas/buzo_oversize_gris.webp",
+          "sizes": [
+            {
+              "size": "M",
+              "stock": 6
+            },
+            {
+              "size": "L",
+              "stock": 8
+            },
+            {
+              "size": "XL",
+              "stock": 5
+            }
           ]
         }
       ]
@@ -401,15 +739,25 @@
   ],
   "orders": [
     {
-      "id": "ORD-001",
+      "id": "1",
       "date": "2024-01-15T10:30:00.000Z",
-      "customerId": "CUST-001",
+      "customerId": 3,
+      "customerSnapshot": {
+        "name": "María",
+        "lastName": "González",
+        "email": "maria.gonzalez@email.com",
+        "phone": "11 2345-6789",
+        "dni": "12345678",
+        "province": "Buenos Aires",
+        "city": "CABA",
+        "postalCode": "1043",
+        "address": "Av. Corrientes 1234",
+        "floorApartment": "Piso 3, Depto A"
+      },
       "items": [
         {
-          "id": "ITEM-001",
-          "productId": "7",
-          "quantity": 2,
-          "subtotal": 13600,
+          "id": 1,
+          "productId": 7,
           "productSnapshot": {
             "name": "Remera Personalizada",
             "description": "Remera con bordado personalizado a elección del cliente",
@@ -419,42 +767,55 @@
             "type": "personalizable",
             "variant": {
               "color": "Blanco",
-              "image": "/prendas/remera_blanca.webp",
-              "size": "M"
+              "size": "M",
+              "image": "/prendas/remera_blanca.webp"
             }
           },
+          "quantity": 2,
+          "subtotal": 24000,
           "customization": {
             "threadColor1": "1",
-            "threadColor2": "2",
-            "customText": "Mi Logo",
-            "customTextColor": "4",
+            "threadColor2": "4",
+            "customText": "María 2024",
+            "customTextColor": "1",
             "customImage": "/productos/imagen1.png"
           }
         }
       ],
-      "subtotal": 13600,
+      "couponCode": "",
       "couponDiscount": 0,
+      "subtotal": 24000,
       "shippingPrice": 1500,
-      "total": 15100,
-      "status": "entregado",
+      "total": 25500,
       "paymentMethod": "mercadopago",
-      "notes": "Entregar en horario de tarde",
+      "status": "entregado",
       "shippingAddress": "Av. Corrientes 1234",
       "shippingCity": "CABA",
       "shippingProvince": "Buenos Aires",
       "shippingPostalCode": "1043",
-      "shippingFloorApartment": "Piso 3, Depto A"
+      "shippingFloorApartment": "Piso 3, Depto A",
+      "notes": "Entregar en horario de tarde"
     },
     {
-      "id": "ORD-002",
+      "id": "2",
       "date": "2024-01-20T14:15:00.000Z",
-      "customerId": "CUST-002",
+      "customerId": 3,
+      "customerSnapshot": {
+        "name": "Carlos",
+        "lastName": "Rodríguez",
+        "email": "carlos.rodriguez@email.com",
+        "phone": "11 3456-7890",
+        "dni": "87654321",
+        "province": "Buenos Aires",
+        "city": "CABA",
+        "postalCode": "1425",
+        "address": "Belgrano 567",
+        "floorApartment": "Piso 1"
+      },
       "items": [
         {
-          "id": "ITEM-002",
-          "productId": "2",
-          "quantity": 1,
-          "subtotal": 15000,
+          "id": 2,
+          "productId": 2,
           "productSnapshot": {
             "name": "Buzo Capucha Bordado",
             "description": "Buzo con capucha de frisa suave con bordado deportivo",
@@ -464,16 +825,16 @@
             "type": "bordado",
             "variant": {
               "color": "Gris",
-              "image": "/prendas/buzo_capucha_gris.webp",
-              "size": "L"
+              "size": "L",
+              "image": "/prendas/buzo_capucha_gris.webp"
             }
-          }
+          },
+          "quantity": 1,
+          "subtotal": 14975
         },
         {
-          "id": "ITEM-003",
-          "productId": "5",
-          "quantity": 3,
-          "subtotal": 19500,
+          "id": 3,
+          "productId": 5,
           "productSnapshot": {
             "name": "Remera Básica Bordada",
             "description": "Remera básica de algodón con bordado personalizado",
@@ -483,32 +844,47 @@
             "type": "bordado",
             "variant": {
               "color": "Blanco",
-              "image": "/prendas/remera_blanca.webp",
-              "size": "M"
+              "size": "M",
+              "image": "/prendas/remera_blanca.webp"
             }
-          }
+          },
+          "quantity": 3,
+          "subtotal": 25470
         }
       ],
-      "subtotal": 34500,
+      "couponCode": "",
       "couponDiscount": 0,
+      "subtotal": 40445,
       "shippingPrice": 0,
-      "total": 34500,
-      "status": "en_proceso",
+      "total": 40445,
       "paymentMethod": "transferencia",
+      "status": "en_proceso",
       "shippingAddress": "Belgrano 567",
       "shippingCity": "CABA",
       "shippingProvince": "Buenos Aires",
       "shippingPostalCode": "1425",
-      "shippingFloorApartment": "Piso 1"
+      "shippingFloorApartment": "Piso 1",
+      "notes": ""
     },
     {
-      "id": "ORD-003",
+      "id": "3",
       "date": "2024-01-25T09:45:00.000Z",
-      "customerId": "CUST-003",
+      "customerId": 3,
+      "customerSnapshot": {
+        "name": "Ana",
+        "lastName": "Martínez",
+        "email": "ana.martinez@email.com",
+        "phone": "11 4567-8901",
+        "dni": "23456789",
+        "province": "Córdoba",
+        "city": "Córdoba",
+        "postalCode": "5000",
+        "address": "San Martín 789"
+      },
       "items": [
         {
-          "id": "ITEM-004",
-          "productId": "3",
+          "id": 4,
+          "productId": 3,
           "quantity": 1,
           "subtotal": 16200,
           "productSnapshot": {
@@ -539,13 +915,25 @@
       "shippingPostalCode": "5000"
     },
     {
-      "id": "ORD-004",
+      "id": "4",
       "date": "2024-01-28T16:20:00.000Z",
-      "customerId": "CUST-004",
+      "customerId": 4,
+      "customerSnapshot": {
+        "name": "Luis",
+        "lastName": "Fernández",
+        "email": "luis.fernandez@email.com",
+        "phone": "11 5678-9012",
+        "dni": "34567890",
+        "province": "Santa Fe",
+        "city": "Rosario",
+        "postalCode": "2000",
+        "address": "Pellegrini 456",
+        "floorApartment": "Piso 5, Depto B"
+      },
       "items": [
         {
-          "id": "ITEM-005",
-          "productId": "4",
+          "id": 5,
+          "productId": 4,
           "quantity": 2,
           "subtotal": 15000,
           "productSnapshot": {
@@ -555,16 +943,16 @@
             "discount": 20,
             "garmentType": "buzo",
             "type": "bordado",
-                          "variant": {
-                "color": "Negro",
-                "image": "/prendas/buzo_frisa_negro.webp",
-                "size": "M"
-              }
+            "variant": {
+              "color": "Negro",
+              "image": "/prendas/buzo_frisa_negro.webp",
+              "size": "M"
+            }
           }
         },
         {
-          "id": "ITEM-006",
-          "productId": "8",
+          "id": 6,
+          "productId": 8,
           "quantity": 1,
           "subtotal": 12000,
           "productSnapshot": {
@@ -604,13 +992,25 @@
       "shippingFloorApartment": "Piso 5, Depto B"
     },
     {
-      "id": "ORD-005",
-      "date": "2024-01-30T11:15:00.000Z",
-      "customerId": "CUST-006",
+      "id": "5",
+      "date": "2024-07-30T11:15:00.000Z",
+      "customerId": 6,
+      "customerSnapshot": {
+        "name": "Diego",
+        "lastName": "Martínez",
+        "email": "diego.martinez@email.com",
+        "phone": "11 7890-1234",
+        "dni": "56789012",
+        "province": "Córdoba",
+        "city": "Villa María",
+        "postalCode": "5900",
+        "address": "San Martín 789",
+        "floorApartment": "Piso 2"
+      },
       "items": [
         {
-          "id": "ITEM-007",
-          "productId": "1",
+          "id": 7,
+          "productId": 1,
           "quantity": 3,
           "subtotal": 25500,
           "productSnapshot": {
@@ -628,8 +1028,8 @@
           }
         },
         {
-          "id": "ITEM-008",
-          "productId": "3",
+          "id": 8,
+          "productId": 3,
           "quantity": 1,
           "subtotal": 18000,
           "productSnapshot": {
@@ -659,11 +1059,92 @@
       "shippingCity": "La Plata",
       "shippingProvince": "Buenos Aires",
       "shippingPostalCode": "1900"
+    },
+    {
+      "id": "6",
+      "date": "2024-02-15T13:30:00.000Z",
+      "customerId": 5,
+      "customerSnapshot": {
+        "name": "Sofía",
+        "lastName": "López",
+        "email": "sofia.lopez@email.com",
+        "phone": "11 6789-0123",
+        "dni": "45678901",
+        "province": "Buenos Aires",
+        "city": "La Plata",
+        "postalCode": "1900",
+        "address": "Calle 7 1234"
+      },
+      "items": [
+        {
+          "id": 9,
+          "productId": 12,
+          "quantity": 1,
+          "subtotal": 14000,
+          "productSnapshot": {
+            "name": "Remera Oversize Personalizada",
+            "description": "Remera oversize con bordado personalizado y diseño moderno",
+            "price": 14000,
+            "discount": 0,
+            "garmentType": "remera",
+            "type": "personalizable",
+            "variant": {
+              "color": "Blanco",
+              "image": "/prendas/remera_oversize_blanca.webp",
+              "size": "M"
+            }
+          },
+          "customization": {
+            "threadColor1": "3",
+            "customText": "Sofía",
+            "customTextColor": "4",
+            "customImage": "/productos/imagen3.png"
+          }
+        },
+        {
+          "id": 10,
+          "productId": 13,
+          "quantity": 1,
+          "subtotal": 18000,
+          "productSnapshot": {
+            "name": "Buzo Oversize Personalizado",
+            "description": "Buzo oversize con bordado personalizado y capucha",
+            "price": 18000,
+            "discount": 0,
+            "garmentType": "buzo",
+            "type": "personalizable",
+            "variant": {
+              "color": "Negro",
+              "image": "/prendas/buzo_oversize_negro.webp",
+              "size": "L"
+            }
+          },
+          "customization": {
+            "threadColor1": "6",
+            "threadColor2": "5",
+            "customText": "La Plata FC",
+            "customTextColor": "6",
+            "customImage": "/productos/imagen4.png"
+          }
+        }
+      ],
+      "subtotal": 32000,
+      "couponDiscount": 3200,
+      "shippingPrice": 2000,
+      "total": 30800,
+      "status": "confirmado",
+      "paymentMethod": "tarjeta",
+      "notes": "Diseño deportivo",
+      "couponCode": "DESCUENTO10",
+      "shippingAddress": "Calle 7 1234",
+      "shippingCity": "La Plata",
+      "shippingProvince": "Buenos Aires",
+      "shippingPostalCode": "1900"
     }
   ],
   "coupons": [
     {
-      "id": "COUPON-001",
+      "id": "1",
       "code": "DESCUENTO10",
       "discountType": "percentage",
       "discountValue": 10,
@@ -676,10 +1157,10 @@
       "description": "Descuento del 10% en pedidos superiores a $15,000"
     },
     {
-      "id": "COUPON-002",
+      "id": "2",
       "code": "PRIMERA20",
       "discountType": "percentage",
-      "discountValue": 20,
+      "discountValue": 45,
       "minOrderAmount": 25000,
       "maxUses": 25,
       "currentUses": 1,
@@ -689,7 +1170,7 @@
       "description": "Descuento del 20% para primera compra"
     },
     {
-      "id": "COUPON-003",
+      "id": "3",
       "code": "FIXED5000",
       "discountType": "fixed",
       "discountValue": 5000,
@@ -697,16 +1178,16 @@
       "maxUses": 30,
       "currentUses": 2,
       "validFrom": "2024-02-01T00:00:00.000Z",
-      "validTo": "2024-08-31T23:59:59.000Z",
+      "validTo": "2025-09-13T03:00:00.000Z",
       "active": true,
       "description": "Descuento fijo de $5,000 en pedidos superiores a $30,000"
     },
     {
-      "id": "COUPON-004",
+      "id": "4",
       "code": "DESCUENTO15",
       "discountType": "percentage",
       "discountValue": 15,
-      "minOrderAmount": 20000,
+      "minOrderAmount": 27000,
       "maxUses": 40,
       "currentUses": 1,
       "validFrom": "2024-01-01T00:00:00.000Z",
@@ -715,7 +1196,7 @@
       "description": "Descuento del 15% en pedidos superiores a $20,000"
     },
     {
-      "id": "COUPON-005",
+      "id": "5",
       "code": "ENVIOGRATIS",
       "discountType": "fixed",
       "discountValue": 2000,
@@ -728,7 +1209,7 @@
       "description": "Descuento de $2,000 (equivalente a envío gratis)"
     },
     {
-      "id": "COUPON-006",
+      "id": "6",
       "code": "FLASH25",
       "discountType": "percentage",
       "discountValue": 25,
@@ -776,13 +1257,21 @@
       "code": "#FFFFFF",
       "stock": 250,
       "active": true
+    },
+    {
+      "id": "6",
+      "name": "Amarillo",
+      "code": "#fffa00",
+      "stock": 500,
+      "active": true
     }
   ],
   "settings": {
-    "secondColorPrice": 1500,
-    "customTextPrice": 3000,
-    "shippingPrice": 2000,
-    "freeShippingThreshold": 50000,
-    "whatsAppPhone": "1123456789"
+    "whatsAppPhone": "+54 9 11 5840-5319",
+    "freeShippingThreshold": 65000,
+    "maxImageSize": 10485760,
+    "secondColorPrice": 3000,
+    "customTextPrice": 3500,
+    "maxTextLength": 20
   }
 }

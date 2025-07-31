@@ -1,14 +1,13 @@
 import { ProductBase } from './product-base';
 
-export class Product extends ProductBase {
+export class ProductEmbroided extends ProductBase {
 
     tags!: string[];
-    category!: string;
     rating!: number;
     isNew!: boolean;
     isFeatured!: boolean;
 
-    constructor(init?: Partial<Product>) {
+    constructor(init?: Partial<ProductEmbroided>) {
         super(init);
         this.type = 'bordado';
         Object.assign(this, init);

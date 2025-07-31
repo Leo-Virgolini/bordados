@@ -10,7 +10,6 @@ import { Password } from 'primeng/password';
 import { Checkbox } from 'primeng/checkbox';
 import { Divider } from 'primeng/divider';
 import { Toast } from 'primeng/toast';
-import { ProgressSpinner } from 'primeng/progressspinner';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
@@ -31,7 +30,6 @@ import { AuthService } from '../../services/auth.service';
     Checkbox,
     Divider,
     Toast,
-    ProgressSpinner,
     InputGroup,
     InputGroupAddon
   ],

@@ -54,18 +54,16 @@ export class ContactoComponent {
         if (this.contactForm.valid) {
             this.isSubmitting = true;
 
-            // Simulate API call
-            setTimeout(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: '¡Mensaje enviado!',
-                    detail: 'Gracias por contactarnos. Te responderemos pronto.',
-                    life: 5000
-                });
+            this.messageService.add({
+                severity: 'success',
+                summary: '¡Mensaje enviado!',
+                detail: 'Gracias por contactarnos. Te responderemos pronto.',
+                life: 5000
+            });
 
-                this.contactForm.reset();
-                this.isSubmitting = false;
-            }, 1500);
+            this.contactForm.reset();
+            this.isSubmitting = false;
+
         } else {
             this.markFormGroupTouched();
             this.messageService.add({

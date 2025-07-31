@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { OrdersService } from './orders.service';
 import { ProductsService } from './products.service';
 import { CustomersService } from './customers.service';
-import { Observable, of, delay, forkJoin } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ChartData } from '../models/chart-data';
 import { map, switchMap } from 'rxjs/operators';
@@ -23,9 +23,9 @@ export class ChartsService {
 
     getSalesChartData(): Observable<any> {
         return forkJoin({
-            orders: this.http.get<any[]>(`${this.apiUrl}/orders`),
-            products: this.http.get<any[]>(`${this.apiUrl}/products`),
-            customers: this.http.get<any[]>(`${this.apiUrl}/customers`)
+            orders: this.ordersService.getOrders(),
+            products: this.productsService.getEmbroidedProducts(),
+            customers: this.customersService.getCustomers()
         }).pipe(
             map(({ orders, products, customers }) => {
                 // Monthly Sales Data
@@ -59,7 +59,7 @@ export class ChartsService {
     }
 
     getProductAnalytics(): Observable<ChartData> {
-        return this.http.get<any[]>(`${this.apiUrl}/products`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}/embroidedProducts`).pipe(
             map(products => {
                 const categoryData = this.aggregateProductsByCategory(products);
 
@@ -308,7 +308,7 @@ export class ChartsService {
         const categoryStock: { [key: string]: number } = {};
 
         products.forEach(product => {
-            const category = product.category || 'otros';
+            const category = product.garmentType || 'otros';
             let totalStock = 0;
 
             if (product.variants) {
@@ -328,14 +328,14 @@ export class ChartsService {
     }
 
     private generateRevenueTrendData(orders: any[]): { labels: string[], revenue: number[], expenses: number[] } {
-        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-        const revenue = new Array(6).fill(0);
-        const expenses = new Array(6).fill(0);
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const revenue = new Array(12).fill(0);
+        const expenses = new Array(12).fill(0);
 
         orders.forEach(order => {
             const orderDate = new Date(order.date);
             const monthIndex = orderDate.getMonth();
-            if (monthIndex < 6) {
+            if (monthIndex < 12) {
                 revenue[monthIndex] += order.total || 0;
                 // Estimate expenses as 70% of revenue
                 expenses[monthIndex] += (order.total || 0) * 0.7;
@@ -346,13 +346,13 @@ export class ChartsService {
     }
 
     private generateCustomerGrowthData(customers: any[]): { labels: string[], data: number[] } {
-        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-        const newCustomers = new Array(6).fill(0);
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const newCustomers = new Array(12).fill(0);
 
         customers.forEach(customer => {
             const registrationDate = new Date(customer.registrationDate);
             const monthIndex = registrationDate.getMonth();
-            if (monthIndex < 6) {
+            if (monthIndex < 12) {
                 newCustomers[monthIndex]++;
             }
         });

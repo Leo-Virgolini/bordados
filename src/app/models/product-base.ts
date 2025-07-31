@@ -11,7 +11,7 @@ export interface ProductVariant {
 
 export abstract class ProductBase {
 
-    id: string;
+    id: number;
     name: string;
     description: string;
     garmentType: string;
@@ -21,7 +21,7 @@ export abstract class ProductBase {
     variants: ProductVariant[];
 
     constructor(init?: Partial<ProductBase>) {
-        this.id = init?.id || '';
+        this.id = init?.id || 0;
         this.name = init?.name || '';
         this.description = init?.description || '';
         this.garmentType = init?.garmentType || '';
@@ -35,7 +35,7 @@ export abstract class ProductBase {
         return this.name;
     }
 
-    get key(): string {
+    get key(): number {
         return this.id;
     }
 

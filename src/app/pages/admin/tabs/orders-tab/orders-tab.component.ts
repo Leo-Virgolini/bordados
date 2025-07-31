@@ -1,34 +1,39 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 // PrimeNG Components
-import { Button } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { InputNumber } from 'primeng/inputnumber';
-import { Select } from 'primeng/select';
-import { Dialog } from 'primeng/dialog';
-import { Card } from 'primeng/card';
-import { Tag } from 'primeng/tag';
-import { InputGroup } from 'primeng/inputgroup';
-import { InputGroupAddon } from 'primeng/inputgroupaddon';
-import { InputMask } from 'primeng/inputmask';
-import { Textarea } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { SelectModule } from 'primeng/select';
+import { DialogModule } from 'primeng/dialog';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
+import { TooltipModule } from 'primeng/tooltip';
+import { ImageModule } from 'primeng/image';
+
+// Shared Components
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
-import { OrdersService } from '../../../../services/orders.service';
-import { Order, OrderItem } from '../../../../models/order';
-import { SalesSummary } from '../../../../models/sales-summary';
-import { ProductsService } from '../../../../services/products.service';
-import { Product } from '../../../../models/product';
-import { ProductCustomizable } from '../../../../models/product-customizable';
-import { CouponsService } from '../../../../services/coupons.service';
+
+// Models and Services
+import { Order, CustomerSnapshot, OrderItem } from '../../../../models/order';
 import { Customer } from '../../../../models/customer';
-import { CustomersService } from '../../../../services/customers.service';
+import { ProductEmbroided } from '../../../../models/product-embroided';
+import { ProductCustomizable } from '../../../../models/product-customizable';
 import { Coupon } from '../../../../models/coupon';
+import { SalesSummary } from '../../../../models/sales-summary';
+import { OrdersService } from '../../../../services/orders.service';
+import { CustomersService } from '../../../../services/customers.service';
+import { ProductsService } from '../../../../services/products.service';
+import { CouponsService } from '../../../../services/coupons.service';
 
 @Component({
     selector: 'app-orders-tab',
@@ -37,28 +42,30 @@ import { Coupon } from '../../../../models/coupon';
         ReactiveFormsModule,
         TableModule,
         TabsModule,
-        Button,
-        InputText,
-        InputNumber,
-        Select,
-        Dialog,
-        Card,
-        Tag,
-        Textarea,
-        InputGroup,
-        InputGroupAddon,
+        ButtonModule,
+        InputTextModule,
+        InputNumberModule,
+        SelectModule,
+        DialogModule,
+        CardModule,
+        TagModule,
+        TextareaModule,
+        InputGroupModule,
+        InputGroupAddonModule,
         DatePickerModule,
+        TooltipModule,
+        ImageModule,
         ErrorHelperComponent
     ],
-    providers: [],
     templateUrl: './orders-tab.component.html',
-    styleUrl: './orders-tab.component.scss'
+    styleUrls: ['./orders-tab.component.scss']
 })
 export class OrdersTabComponent implements OnInit {
-
-    // Orders Management
+    // Properties
     orders: Order[] = [];
-    products: Product[] = [];
+    products: ProductEmbroided[] = [];
+    customizableProducts: ProductCustomizable[] = [];
+    allProducts: (ProductEmbroided | ProductCustomizable)[] = [];
     customers: Customer[] = [];
     salesSummary: SalesSummary = new SalesSummary({
         monthlySales: 0,
@@ -66,24 +73,27 @@ export class OrdersTabComponent implements OnInit {
         newCustomers: 0,
         averageTicket: 0
     });
+
+    // Loading states
     ordersLoading: boolean = false;
 
-    // Order Dialog
+    // Dialog states
     showOrderDialog: boolean = false;
     editingOrder: Order | null = null;
     orderForm!: FormGroup;
     orderLoading: boolean = false;
+    formArrayReady: boolean = false;
 
-    // Coupon Management
+    // Coupon management
     availableCoupons: Coupon[] = [];
     selectedCoupon: Coupon | null = null;
     couponLoading: boolean = false;
 
-    // Order Details Dialog
+    // Order details dialog
     showOrderDetailsDialog: boolean = false;
     selectedOrder: Order | null = null;
 
-    // Tab Management
+    // Tab management
     activeTabIndex: number = 0;
 
     // Order status options
@@ -91,12 +101,11 @@ export class OrdersTabComponent implements OnInit {
         { label: 'Pendiente', value: 'pendiente' },
         { label: 'Confirmado', value: 'confirmado' },
         { label: 'En Proceso', value: 'en_proceso' },
-        { label: 'Enviado', value: 'enviado' },
+        { label: 'Despachado', value: 'despachado' },
         { label: 'Entregado', value: 'entregado' },
         { label: 'Cancelado', value: 'cancelado' }
     ];
 
-    // Payment method options
     paymentMethodOptions = [
         { label: 'Efectivo', value: 'efectivo' },
         { label: 'Tarjeta', value: 'tarjeta' },
@@ -109,9 +118,9 @@ export class OrdersTabComponent implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private ordersService: OrdersService,
+        private customersService: CustomersService,
         private productsService: ProductsService,
         private couponsService: CouponsService,
-        private customersService: CustomersService,
         private cdr: ChangeDetectorRef
     ) { }
 
@@ -120,7 +129,7 @@ export class OrdersTabComponent implements OnInit {
         this.loadProducts();
         this.loadCoupons();
         this.loadCustomers();
-        this.initForms();
+        this.loadOrders();
     }
 
     private initForms(): void {
@@ -183,9 +192,12 @@ export class OrdersTabComponent implements OnInit {
     }
 
     private loadProducts(): void {
-        this.productsService.getProducts().subscribe({
+        // Load regular products
+        this.productsService.getEmbroidedProducts().subscribe({
             next: (products) => {
                 this.products = products;
+                console.log('Regular products loaded:', products.length);
+                this.updateAllProducts();
             },
             error: (error) => {
                 this.messageService.add({
@@ -195,13 +207,35 @@ export class OrdersTabComponent implements OnInit {
                 });
             }
         });
+
+        // Load customizable products
+        this.productsService.getCustomizableProducts().subscribe({
+            next: (customizableProducts) => {
+                this.customizableProducts = customizableProducts;
+                console.log('Customizable products loaded:', customizableProducts.length);
+                this.updateAllProducts();
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al cargar los productos personalizables: ' + error.message
+                });
+            }
+        });
+    }
+
+    private updateAllProducts(): void {
+        this.allProducts = [...this.products, ...this.customizableProducts];
+        console.log('All products combined:', this.allProducts.length);
     }
 
     private loadCoupons(): void {
         // Load active coupons from service
-        this.couponsService.getActiveCoupons().subscribe({
+        this.couponsService.getCoupons().subscribe({
             next: (coupons) => {
-                this.availableCoupons = coupons;
+                this.availableCoupons = coupons.filter(coupon => coupon.active);
+                console.log('Available coupons loaded:', this.availableCoupons.length);
             },
             error: (error) => {
                 this.messageService.add({
@@ -217,6 +251,7 @@ export class OrdersTabComponent implements OnInit {
         this.customersService.getCustomers().subscribe({
             next: (customers) => {
                 this.customers = customers;
+                console.log('Customers loaded:', customers.length);
             },
             error: (error) => {
                 this.messageService.add({
@@ -232,7 +267,7 @@ export class OrdersTabComponent implements OnInit {
         this.ordersService.getOrders().subscribe({
             next: (orders) => {
                 this.orders = orders;
-                this.ordersLoading = false;
+                console.log('Orders loaded:', orders.length);
             },
             error: (error) => {
                 this.messageService.add({
@@ -240,7 +275,6 @@ export class OrdersTabComponent implements OnInit {
                     summary: 'Error',
                     detail: 'Error al cargar los pedidos: ' + error.message
                 });
-                this.ordersLoading = false;
             }
         });
     }
@@ -268,7 +302,7 @@ export class OrdersTabComponent implements OnInit {
             'pendiente': 'Pendiente',
             'confirmado': 'Confirmado',
             'en_proceso': 'En Proceso',
-            'enviado': 'Enviado',
+            'despachado': 'Despachado',
             'entregado': 'Entregado',
             'cancelado': 'Cancelado'
         };
@@ -280,11 +314,11 @@ export class OrdersTabComponent implements OnInit {
             'pendiente': 'warn',
             'confirmado': 'info',
             'en_proceso': 'primary',
-            'enviado': 'success',
+            'despachado': 'secondary',
             'entregado': 'success',
             'cancelado': 'danger'
         };
-        return severityMap[estado] || 'secondary';
+        return severityMap[estado] || 'info';
     }
 
     getPaymentMethodLabel(metodo: string): string {
@@ -298,16 +332,46 @@ export class OrdersTabComponent implements OnInit {
     }
 
     // Order Management Methods
+    trackByIndex(index: number): number {
+        return index;
+    }
+
     get orderItemsArray() {
         return this.orderForm.get('items') as FormArray;
     }
 
     openOrderDialog(order?: Order): void {
-        this.editingOrder = order || null;
 
-        // Reset form first with correct field names
+        // Initialize form if not exists
+        if (!this.orderForm) {
+            this.initForms();
+        }
+
+        // Reset form array
+        while (this.orderItemsArray.length !== 0) {
+            this.orderItemsArray.removeAt(0);
+        }
+
+        // Set ready flag
+        this.formArrayReady = true;
+
+        // Open dialog
+        this.showOrderDialog = true;
+
+        if (order) {
+            this.editingOrder = order;
+            this.populateDialogForm(order);
+        } else {
+            this.editingOrder = null;
+            this.resetForm();
+            // Add one item for new orders
+            this.addOrderItem();
+        }
+    }
+
+    private resetForm(): void {
         this.orderForm.reset({
-            id: order ? order.id : `ORD-${Date.now()}`,
+            id: `ORD-${Date.now()}`,
             date: new Date(),
             status: 'pendiente',
             paymentMethod: 'efectivo',
@@ -318,89 +382,112 @@ export class OrdersTabComponent implements OnInit {
             customerId: '',
             couponCode: '',
             notes: '',
-            // Shipping address defaults
             shippingAddress: '',
             shippingCity: '',
             shippingProvince: '',
             shippingPostalCode: '',
             shippingFloorApartment: ''
         });
+    }
 
-        // Clear items array
+    private populateDialogForm(order: Order): void {
+        // Populate form with order data
+        this.orderForm.patchValue({
+            id: order.id,
+            date: order.date,
+            couponCode: order.couponCode || '',
+            subtotal: order.subtotal,
+            couponDiscount: order.couponDiscount,
+            shippingPrice: order.shippingPrice || 0,
+            total: order.total,
+            status: order.status,
+            paymentMethod: order.paymentMethod,
+            notes: order.notes || '',
+            shippingAddress: order.shippingAddress,
+            shippingCity: order.shippingCity,
+            shippingProvince: order.shippingProvince,
+            shippingPostalCode: order.shippingPostalCode,
+            shippingFloorApartment: order.shippingFloorApartment || ''
+        });
+
+        // Clear existing items
         while (this.orderItemsArray.length !== 0) {
             this.orderItemsArray.removeAt(0);
         }
 
-        if (order) {
-            // Prepare order data for form
-            const orderData = {
-                id: order.id,
-                date: order.date,
-                customerId: order.customerId,
-                couponCode: order.couponCode || '',
-                subtotal: order.subtotal,
-                couponDiscount: order.couponDiscount,
-                shippingPrice: order.shippingPrice || 0,
-                total: order.total,
-                status: order.status,
-                paymentMethod: order.paymentMethod,
-                notes: order.notes || '',
-                // Shipping address from order
-                shippingAddress: order.shippingAddress,
-                shippingCity: order.shippingCity,
-                shippingProvince: order.shippingProvince,
-                shippingPostalCode: order.shippingPostalCode,
-                shippingFloorApartment: order.shippingFloorApartment || ''
-            };
+        // Add order items
+        order.items.forEach((item) => {
+            // Find the actual product object from allProducts
+            const foundProduct = this.allProducts.find(p => p.id === item.productId);
 
-            // Set form values
-            this.orderForm.patchValue(orderData);
+            // Create the form group first
+            const itemForm = this.fb.group({
+                product: [null as any, Validators.required],
+                quantity: [1, [Validators.required, Validators.min(1)]],
+                selectedColor: [{ value: '', disabled: true }, Validators.required],
+                selectedSize: [{ value: '', disabled: true }, Validators.required]
+            });
 
-            // If there's a coupon code, find and set the selected coupon
-            if (order.couponCode) {
-                this.couponsService.getCouponByCode(order.couponCode).subscribe(coupon => {
-                    if (coupon) {
-                        this.selectedCoupon = coupon;
-                    }
-                });
+            // Add to array first
+            this.orderItemsArray.push(itemForm);
+
+            // Set values immediately
+            let productToSet = foundProduct;
+
+            // If product not found, create a mock product from snapshot
+            if (!foundProduct && item.productSnapshot) {
+                productToSet = {
+                    id: item.productId,
+                    name: item.productSnapshot.name,
+                    description: item.productSnapshot.description,
+                    price: item.productSnapshot.price,
+                    discount: item.productSnapshot.discount,
+                    garmentType: item.productSnapshot.garmentType,
+                    type: item.productSnapshot.type as 'bordado' | 'personalizable',
+                    variants: [{
+                        color: item.productSnapshot.variant?.color || '',
+                        image: item.productSnapshot.variant?.image || '',
+                        sizes: [{
+                            size: item.productSnapshot.variant?.size || '',
+                            stock: 1
+                        }]
+                    }],
+                    // Include customization data if available
+                    threadColor1: item.customization?.threadColor1 ? { code: item.customization.threadColor1, name: 'Color 1' } : undefined,
+                    threadColor2: item.customization?.threadColor2 ? { code: item.customization.threadColor2, name: 'Color 2' } : undefined,
+                    customText: item.customization?.customText,
+                    customTextColor: item.customization?.customTextColor ? { code: item.customization.customTextColor } : undefined,
+                    customImage: item.customization?.customImage
+                } as any; // Use type assertion to avoid complex type issues
+
+                // Add the mock product to allProducts temporarily so p-select can find it
+                if (productToSet) {
+                    this.allProducts.push(productToSet as any);
+                }
             }
 
-            // Prepare items data for form array
-            const itemsData = order.items.map(item => ({
-                product: item.productSnapshot,
-                quantity: item.quantity,
-                selectedColor: item.productSnapshot.variant?.color || '',
-                selectedSize: item.productSnapshot.variant?.size || ''
-            }));
+            if (productToSet) {
+                itemForm.get('product')?.setValue(productToSet);
+            }
+            itemForm.get('quantity')?.setValue(item.quantity);
+            itemForm.get('selectedColor')?.setValue(item.productSnapshot.variant?.color || '');
+            itemForm.get('selectedSize')?.setValue(item.productSnapshot.variant?.size || '');
 
-            // Create form groups for each item and add them to the array
-            itemsData.forEach(itemData => {
-                const itemGroup = this.fb.group({
-                    productSnapshot: [itemData.product, Validators.required],
-                    quantity: [itemData.quantity, [Validators.required, Validators.min(1)]],
-                    selectedColor: [itemData.selectedColor, Validators.required],
-                    selectedSize: [itemData.selectedSize, Validators.required]
-                });
-                this.orderItemsArray.push(itemGroup);
-            });
-        } else {
-            // Add at least one empty item for new orders
-            this.addOrderItem();
-        }
+            // Update disabled states after setting values
+            this.updateItemControlStates(this.orderItemsArray.length - 1);
+        });
 
-        // Force form update to ensure p-select components are properly bound
+        // Force form update and trigger change detection
         this.orderForm.updateValueAndValidity();
-        this.orderItemsArray.updateValueAndValidity();
-
-        // Ensure dialog opens immediately
-        this.showOrderDialog = true;
+        this.cdr.detectChanges();
+        this.calculateOrderTotals();
     }
 
     addOrderItem(): void {
         const itemForm = this.fb.group({
-            productSnapshot: [null, Validators.required],
-            selectedColor: [null, Validators.required],
-            selectedSize: [null, Validators.required],
+            product: [null, Validators.required],
+            selectedColor: [{ value: null, disabled: true }, Validators.required],
+            selectedSize: [{ value: null, disabled: true }, Validators.required],
             quantity: [1, [Validators.required, Validators.min(1)]]
         });
         this.orderItemsArray.push(itemForm);
@@ -416,12 +503,12 @@ export class OrdersTabComponent implements OnInit {
         let subtotal = 0;
 
         this.orderItemsArray.controls.forEach((itemControl: any) => {
-            const productSnapshot = itemControl.get('productSnapshot')?.value;
+            const product = itemControl.get('product')?.value;
             const quantity = itemControl.get('quantity')?.value || 0;
 
-            if (productSnapshot && quantity > 0) {
-                const basePrice = productSnapshot.price || 0;
-                const discount = productSnapshot.discount || 0;
+            if (product && quantity > 0) {
+                const basePrice = product.price || 0;
+                const discount = product.discount || 0;
                 const unitPrice = Math.max(0, basePrice - discount);
                 subtotal += unitPrice * quantity;
             }
@@ -443,46 +530,75 @@ export class OrdersTabComponent implements OnInit {
 
     onProductChange(index: number): void {
         const itemControl = this.orderItemsArray.at(index);
-        itemControl.patchValue({ selectedColor: null, selectedSize: null });
+        itemControl.patchValue({
+            selectedColor: null,
+            selectedSize: null
+        });
+
+        // Update disabled state based on product selection
+        this.updateItemControlStates(index);
         this.calculateOrderTotals();
     }
 
-    onVariantChange(index: number): void {
-        const itemControl = this.orderItemsArray.at(index);
-        itemControl.patchValue({ color: '', size: '' });
-        this.calculateOrderTotals();
+    getAvailableColorsForItem(index: number): any[] {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        if (!product || !product.variants) return [];
+
+        const colors = product.variants
+            .map((variant: any) => variant.color)
+            .filter((color: string) => color)
+            .filter((color: string, index: number, arr: string[]) => arr.indexOf(color) === index);
+
+        return colors.map((color: string) => ({ label: color, value: color }));
     }
 
-    getAvailableColorsForItem(index: number): string[] {
-        const productSnapshot = this.orderItemsArray.at(index).get('productSnapshot')?.value;
-        if (!productSnapshot || !productSnapshot.variant) return [];
-        return [productSnapshot.variant.color];
-    }
+    getAvailableSizesForItem(index: number): any[] {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        const selectedColor = this.orderItemsArray.at(index)?.get('selectedColor')?.value;
 
-    getAvailableSizesForItem(index: number): string[] {
-        const productSnapshot = this.orderItemsArray.at(index).get('productSnapshot')?.value;
-        if (!productSnapshot || !productSnapshot.variant) return [];
-        return [productSnapshot.variant.size];
+        if (!product || !product.variants || !selectedColor) return [];
+
+        const variant = product.variants.find((v: any) => v.color === selectedColor);
+        if (!variant || !variant.sizes) return [];
+
+        const sizes = variant.sizes
+            .map((size: any) => size.size)
+            .filter((size: string) => size);
+
+        return sizes.map((size: string) => ({ label: size, value: size }));
     }
 
     onColorChange(index: number): void {
         const itemControl = this.orderItemsArray.at(index);
-        itemControl.patchValue({ size: '' });
+        itemControl.patchValue({ selectedSize: null });
+
+        // Update disabled state based on color selection
+        this.updateItemControlStates(index);
         this.calculateOrderTotals();
+    }
+
+    private updateItemControlStates(index: number): void {
+        const itemControl = this.orderItemsArray.at(index);
+        const product = itemControl.get('product')?.value;
+        const selectedColor = itemControl.get('selectedColor')?.value;
+
+        // Disable/enable color select based on product selection
+        if (product) {
+            itemControl.get('selectedColor')?.enable();
+        } else {
+            itemControl.get('selectedColor')?.disable();
+        }
+
+        // Disable/enable size select based on color selection
+        if (selectedColor) {
+            itemControl.get('selectedSize')?.enable();
+        } else {
+            itemControl.get('selectedSize')?.disable();
+        }
     }
 
     onSizeChange(): void {
         this.calculateOrderTotals();
-    }
-
-    onCustomerChange(): void {
-        // Customer selection changed
-    }
-
-    getCurrentTaxAmount(): number {
-        const subtotal = this.orderForm.get('subtotal')?.value || 0;
-        const discount = this.orderForm.get('discount')?.value || 0;
-        return (subtotal - discount) * 0.21;
     }
 
     validateAndApplyCoupon(): void {
@@ -496,11 +612,9 @@ export class OrdersTabComponent implements OnInit {
         this.couponLoading = true;
         const subtotal = this.orderForm.get('subtotal')?.value || 0;
 
-        // Validate coupon using service
         this.couponsService.validateCoupon(couponCode, subtotal).subscribe({
             next: (result) => {
                 if (result.valid && result.coupon) {
-                    // Apply coupon
                     this.selectedCoupon = result.coupon;
                     let discountAmount = 0;
 
@@ -510,9 +624,7 @@ export class OrdersTabComponent implements OnInit {
                         discountAmount = result.coupon.discountValue;
                     }
 
-                    // Ensure discount doesn't exceed subtotal
                     discountAmount = Math.min(discountAmount, subtotal);
-
                     this.orderForm.get('couponDiscount')?.setValue(discountAmount);
 
                     this.messageService.add({
@@ -546,24 +658,6 @@ export class OrdersTabComponent implements OnInit {
         });
     }
 
-    getCouponDisplayValue(coupon: Coupon): string {
-        if (coupon.discountType === 'percentage') {
-            return `${coupon.code} - ${coupon.discountValue}%`;
-        } else {
-            return `${coupon.code} - $${coupon.discountValue.toLocaleString('es-AR')}`;
-        }
-    }
-
-    getDiscountPercentage(): number {
-        const subtotal = this.orderForm.get('subtotal')?.value || 0;
-        const couponDiscount = this.orderForm.get('couponDiscount')?.value || 0;
-
-        if (subtotal > 0 && couponDiscount > 0) {
-            return Math.round((couponDiscount / subtotal) * 100);
-        }
-        return 0;
-    }
-
     clearCoupon(): void {
         this.selectedCoupon = null;
         this.orderForm.get('couponCode')?.setValue('');
@@ -574,14 +668,6 @@ export class OrdersTabComponent implements OnInit {
             severity: 'info',
             summary: 'Cupón removido',
             detail: 'El cupón ha sido removido del pedido'
-        });
-    }
-
-    private updateCouponUsage(coupon: Coupon): void {
-        // Update coupon usage through service
-        this.couponsService.applyCouponUsage(coupon.code).subscribe(() => {
-            // Reload available coupons
-            this.loadCoupons();
         });
     }
 
@@ -599,40 +685,46 @@ export class OrdersTabComponent implements OnInit {
 
         try {
             const formValue = this.orderForm.value;
-            const selectedCustomer = this.customers.find(c => c.id === formValue.customerId);
 
-            if (!selectedCustomer) {
+            // For new orders, use customerId from form. For existing orders, use from editingOrder
+            const customerId = this.editingOrder ? this.editingOrder.customerId : formValue.customerId;
+
+            if (!customerId) {
                 throw new Error('Cliente no encontrado');
             }
 
-            // Build order items with selected variants
+            // Build order items
             const orderItems: OrderItem[] = formValue.items.map((itemForm: any) => {
                 const product = itemForm.product;
                 const selectedColor = itemForm.selectedColor;
                 const selectedSize = itemForm.selectedSize;
 
-                // Create a product snapshot with only the selected variant
-                const productSnapshot = { ...product };
-                if (product.variants) {
-                    const selectedVariant = product.variants.find((v: any) => v.color === selectedColor);
-                    if (selectedVariant) {
-                        // Keep only the selected variant with the selected size
-                        productSnapshot.variants = [{
-                            ...selectedVariant,
-                            sizes: selectedVariant.sizes.filter((s: any) => s.size === selectedSize)
-                        }];
+                const productSnapshot = {
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    discount: product.discount || 0,
+                    garmentType: product.garmentType,
+                    type: product.type,
+                    variant: {
+                        color: selectedColor,
+                        size: selectedSize,
+                        image: product.variants?.find((v: any) => v.color === selectedColor)?.image || ''
                     }
-                }
+                };
 
                 return new OrderItem({
+                    productId: product.id,
                     productSnapshot: productSnapshot,
-                    quantity: itemForm.quantity
+                    quantity: itemForm.quantity,
+                    subtotal: itemForm.quantity * (product.price - (product.discount || 0))
                 });
             });
 
             const orderData = {
-                date: new Date(),
-                customer: selectedCustomer,
+                id: formValue.id,
+                date: formValue.date,
+                customerId: customerId,
                 items: orderItems,
                 couponCode: formValue.couponCode,
                 subtotal: formValue.subtotal,
@@ -672,11 +764,15 @@ export class OrdersTabComponent implements OnInit {
                             summary: 'Error',
                             detail: 'Error al actualizar el pedido: ' + error.message
                         });
+                    },
+                    complete: () => {
+                        this.orderLoading = false;
                     }
                 });
             } else {
                 // Create new order
-                this.ordersService.createOrder(orderData as any).subscribe({
+                const newOrder = new Order(orderData);
+                this.ordersService.createOrder(newOrder).subscribe({
                     next: () => {
                         this.messageService.add({
                             severity: 'success',
@@ -692,6 +788,9 @@ export class OrdersTabComponent implements OnInit {
                             summary: 'Error',
                             detail: 'Error al crear el pedido: ' + error.message
                         });
+                    },
+                    complete: () => {
+                        this.orderLoading = false;
                     }
                 });
             }
@@ -701,7 +800,6 @@ export class OrdersTabComponent implements OnInit {
                 summary: 'Error',
                 detail: error.message
             });
-        } finally {
             this.orderLoading = false;
         }
     }
@@ -712,57 +810,17 @@ export class OrdersTabComponent implements OnInit {
     }
 
     editOrder(order: Order): void {
-        // Set the order and open dialog immediately
-        this.editingOrder = order;
-        this.showOrderDialog = true;
-
-        // Then populate the form data
-        this.populateOrderForm(order);
+        this.openOrderDialog(order);
     }
 
     closeOrderDialog(): void {
         this.showOrderDialog = false;
         this.editingOrder = null;
         this.selectedCoupon = null;
-    }
+        this.formArrayReady = false;
 
-    private populateOrderForm(order: Order): void {
-        this.orderForm.patchValue({
-            id: order.id,
-            date: order.date,
-            customerId: order.customerId,
-            couponCode: order.couponCode,
-            couponDiscount: order.couponDiscount,
-            shippingPrice: order.shippingPrice,
-            subtotal: order.subtotal,
-            total: order.total,
-            status: order.status,
-            paymentMethod: order.paymentMethod,
-            notes: order.notes,
-            shippingAddress: order.shippingAddress,
-            shippingCity: order.shippingCity,
-            shippingProvince: order.shippingProvince,
-            shippingPostalCode: order.shippingPostalCode,
-            shippingFloorApartment: order.shippingFloorApartment
-        });
-
-        // Clear existing items
-        while (this.orderItemsArray.length !== 0) {
-            this.orderItemsArray.removeAt(0);
-        }
-
-        // Add items with their variants
-        order.items.forEach(item => {
-            const itemForm = this.fb.group({
-                productSnapshot: [item.productSnapshot, Validators.required],
-                selectedColor: [item.productSnapshot.variant?.color || '', Validators.required],
-                selectedSize: [item.productSnapshot.variant?.size || '', Validators.required],
-                quantity: [item.quantity, [Validators.required, Validators.min(1)]]
-            });
-            this.orderItemsArray.push(itemForm);
-        });
-
-        this.calculateOrderTotals();
+        // Clean up any mock products that were added
+        this.cleanupMockProducts();
     }
 
     confirmDeleteOrder(order: Order): void {
@@ -785,7 +843,6 @@ export class OrdersTabComponent implements OnInit {
                     summary: 'Pedido eliminado',
                     detail: `El pedido ID: ${order.id} - ${order.getCustomerName()} ha sido eliminado correctamente`
                 });
-                // Reload sales summary
                 this.loadSalesData();
             },
             error: (error) => {
@@ -801,7 +858,6 @@ export class OrdersTabComponent implements OnInit {
     exportOrders(): void {
         this.ordersService.exportOrders().subscribe({
             next: (csvContent) => {
-                // Create and download CSV file
                 const blob = new Blob([csvContent], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -826,98 +882,168 @@ export class OrdersTabComponent implements OnInit {
         });
     }
 
-    // Table sorting method
-    onSort(event: any): void {
-        // This method is called when table columns are sorted
-        // The PrimeNG table handles sorting automatically, so this method can be empty
-        // or you can add custom sorting logic here if needed
-        console.log('Sort event:', event);
-    }
-
-    // Helper methods
-    getProductName(product: Product | ProductCustomizable): string {
-        return product?.name || 'Producto no disponible';
-    }
-
     // Helper methods for item calculations
     getItemUnitPrice(index: number): number {
         const itemControl = this.orderItemsArray.at(index);
-        const productSnapshot = itemControl.get('productSnapshot')?.value;
-        if (!productSnapshot) return 0;
+        const product = itemControl?.get('product')?.value;
 
-        const basePrice = productSnapshot.price || 0;
-        const discount = productSnapshot.discount || 0;
+        if (!product) return 0;
+
+        const basePrice = product.price || 0;
+        const discount = product.discount || 0;
         return Math.max(0, basePrice - discount);
     }
 
     getItemGrossSubtotal(index: number): number {
         const itemControl = this.orderItemsArray.at(index);
-        const product = itemControl.get('product')?.value;
-        const quantity = itemControl.get('quantity')?.value || 0;
+        const product = itemControl?.get('product')?.value;
+        const quantity = itemControl?.get('quantity')?.value || 0;
 
         if (!product) return 0;
-        return (product.price || 0) * quantity;
+
+        const basePrice = product.price || 0;
+        return basePrice * quantity;
     }
 
     getItemTotalDiscount(index: number): number {
         const itemControl = this.orderItemsArray.at(index);
-        const product = itemControl.get('product')?.value;
-        const quantity = itemControl.get('quantity')?.value || 0;
+        const product = itemControl?.get('product')?.value;
+        const quantity = itemControl?.get('quantity')?.value || 0;
 
         if (!product) return 0;
-        const discount = (product as any)?.discount || 0;
+
+        const discount = product.discount || 0;
         return discount * quantity;
     }
 
     getItemSubtotal(index: number): number {
         const itemControl = this.orderItemsArray.at(index);
-        const product = itemControl.get('product')?.value;
-        const quantity = itemControl.get('quantity')?.value || 0;
+        const product = itemControl?.get('product')?.value;
+        const quantity = itemControl?.get('quantity')?.value || 0;
 
         if (!product) return 0;
+
         const basePrice = product.price || 0;
-        const discount = (product as any)?.discount || 0;
+        const discount = product.discount || 0;
         const unitPrice = Math.max(0, basePrice - discount);
         return unitPrice * quantity;
     }
 
-    getItemFinalPrice(index: number): number {
-        const item = this.orderItemsArray.at(index);
-        if (item) {
-            const product = item.get('product')?.value;
-            if (product) {
-                const unitPrice = (product.price || 0) - (product.discount || 0);
-                return Math.max(0, unitPrice);
-            }
-        }
-        return 0;
+    isItemPersonalized(item: OrderItem): boolean {
+        return item.productSnapshot.type === 'personalizable' ||
+            item.customization !== undefined;
     }
 
-    getItemDiscountPercentage(index: number): number {
-        const grossSubtotal = this.getItemGrossSubtotal(index);
-        const totalDiscount = this.getItemTotalDiscount(index);
-        if (grossSubtotal > 0) {
-            return Math.round((totalDiscount / grossSubtotal) * 100);
-        }
-        return 0;
+    getCustomerDisplayName(customer: Customer | CustomerSnapshot | undefined): string {
+        if (!customer) return 'N/A';
+        return `${customer.name} ${customer.lastName}`.trim();
     }
 
-    getColorValue(colorName: string): string {
+
+
+    // Clean up mock products that were added for editing
+    private cleanupMockProducts(): void {
+        // Remove any products that were added as mock products (they have high IDs)
+        this.allProducts = this.allProducts.filter(product => {
+            // Keep only products that were originally loaded (IDs < 1000000)
+            return product.id < 1000000;
+        });
+    }
+
+    // Get product type label for display
+    getProductTypeLabel(index: number): string {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        if (!product) return '';
+
+        return product.type === 'personalizable' ? 'Personalizado' : 'Bordado';
+    }
+
+    // Get product type severity for styling
+    getProductTypeSeverity(index: number): string {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        if (!product) return 'info';
+
+        return product.type === 'personalizable' ? 'warn' : 'success';
+    }
+
+    // Check if product is personalizable
+    isProductPersonalizado(index: number): boolean {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        return product?.type === 'personalizable';
+    }
+
+    // Get thread colors for personalizable products
+    getProductThreadColors(index: number): any[] {
+        const product = this.orderItemsArray.at(index)?.get('product')?.value;
+        if (!product || product.type !== 'personalizable') return [];
+
+        // Get customization data from the original order item
+        const originalOrderItem = this.editingOrder?.items[index];
+        if (!originalOrderItem?.customization) return [];
+
+        const colors = [];
+        if (originalOrderItem.customization.threadColor1) {
+            const colorCode = this.getColorCodeById(originalOrderItem.customization.threadColor1);
+            const colorName = this.getColorNameById(originalOrderItem.customization.threadColor1);
+            colors.push({ code: colorCode, name: colorName });
+        }
+        if (originalOrderItem.customization.threadColor2) {
+            const colorCode = this.getColorCodeById(originalOrderItem.customization.threadColor2);
+            const colorName = this.getColorNameById(originalOrderItem.customization.threadColor2);
+            colors.push({ code: colorCode, name: colorName });
+        }
+
+        console.log('Thread colors for index', index, ':', colors);
+        return colors;
+    }
+
+    // Get custom text for personalizable products
+    getProductCustomText(index: number): string {
+        const originalOrderItem = this.editingOrder?.items[index];
+        return originalOrderItem?.customization?.customText || '';
+    }
+
+    // Get custom text color for personalizable products
+    getProductCustomTextColor(index: number): any {
+        const originalOrderItem = this.editingOrder?.items[index];
+        if (!originalOrderItem?.customization?.customTextColor) return null;
+
+        const colorCode = this.getColorCodeById(originalOrderItem.customization.customTextColor);
+        const colorName = this.getColorNameById(originalOrderItem.customization.customTextColor);
+        return { code: colorCode, name: colorName };
+    }
+
+    // Helper method to convert color ID to color code
+    public getColorCodeById(colorId: string): string {
         const colorMap: { [key: string]: string } = {
-            'Blanco': '#FFFFFF',
-            'Negro': '#000000',
-            'Gris': '#808080',
-            'Azul': '#0000FF',
-            'Rojo': '#FF0000',
-            'Verde': '#008000',
-            'Amarillo': '#FFFF00',
-            'Naranja': '#FFA500',
-            'Rosa': '#FFC0CB',
-            'Violeta': '#800080',
-            'Marrón': '#A52A2A',
-            'Beige': '#F5F5DC'
+            '1': '#FF0000', // Rojo Fuego
+            '2': '#000080', // Azul Marino
+            '3': '#228B22', // Verde Bosque
+            '4': '#000000', // Negro
+            '5': '#FFFFFF', // Blanco
+            '6': '#fffa00'  // Amarillo
         };
-        return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
+        return colorMap[colorId] || '#000000'; // Default to black if not found
+    }
+
+    // Helper method to convert color ID to color name
+    public getColorNameById(colorId: string): string {
+        const colorNameMap: { [key: string]: string } = {
+            '1': 'Rojo Fuego',
+            '2': 'Azul Marino',
+            '3': 'Verde Bosque',
+            '4': 'Negro',
+            '5': 'Blanco',
+            '6': 'Amarillo'
+        };
+        return colorNameMap[colorId] || 'Color Desconocido'; // Default name if not found
+    }
+
+
+    // Get custom image for personalizable products
+    getProductCustomImage(index: number): string {
+        const originalOrderItem = this.editingOrder?.items[index];
+        return originalOrderItem?.customization?.customImage || '';
     }
 
 } 

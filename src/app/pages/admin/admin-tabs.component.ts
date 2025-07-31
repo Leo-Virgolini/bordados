@@ -12,7 +12,7 @@ import { ProductsTabComponent } from './tabs/products-tab/products-tab.component
 import { OrdersTabComponent } from './tabs/orders-tab/orders-tab.component';
 import { AnalyticsTabComponent } from './tabs/analytics-tab/analytics-tab.component';
 import { AdminUser } from '../../models/admin-user';
-import { CustomizationTabComponent } from './tabs/customization-tab/customization-tab.component';
+import { HiladosTabComponent } from './tabs/hilados-tab/hilados-tab.component';
 import { SettingsTabComponent } from './tabs/settings-tab/settings-tab.component';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { CustomersTabComponent } from './tabs/customers-tab/customers-tab.component';
@@ -28,7 +28,7 @@ import { CustomersTabComponent } from './tabs/customers-tab/customers-tab.compon
         ConfirmDialog,
         ProductsTabComponent,
         OrdersTabComponent,
-        CustomizationTabComponent,
+        HiladosTabComponent,
         AnalyticsTabComponent,
         SettingsTabComponent,
         CustomersTabComponent
@@ -46,7 +46,6 @@ export class AdminTabsComponent implements OnInit, AfterViewInit {
 
     constructor(
         private authService: AuthService,
-        private router: Router,
         private messageService: MessageService
     ) { }
 

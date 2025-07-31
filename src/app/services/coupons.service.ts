@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay, switchMap } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { Coupon } from '../models/coupon';
@@ -25,7 +25,7 @@ export class CouponsService {
         );
     }
 
-    getCouponById(id: string): Observable<Coupon | undefined> {
+    getCouponById(id: number): Observable<Coupon | undefined> {
         return this.http.get<any>(`${this.apiUrl}/coupons/${id}`).pipe(
             map(coupon => coupon ? new Coupon(coupon) : undefined)
         );
@@ -34,7 +34,7 @@ export class CouponsService {
     createCoupon(coupon: Partial<Coupon>): Observable<Coupon> {
         const newCoupon = {
             ...coupon,
-            id: this.generateId(),
+
             validFrom: coupon.validFrom?.toISOString(),
             validTo: coupon.validTo?.toISOString()
         };
@@ -54,7 +54,7 @@ export class CouponsService {
         );
     }
 
-    deleteCoupon(id: string): Observable<void> {
+    deleteCoupon(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/coupons/${id}`);
     }
 
@@ -96,7 +96,4 @@ export class CouponsService {
         );
     }
 
-    private generateId(): string {
-        return `COUPON-${Date.now().toString().slice(-6)}`;
-    }
 } 

@@ -17,47 +17,6 @@
                 </ng-template>
 
                 <form [formGroup]="formulario" class="p-fluid flex flex-column gap-4 max-w-2xl mx-auto" [class.opacity-50]="isLoadingProducts">
-                    <!-- Nombre -->
-                    <div class="col-12 md:col-6">
-                        <label for="nombre" class="block mb-2 text-lg font-semibold">Nombre: *</label>
-                        <p-inputgroup>
-                            <p-inputgroup-addon>
-                                <i class="pi pi-user"></i>
-                            </p-inputgroup-addon>
-                            <input pInputText id="nombre" formControlName="nombre" class="w-full" placeholder="Nombre completo" required />
-                        </p-inputgroup>
-                    </div>
-                    <!-- Teléfono -->
-                    <div class="col-12 md:col-6">
-                        <label for="telefono" class="block mb-2 text-lg font-semibold">Teléfono: *</label>
-                        <p-inputgroup>
-                            <p-inputgroup-addon>
-                                <i class="pi pi-phone"></i>
-                            </p-inputgroup-addon>
-                            <input pInputText id="telefono" formControlName="telefono" class="w-full" placeholder="Ej: 11 1234-5678" required />
-                        </p-inputgroup>
-                    </div>
-                    <!-- Email -->
-                    <div class="col-12 md:col-6">
-                        <label for="email" class="block mb-2 text-lg font-semibold">Email: *</label>
-                        <p-inputgroup>
-                            <p-inputgroup-addon>
-                                <i class="pi pi-envelope"></i>
-                            </p-inputgroup-addon>
-                            <input pInputText id="email" formControlName="email" class="w-full" placeholder="Ej: correo@ejemplo.com" required />
-                        </p-inputgroup>
-                    </div>
-                    <!-- Dirección -->
-                    <div class="col-12 md:col-6">
-                        <label for="direccion" class="block mb-2 text-lg font-semibold">Dirección: *</label>
-                        <p-inputgroup>
-                            <p-inputgroup-addon>
-                                <i class="pi pi-home"></i>
-                            </p-inputgroup-addon>
-                            <input pInputText id="direccion" formControlName="direccion" class="w-full" placeholder="Dirección de entrega" required />
-                        </p-inputgroup>
-                    </div>
-
                     <!-- Tipo de prenda -->
                     <div>
                         <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
@@ -125,7 +84,7 @@
                             class="ml-2" />
                     </div>
 
-                    <!-- 2° Color del hilado -->
+                    <!-- 2° Color del hilado (Opcional) -->
                     <div *ngIf="formulario.get('usarSegundoColor')?.value">
                         <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
                         <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="name" optionValue="id" aria-labelledby="basic"
@@ -139,7 +98,7 @@
                         <app-error-helper [control]="formulario.get('colorHilado2')"></app-error-helper>
                     </div>
 
-                    <!-- Texto personalizado -->
+                    <!-- ¿Usar texto personalizado? -->
                     <div>
                         <label for="usarTextoPersonalizado" class="block mb-2 text-lg font-semibold">¿Querés agregar texto personalizado debajo de la imagen?
                             <p-badge value="Opcional" severity="warn" class="ml-2" />
@@ -150,35 +109,40 @@
                             badgeSize="large" class="ml-2" />
                     </div>
 
-                    <!-- Texto personalizado -->
+                    <!-- Texto personalizado (Opcional) -->
                     <div *ngIf="formulario.get('usarTextoPersonalizado')?.value">
-                        <div class="grid">
-                            <div class="col-12 md:col-8">
-                                <label for="textoPersonalizado" class="block mb-2 text-lg font-semibold">Texto personalizado: *</label>
-                                <p-inputgroup>
-                                    <p-inputgroup-addon>
-                                        <i class="pi pi-language"></i>
-                                    </p-inputgroup-addon>
-                                    <input pInputText id="textoPersonalizado" formControlName="textoPersonalizado" class="w-full" placeholder="Ej: Mi nombre, fecha especial, etc."
-                                        [maxlength]="maxTextLength" [required]="formulario.get('usarTextoPersonalizado')?.value" />
-                                </p-inputgroup>
-                                <div class="flex justify-content-between align-items-center mt-1">
-                                    <small class="text-500">Máximo {{ maxTextLength }} caracteres</small>
-                                    <small class="text-500">{{ (formulario.get('textoPersonalizado')?.value?.length || 0) }}/{{ maxTextLength }}</small>
+                        <label for="textoPersonalizado" class="block mb-2 text-lg font-semibold">Texto personalizado: *</label>
+                        <p-inputgroup class="max-w-max">
+                            <p-inputgroup-addon>
+                                <i class="pi pi-language"></i>
+                            </p-inputgroup-addon>
+                            <input pInputText id="textoPersonalizado" formControlName="textoPersonalizado" class="w-full" placeholder="Ej: Mi nombre, fecha especial, etc."
+                                [maxlength]="maxTextLength" [required]="formulario.get('usarTextoPersonalizado')?.value" />
+                            <p-inputgroup-addon *ngIf="formulario.get('colorTextoPersonalizado')?.value" class="p-0">
+                                <div class="w-2rem h-2rem border-circle border-1 border-300 flex align-items-center justify-content-center"
+                                    [ngStyle]="{'background-color': getThreadColorCode(formulario.get('colorTextoPersonalizado')?.value)}">
+                                    <i class="pi pi-palette  text-sm"></i>
                                 </div>
-                                <app-error-helper [control]="formulario.get('textoPersonalizado')"></app-error-helper>
-                            </div>
-                            <div class="col-12 md:col-4">
-                                <label for="colorTextoPersonalizado" class="block mb-2 text-lg font-semibold">Color del texto: *</label>
-                                <p-inputgroup>
-                                    <p-inputgroup-addon>
-                                        <i class="pi pi-palette"></i>
-                                    </p-inputgroup-addon>
-                                    <p-selectButton id="colorTextoPersonalizado" formControlName="colorTextoPersonalizado" [options]="coloresHilado" optionLabel="name" optionValue="id"
-                                        class="w-full" [disabled]="!formulario.get('usarTextoPersonalizado')?.value"></p-selectButton>
-                                </p-inputgroup>
-                            </div>
+                            </p-inputgroup-addon>
+                        </p-inputgroup>
+                        <app-error-helper [control]="formulario.get('textoPersonalizado')"></app-error-helper>
+                        <div class="flex justify-content-start align-items-center mt-2">
+                            <small class="text-500">Máximo {{ maxTextLength }} caracteres ({{ (formulario.get('textoPersonalizado')?.value?.length || 0) }}/{{ maxTextLength }})</small>
                         </div>
+                    </div>
+
+                    <!-- Color del texto personalizado (Opcional) -->
+                    <div *ngIf="formulario.get('usarTextoPersonalizado')?.value">
+                        <label for="colorTextoPersonalizado" class="block mb-2 text-lg font-semibold">Color del texto: *</label>
+                        <p-selectButton id="colorTextoPersonalizado" formControlName="colorTextoPersonalizado" [options]="coloresHilado" optionLabel="name" optionValue="id" class="w-full"
+                            [disabled]="!formulario.get('usarTextoPersonalizado')?.value" [required]="formulario.get('usarTextoPersonalizado')?.value">
+                            <ng-template #item let-color>
+                                <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
+                                    [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                </div>
+                            </ng-template>
+                        </p-selectButton>
+                        <app-error-helper [control]="formulario.get('colorTextoPersonalizado')"></app-error-helper>
                     </div>
 
                     <!-- Imagen -->
@@ -350,7 +314,7 @@
                         </div>
 
                         <!-- Custom Text -->
-                        <div *ngIf="formulario.get('usarTextoPersonalizado')?.value && formulario.get('textoPersonalizado')?.value" class="surface-50 border-round-lg p-3">
+                        <div *ngIf="formulario.get('usarTextoPersonalizado')?.value" class="surface-50 border-round-lg p-3">
                             <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2 mt-0">
                                 <i class="pi pi-align-center text-pink-500"></i>
                                 Texto Personalizado

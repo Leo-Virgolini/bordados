@@ -55,4 +55,5 @@ export class SortOption {
     toString(): string {
         return this.name;
     }
+
 } 

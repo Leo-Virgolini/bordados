@@ -3,9 +3,9 @@ import { ThreadColor } from "./thread-color";
 
 export class ProductCustomizable extends ProductBase {
 
-    threadColor1!: ThreadColor;
+    threadColor1?: ThreadColor;
     threadColor2?: ThreadColor;
-    customImage!: string;
+    customImage?: string;
     customText?: string;
     customTextColor?: ThreadColor;
 
@@ -13,9 +13,9 @@ export class ProductCustomizable extends ProductBase {
         super(init);
         this.type = 'personalizable';
         if (init) {
-            this.threadColor1 = init.threadColor1 || {} as ThreadColor;
-            this.threadColor2 = init.threadColor2;
-            this.customImage = init.customImage || '';
+            this.threadColor1 = init.threadColor1 as ThreadColor;
+            this.threadColor2 = init.threadColor2 as ThreadColor;
+            this.customImage = init.customImage;
             this.customText = init.customText;
             this.customTextColor = init.customTextColor;
         }
@@ -51,8 +51,8 @@ export class ProductCustomizable extends ProductBase {
 
     // Stock validation for thread colors
     get hasAvailableThreads(): boolean {
-        const primaryAvailable = this.threadColor1?.stock > 0;
-        const secondaryAvailable = !this.threadColor2 || this.threadColor2.stock > 0;
+        const primaryAvailable: boolean = (this.threadColor1?.stock && this.threadColor1.stock > 0) || false;
+        const secondaryAvailable: boolean = (this.threadColor2?.stock && this.threadColor2.stock > 0) || false;
         return primaryAvailable && secondaryAvailable;
     }
 

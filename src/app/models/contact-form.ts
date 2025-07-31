@@ -1,6 +1,6 @@
 export class ContactForm {
 
-    id: string;
+    id: number;
     name: string;
     email: string;
     phone: string;
@@ -9,7 +9,7 @@ export class ContactForm {
     date: Date;
 
     constructor(init?: Partial<ContactForm>) {
-        this.id = init?.id || crypto.randomUUID();
+        this.id = init?.id || 0;
         this.name = init?.name || '';
         this.email = init?.email || '';
         this.phone = init?.phone || '';
@@ -134,4 +134,5 @@ export class ContactForm {
     static createEmpty(): ContactForm {
         return new ContactForm();
     }
+
 } 

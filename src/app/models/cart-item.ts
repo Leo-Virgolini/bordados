@@ -1,13 +1,18 @@
-import { Product } from "./product";
+import { ProductEmbroided } from "./product-embroided";
 import { ProductCustomizable } from "./product-customizable";
 
 export class CartItem {
 
-    product!: Product | ProductCustomizable;
+    id!: string;
+    product!: ProductEmbroided | ProductCustomizable;
     quantity!: number;
 
     constructor(init?: Partial<CartItem>) {
         Object.assign(this, init);
+        // Generate a unique ID if not provided
+        if (!this.id) {
+            this.id = `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
     }
 
     // Get the discounted unit price
@@ -76,7 +81,7 @@ export class CartItem {
 
     getProductImage(): string {
         if (this.product?.type === 'personalizable' && (this.product as ProductCustomizable).customImage) {
-            return (this.product as ProductCustomizable).customImage;
+            return (this.product as ProductCustomizable).customImage || '';
         }
         return this.product?.variants?.[0]?.image || '';
     }

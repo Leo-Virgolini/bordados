@@ -219,7 +219,6 @@ export class CheckoutComponent implements OnInit {
     private fb: FormBuilder,
     private carritoService: CarritoService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService,
     private router: Router,
     private settingsService: SettingsService,
     private couponsService: CouponsService
@@ -475,7 +474,7 @@ export class CheckoutComponent implements OnInit {
 
       // Track coupon usage if a coupon was applied
       if (this.selectedCoupon) {
-        this.couponsService.applyCouponUsage(this.selectedCoupon.id).subscribe({
+        this.couponsService.applyCouponUsage(this.selectedCoupon.code).subscribe({
           next: () => {
             console.log('Coupon usage tracked successfully');
           },

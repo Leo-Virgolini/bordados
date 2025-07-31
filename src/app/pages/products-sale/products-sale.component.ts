@@ -10,10 +10,7 @@ import { MultiSelect } from 'primeng/multiselect';
 import { Slider } from 'primeng/slider';
 import { Paginator } from 'primeng/paginator';
 import { Tag } from 'primeng/tag';
-import { Badge } from 'primeng/badge';
-import { Divider } from 'primeng/divider';
 import { Image } from 'primeng/image';
-import { Tooltip } from 'primeng/tooltip';
 import { AnimateOnScrollModule } from 'primeng/animateonscroll';
 import { Checkbox } from 'primeng/checkbox';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -27,7 +24,7 @@ import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { InputNumber } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
-import { Product } from '../../models/product';
+import { ProductEmbroided } from '../../models/product-embroided';
 import { CartItem } from '../../models/cart-item';
 
 @Component({
@@ -44,10 +41,7 @@ import { CartItem } from '../../models/cart-item';
         Slider,
         Paginator,
         Tag,
-        Badge,
-        Divider,
         Image,
-        Tooltip,
         AnimateOnScrollModule,
         Checkbox,
         ProgressSpinner,
@@ -68,12 +62,12 @@ export class ProductsSaleComponent implements OnInit {
     productSelectionForm!: FormGroup;
 
     // Products data
-    allProducts: Product[] = [];
-    filteredProducts: Product[] = [];
-    displayedProducts: Product[] = [];
+    allProducts: ProductEmbroided[] = [];
+    filteredProducts: ProductEmbroided[] = [];
+    displayedProducts: ProductEmbroided[] = [];
     isLoading: boolean = false;
-    selectedProduct: Product | null = null;
-    loadingProducts: Set<string> = new Set(); // Track which products are being added to cart
+    selectedProduct: ProductEmbroided | null = null;
+    loadingProducts: Set<number> = new Set(); // Track which products are being added to cart
 
     // Pagination
     first: number = 0;
@@ -82,11 +76,11 @@ export class ProductsSaleComponent implements OnInit {
 
     // Options for filters
     categories: SortOption[] = [
-        new SortOption('Remeras', 'remeras'),
-        new SortOption('Buzos', 'buzos'),
-        new SortOption('Camisetas', 'camisetas'),
-        new SortOption('Hoodies', 'hoodies'),
-        new SortOption('Accesorios', 'accesorios')
+        new SortOption('Remeras', 'remera'),
+        new SortOption('Buzos', 'buzo'),
+        new SortOption('Camisetas', 'camiseta'),
+        new SortOption('Hoodies', 'hoodie'),
+        new SortOption('Accesorios', 'accesorio')
     ];
 
     tags: SortOption[] = [
@@ -152,7 +146,7 @@ export class ProductsSaleComponent implements OnInit {
 
     private loadProducts(): void {
         this.isLoading = true;
-        this.productsService.getProducts().subscribe({
+        this.productsService.getEmbroidedProducts().subscribe({
             next: (products) => {
                 // Filter only pre-embroidered products (type === 'bordado')
                 this.allProducts = products.filter(product => product.type === 'bordado');
@@ -183,7 +177,7 @@ export class ProductsSaleComponent implements OnInit {
         // Category filter
         if (formValue.selectedCategories.length > 0) {
             filtered = filtered.filter(product =>
-                formValue.selectedCategories.includes(product.category)
+                formValue.selectedCategories.includes(product.garmentType)
             );
         }
 
@@ -223,7 +217,7 @@ export class ProductsSaleComponent implements OnInit {
         this.updateDisplayedProducts();
     }
 
-    private sortProducts(products: Product[], selectedSort: string): void {
+    private sortProducts(products: ProductEmbroided[], selectedSort: string): void {
         switch (selectedSort) {
             case 'name-asc':
                 products.sort((a, b) => a.name.localeCompare(b.name));
@@ -299,7 +293,7 @@ export class ProductsSaleComponent implements OnInit {
         }
     }
 
-    addToCart(event: Event, product: Product): void {
+    addToCart(event: Event, product: ProductEmbroided): void {
         this.selectedProduct = product;
         // Reset form values
         this.productSelectionForm.patchValue({
@@ -402,7 +396,7 @@ export class ProductsSaleComponent implements OnInit {
                         return;
                     }
 
-                    const productWithSelectedVariant = new Product({
+                    const productWithSelectedVariant = new ProductEmbroided({
                         ...product,
                         variants: [{
                             color: selectedVariant.color,
@@ -411,30 +405,28 @@ export class ProductsSaleComponent implements OnInit {
                         }]
                     });
 
-                    // Simulate API call delay
-                    setTimeout(() => {
-                        this.carritoService.agregarItem(new CartItem({
-                            product: productWithSelectedVariant,
-                            quantity: selectedQuantity
-                        }));
-                        this.messageService.add({
-                            severity: 'info',
-                            summary: 'Producto agregado',
-                            detail: `'${product.name}' ${selectedColor} - T: ${selectedSize} x ${selectedQuantity} agregado al carrito`,
-                            icon: 'pi pi-cart-plus',
-                            life: 3000
-                        });
+                    this.carritoService.agregarItem(new CartItem({
+                        product: productWithSelectedVariant,
+                        quantity: selectedQuantity
+                    }));
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'Producto agregado',
+                        detail: `'${product.name}' ${selectedColor} - T: ${selectedSize} x ${selectedQuantity} agregado al carrito`,
+                        icon: 'pi pi-cart-plus',
+                        life: 3000
+                    });
 
-                        // Remove loading state
-                        this.loadingProducts.delete(product.id);
-                        this.selectedProduct = null;
-                        // Reset form
-                        this.productSelectionForm.patchValue({
-                            selectedColor: '',
-                            selectedSize: '',
-                            selectedQuantity: 1
-                        });
-                    }, 1000); // 1 second delay to show loading
+                    // Remove loading state
+                    this.loadingProducts.delete(product.id);
+                    this.selectedProduct = null;
+                    // Reset form
+                    this.productSelectionForm.patchValue({
+                        selectedColor: '',
+                        selectedSize: '',
+                        selectedQuantity: 1
+                    });
+
                 },
                 reject: () => {
                     this.selectedProduct = null;
@@ -449,7 +441,7 @@ export class ProductsSaleComponent implements OnInit {
         }, 100); // Small delay to ensure proper repositioning
     }
 
-    isProductLoading(productId: string): boolean {
+    isProductLoading(productId: number): boolean {
         return this.loadingProducts.has(productId);
     }
 
@@ -477,20 +469,20 @@ export class ProductsSaleComponent implements OnInit {
         return Math.ceil(this.totalRecords / this.rows);
     }
 
-    getDiscountedPrice(product: Product): number {
+    getDiscountedPrice(product: ProductEmbroided): number {
         if (product.discount > 0) {
             return product.price * (1 - product.discount / 100);
         }
         return product.price;
     }
 
-    getTotalStock(product: Product): number {
+    getTotalStock(product: ProductEmbroided): number {
         return product.variants?.reduce((sum, variant) =>
             sum + (variant.sizes?.reduce((s, sz) => s + (sz.stock || 0), 0) || 0), 0
         ) || 0;
     }
 
-    getDisplayedVariantStock(product: Product): number {
+    getDisplayedVariantStock(product: ProductEmbroided): number {
         const firstVariant = product.variants?.[0];
         if (!firstVariant || !firstVariant.sizes || firstVariant.sizes.length === 0) {
             return 0;
@@ -500,15 +492,15 @@ export class ProductsSaleComponent implements OnInit {
         return firstVariant.sizes[0].stock || 0;
     }
 
-    getFirstColor(product: Product): string {
+    getFirstColor(product: ProductEmbroided): string {
         return product.variants?.[0]?.color || '-';
     }
 
-    getFirstSize(product: Product): string {
+    getFirstSize(product: ProductEmbroided): string {
         return product.variants?.[0]?.sizes?.[0]?.size || '-';
     }
 
-    getAvailableColors(product: Product): { label: string, value: string }[] {
+    getAvailableColors(product: ProductEmbroided): { label: string, value: string }[] {
         return product.variants
             ?.filter(variant => {
                 // Only include variants that have at least one size with stock > 0
@@ -520,7 +512,7 @@ export class ProductsSaleComponent implements OnInit {
             })) || [];
     }
 
-    getAvailableSizes(product: Product, color?: string): { label: string, value: string }[] {
+    getAvailableSizes(product: ProductEmbroided, color?: string): { label: string, value: string }[] {
         console.log('getAvailableSizes called with:', { productId: product.id, color, productVariants: product.variants });
 
         if (!color) {
@@ -557,7 +549,7 @@ export class ProductsSaleComponent implements OnInit {
         return availableSizes;
     }
 
-    getAllAvailableSizes(product: Product): { label: string, value: string }[] {
+    getAllAvailableSizes(product: ProductEmbroided): { label: string, value: string }[] {
         if (!product.variants) {
             return [];
         }
@@ -591,7 +583,7 @@ export class ProductsSaleComponent implements OnInit {
             }));
     }
 
-    getStockForColorAndSize(product: Product, color: string, size: string): number {
+    getStockForColorAndSize(product: ProductEmbroided, color: string, size: string): number {
         const variant = product.variants?.find(v => v.color === color);
         if (!variant || !variant.sizes) {
             return 0;
@@ -601,12 +593,12 @@ export class ProductsSaleComponent implements OnInit {
         return sizeStock ? sizeStock.stock : 0;
     }
 
-    getAvailableColorsText(product: Product): string {
+    getAvailableColorsText(product: ProductEmbroided): string {
         const colors = this.getAvailableColors(product);
         return colors.length > 0 ? colors.map(c => c.label).join(', ') : 'No disponible';
     }
 
-    getAllAvailableSizesText(product: Product): string {
+    getAllAvailableSizesText(product: ProductEmbroided): string {
         const sizes = this.getAllAvailableSizes(product);
         return sizes.length > 0 ? sizes.map(s => s.label).join(', ') : 'No disponible';
     }

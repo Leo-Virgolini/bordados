@@ -1,5 +1,5 @@
 export class Coupon {
-    id: string;
+    id: number;
     code: string;
     discountType: 'percentage' | 'fixed';
     discountValue: number;
@@ -12,7 +12,7 @@ export class Coupon {
     description?: string;
 
     constructor(init?: Partial<Coupon>) {
-        this.id = init?.id || '';
+        this.id = init?.id || 0;
         this.code = init?.code || '';
         this.discountType = init?.discountType || 'percentage';
         this.discountValue = init?.discountValue || 0;

@@ -1,13 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Customer } from '../models/customer';
-import { Order, OrderItem } from '../models/order';
+import { Order } from '../models/order';
 import { SalesSummary } from '../models/sales-summary';
-import { ProductCustomizable } from '../models/product-customizable';
-import { ThreadColor } from '../models/thread-color';
-import { Product } from '../models/product';
-import { ProductsService } from './products.service';
 import { CustomersService } from './customers.service';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -20,7 +16,6 @@ export class OrdersService {
 
     constructor(
         private http: HttpClient,
-        private productsService: ProductsService,
         private customersService: CustomersService
     ) { }
 
@@ -34,7 +29,7 @@ export class OrdersService {
         );
     }
 
-    getOrderById(id: string): Observable<Order | undefined> {
+    getOrderById(id: number): Observable<Order | undefined> {
         return this.http.get<any>(`${this.apiUrl}/orders/${id}`).pipe(
             map(order => ({
                 ...order,
@@ -46,9 +41,7 @@ export class OrdersService {
 
     createOrder(order: Omit<Order, 'id'>): Observable<Order> {
         const newOrder = {
-            ...order,
-            id: this.generateId(),
-            customerId: order.customerId
+            ...order
         };
         return this.http.post<any>(`${this.apiUrl}/orders`, newOrder).pipe(
             map(createdOrder => ({
@@ -61,8 +54,7 @@ export class OrdersService {
 
     updateOrder(order: Order): Observable<Order> {
         const orderData = {
-            ...order,
-            customerId: order.customerId
+            ...order
         };
         return this.http.put<any>(`${this.apiUrl}/orders/${order.id}`, orderData).pipe(
             map(updatedOrder => ({
@@ -73,7 +65,7 @@ export class OrdersService {
         );
     }
 
-    deleteOrder(id: string): Observable<void> {
+    deleteOrder(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/orders/${id}`);
     }
 
@@ -115,7 +107,4 @@ export class OrdersService {
         );
     }
 
-    private generateId(): string {
-        return `ORD-${Date.now().toString().slice(-6)}`;
-    }
 }

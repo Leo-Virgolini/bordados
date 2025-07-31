@@ -1,6 +1,6 @@
 export class Testimonial {
 
-  id: string;
+  id: number;
   name: string; // Customer name for display
   image: string; // Profile image URL
   comment: string; // Review text
@@ -8,7 +8,7 @@ export class Testimonial {
   date: Date;
 
   constructor(init?: Partial<Testimonial>) {
-    this.id = init?.id || crypto.randomUUID();
+    this.id = init?.id || 0;
     this.name = init?.name || '';
     this.image = init?.image || '';
     this.comment = init?.comment || '';

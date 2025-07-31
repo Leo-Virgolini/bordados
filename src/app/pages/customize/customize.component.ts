@@ -27,11 +27,12 @@ import { ProductCustomizable } from '../../models/product-customizable';
 import { RouterLink } from '@angular/router';
 import { HiladosService } from '../../services/hilados.service';
 import { ProductsService } from '../../services/products.service';
-import { ProductSizeStock } from '../../models/product-base';
+import { ProductSizeStock, ProductVariant } from '../../models/product-base';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
+import { AppSettings, SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-customize',
@@ -55,13 +56,13 @@ export class CustomizeComponent implements OnInit {
   isLoadingProducts: boolean = true;
   showConfirmationDialog: boolean = false;
 
-  maxImageSize: number = 10485760; // 10 MB
+  maxImageSize: number = 0;
   precioSegundoColor: number = 0;
   precioTextoPersonalizado: number = 0;
-  maxTextLength: number = 20;
+  maxTextLength: number = 0;
 
   baseProducts: ProductCustomizable[] = [];
-  availableTypes: { label: string, value: string, product: ProductCustomizable }[] = [];
+  availableTypes: { label: string, value: number, product: ProductCustomizable }[] = [];
   availableColors: { label: string, value: string, image?: string }[] = [];
   availableSizes: { label: string, value: string }[] = [];
   selectedBaseProduct?: ProductCustomizable;
@@ -91,14 +92,13 @@ export class CustomizeComponent implements OnInit {
   };
 
   constructor(private config: PrimeNG, private messageService: MessageService, private fb: FormBuilder,
-    private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService, private productsService: ProductsService
+    private carritoService: CarritoService, private router: Router, private hiladosService: HiladosService, private settingsService: SettingsService, private productsService: ProductsService
   ) {
   }
 
   ngOnInit(): void {
     this.initForm();
-    this.loadSecondColorPrice();
-    this.loadCustomTextPrice();
+    this.loadSettings();
     this.loadThreadColors();
     this.productsService.getCustomizableProducts().subscribe(products => {
       this.baseProducts = products;
@@ -134,26 +134,17 @@ export class CustomizeComponent implements OnInit {
     });
   }
 
-  loadSecondColorPrice() {
-    this.hiladosService.getSecondColorPrice().subscribe({
-      next: (price: number) => {
-        this.precioSegundoColor = price;
+  loadSettings() {
+    this.settingsService.getSettings().subscribe({
+      next: (settings: AppSettings) => {
+        this.precioSegundoColor = settings.secondColorPrice;
+        this.precioTextoPersonalizado = settings.customTextPrice;
+        this.maxImageSize = settings.maxImageSize;
+        this.maxTextLength = settings.maxTextLength;
       },
       error: (error: any) => {
-        console.error('Error loading second color price:', error);
-        // Keep the default value if there's an error
-      }
-    });
-  }
-
-  loadCustomTextPrice() {
-    this.hiladosService.getCustomTextPrice().subscribe({
-      next: (price: number) => {
-        this.precioTextoPersonalizado = price;
-      },
-      error: (error: any) => {
-        console.error('Error loading custom text price:', error);
-        // Keep the default value if there's an error
+        console.error('Error loading settings:', error);
+        // Keep the default values if there's an error
       }
     });
   }
@@ -166,7 +157,7 @@ export class CustomizeComponent implements OnInit {
     if (this.submitFormulario()) {
       this.isLoading = true;
       this.showConfirmationDialog = false;
-      this.messageService.add({ severity: 'success', summary: '¡Pedido confirmado!', detail: 'El producto se ha agregado al carrito. Redirigiendo...', life: 3000, icon: 'pi pi-cart-plus' });
+      this.messageService.add({ severity: 'success', summary: '¡Producto agregado!', detail: 'El producto se ha agregado al carrito. Redirigiendo...', life: 3000, icon: 'pi pi-cart-plus' });
       setTimeout(() => {
         this.isLoading = false;
         this.router.navigate(['/carrito']);
@@ -388,7 +379,7 @@ export class CustomizeComponent implements OnInit {
     return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
   }
 
-  getThreadColorCode(threadColorId: string): string {
+  getThreadColorCode(threadColorId: number): string {
     const threadColor = this.coloresHilado.find(color => color.id === threadColorId);
     return threadColor?.code || '#CCCCCC';
   }
@@ -414,17 +405,17 @@ export class CustomizeComponent implements OnInit {
 
   agregarAlCarrito() {
     const datos = this.formulario.value;
-    const threadColor1 = this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado1')?.value);
-    const threadColor2 = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === this.formulario.get('colorHilado2')?.value) : undefined;
-    const customTextColor = datos.usarTextoPersonalizado ? this.coloresHilado.find(p => p.id === this.formulario.get('colorTextoPersonalizado')?.value) : undefined;
-    const selectedProductId = this.formulario.get('tipo')?.value;
-    const selectedColor = this.formulario.get('colorPrenda')?.value;
-    const selectedSize = this.formulario.get('talle')?.value;
-    const baseProduct = this.baseProducts.find(p => p.id === selectedProductId);
-    const variant = baseProduct?.variants.find(v => v.color === selectedColor);
+    const threadColor1: ThreadColor | undefined = this.coloresHilado.find(p => p.id === datos.colorHilado1);
+    const threadColor2: ThreadColor | undefined = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === datos.colorHilado2) : undefined;
+    const customTextColor: ThreadColor | undefined = datos.usarTextoPersonalizado ? this.coloresHilado.find(p => p.id === datos.colorTextoPersonalizado) : undefined;
+    const selectedProductTypeId: number = datos.tipo;
+    const selectedColor: string = datos.colorPrenda;
+    const selectedSize: string = datos.talle;
+    const baseProduct: ProductCustomizable | undefined = this.baseProducts.find(p => p.id === selectedProductTypeId);
+    const variant: ProductVariant | undefined = baseProduct?.variants.find(v => v.color === selectedColor);
     const image = variant?.image || this.imageURL;
+
     const productoCustomizable = new ProductCustomizable({
-      id: crypto.randomUUID(),
       name: baseProduct?.name || 'Producto Personalizable',
       description: baseProduct?.description || 'Producto personalizable',
       garmentType: baseProduct?.garmentType || 'remera',
@@ -445,10 +436,12 @@ export class CustomizeComponent implements OnInit {
       customText: datos.usarTextoPersonalizado ? datos.textoPersonalizado : undefined,
       customTextColor: customTextColor
     });
+
     const nuevoItem = new CartItem({
       product: productoCustomizable,
       quantity: datos.cantidad
     });
+
     this.carritoService.agregarItem(nuevoItem);
   }
 

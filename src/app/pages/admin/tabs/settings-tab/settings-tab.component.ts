@@ -21,7 +21,7 @@ import { Select } from 'primeng/select';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
 import { Message } from 'primeng/message';
 import { CouponsService } from '../../../../services/coupons.service';
-import { SettingsService } from '../../../../services/settings.service';
+import { AppSettings, SettingsService } from '../../../../services/settings.service';
 import { Coupon } from '../../../../models/coupon';
 
 // Custom validator for date range
@@ -75,11 +75,16 @@ export class SettingsTabComponent implements OnInit {
     // Settings Management
     freeShippingThreshold!: number; // Free shipping threshold
     whatsappPhone!: string; // WhatsApp number
+    secondColorPrice!: number; // Second color price
+    customTextPrice!: number; // Custom text price
+    maxImageSize!: number; // Maximum image size in bytes
+    maxTextLength!: number; // Maximum text length for custom text
     discountCoupons: Coupon[] = [];
 
     // Forms
     shippingForm!: FormGroup;
     contactForm!: FormGroup;
+    priceForm!: FormGroup;
     couponForm!: FormGroup;
 
     // Dialog states
@@ -87,7 +92,9 @@ export class SettingsTabComponent implements OnInit {
     editingCoupon: Coupon | null = null;
     couponLoading: boolean = false;
     shippingLoading: boolean = false;
-    contactLoading: boolean = false;
+    priceLoading: boolean = false;
+    phoneLoading: boolean = false;
+    settingsLoading: boolean = false;
 
     // Coupon options
     discountTypes = [
@@ -105,20 +112,46 @@ export class SettingsTabComponent implements OnInit {
 
     ngOnInit() {
         this.loadSettings();
-        this.initForms();
     }
 
     private loadSettings(): void {
-        this.settingsService.getFreeShippingThreshold().subscribe(threshold => {
-            this.freeShippingThreshold = threshold;
-        });
+        this.settingsLoading = true;
+        this.couponLoading = true;
+        this.settingsService.getSettings().subscribe({
+            next: (settings: AppSettings) => {
+                this.whatsappPhone = settings.whatsAppPhone || '';
+                this.freeShippingThreshold = settings.freeShippingThreshold;
+                this.secondColorPrice = settings.secondColorPrice;
+                this.customTextPrice = settings.customTextPrice;
+                this.maxImageSize = settings.maxImageSize || 10485760; // Default 10MB
+                this.maxTextLength = settings.maxTextLength || 20; // Default 20 characters
+                this.settingsLoading = false;
+                console.log('Settings loaded:', settings);
 
-        this.settingsService.getWhatsAppPhone().subscribe(phone => {
-            this.whatsappPhone = phone;
+                // Initialize forms after settings are loaded
+                this.initForms();
+            }, error: (error: any) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al cargar la configuración: ' + error.message
+                });
+                this.settingsLoading = false;
+            }
         });
-
-        this.couponsService.getCoupons().subscribe(coupons => {
-            this.discountCoupons = coupons;
+        this.couponsService.getCoupons().subscribe({
+            next: (coupons: Coupon[]) => {
+                this.discountCoupons = coupons;
+                this.couponLoading = false;
+            },
+            error: (error: any) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al cargar los cupones: ' + error.message
+                });
+                this.couponLoading = false;
+            }
         });
     }
 
@@ -139,6 +172,13 @@ export class SettingsTabComponent implements OnInit {
         // Shipping settings form
         this.shippingForm = this.fb.group({
             freeShippingThreshold: [this.freeShippingThreshold, [Validators.required, Validators.min(0)]]
+        });
+
+        this.priceForm = this.fb.group({
+            secondColorPrice: [this.secondColorPrice, [Validators.required, Validators.min(0)]],
+            customTextPrice: [this.customTextPrice, [Validators.required, Validators.min(0)]],
+            maxImageSize: [this.maxImageSize, [Validators.required, Validators.min(1024 * 1024), Validators.max(50 * 1024 * 1024)]], // 1MB to 50MB
+            maxTextLength: [this.maxTextLength, [Validators.required, Validators.min(5), Validators.max(50)]] // 5 to 50 characters
         });
 
         // Coupon form with date range validation
@@ -166,7 +206,7 @@ export class SettingsTabComponent implements OnInit {
 
     saveContactSettings(): void {
         if (this.contactForm.valid) {
-            this.contactLoading = true;
+            this.phoneLoading = true;
             const phoneWithoutPrefix = this.contactForm.get('whatsappPhone')?.value;
             // Format the phone number properly for display
             const formattedPhone = `${phoneWithoutPrefix.slice(0, 2)} ${phoneWithoutPrefix.slice(2, 6)}-${phoneWithoutPrefix.slice(6)}`;
@@ -180,7 +220,7 @@ export class SettingsTabComponent implements OnInit {
                         summary: 'Configuración guardada',
                         detail: `Número de WhatsApp actualizado: ${phone}`
                     });
-                    this.contactLoading = false;
+                    this.phoneLoading = false;
                 },
                 error: (error) => {
                     this.messageService.add({
@@ -188,7 +228,7 @@ export class SettingsTabComponent implements OnInit {
                         summary: 'Error',
                         detail: 'Error al guardar la configuración: ' + error.message
                     });
-                    this.contactLoading = false;
+                    this.phoneLoading = false;
                 }
             });
         }
@@ -219,6 +259,91 @@ export class SettingsTabComponent implements OnInit {
                 }
             });
         }
+    }
+
+
+
+    savePrices(): void {
+        if (this.priceForm.valid) {
+            this.priceLoading = true;
+            const secondColorPrice = this.priceForm.get('secondColorPrice')?.value;
+            const customTextPrice = this.priceForm.get('customTextPrice')?.value;
+            const maxImageSize = this.priceForm.get('maxImageSize')?.value;
+            const maxTextLength = this.priceForm.get('maxTextLength')?.value;
+
+            // Update all settings in sequence
+            this.settingsService.updateSecondColorPrice(secondColorPrice).subscribe({
+                next: (updatedSecondColorPrice) => {
+                    this.secondColorPrice = updatedSecondColorPrice;
+
+                    // Update custom text price
+                    this.settingsService.updateCustomTextPrice(customTextPrice).subscribe({
+                        next: (updatedCustomTextPrice) => {
+                            this.customTextPrice = updatedCustomTextPrice;
+
+                            // Update max image size
+                            this.settingsService.updateMaxImageSize(maxImageSize).subscribe({
+                                next: (updatedMaxImageSize) => {
+                                    this.maxImageSize = updatedMaxImageSize;
+
+                                    // Update max text length
+                                    this.settingsService.updateMaxTextLength(maxTextLength).subscribe({
+                                        next: (updatedMaxTextLength) => {
+                                            this.maxTextLength = updatedMaxTextLength;
+                                            this.messageService.add({
+                                                severity: 'success',
+                                                summary: 'Configuración actualizada',
+                                                detail: `Precios y límites actualizados correctamente`
+                                            });
+                                            this.priceLoading = false;
+                                        },
+                                        error: (error) => {
+                                            this.messageService.add({
+                                                severity: 'error',
+                                                summary: 'Error',
+                                                detail: 'Error al actualizar la longitud máxima de texto: ' + error.message
+                                            });
+                                            this.priceLoading = false;
+                                        }
+                                    });
+                                },
+                                error: (error) => {
+                                    this.messageService.add({
+                                        severity: 'error',
+                                        summary: 'Error',
+                                        detail: 'Error al actualizar el tamaño máximo de imagen: ' + error.message
+                                    });
+                                    this.priceLoading = false;
+                                }
+                            });
+                        },
+                        error: (error) => {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'Error al actualizar el precio de texto personalizado: ' + error.message
+                            });
+                            this.priceLoading = false;
+                        }
+                    });
+                },
+                error: (error) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error al actualizar el precio de segundo color: ' + error.message
+                    });
+                    this.priceLoading = false;
+                }
+            });
+        }
+    }
+
+    formatFileSize(bytes: number): string {
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        if (bytes === 0) return '0 Bytes';
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
     }
 
     openCouponDialog(coupon?: Coupon): void {

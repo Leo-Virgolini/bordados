@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Product } from '../models/product';
+import { ProductEmbroided } from '../models/product-embroided';
 import { ProductCustomizable } from '../models/product-customizable';
 import { map, catchError } from 'rxjs/operators';
 
@@ -14,86 +14,81 @@ export class ProductsService {
 
     constructor(private http: HttpClient) { }
 
-    getProducts(): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products`);
+    getEmbroidedProducts(): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`);
     }
 
-    getProductById(id: string): Observable<Product | undefined> {
-        return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
+    getEmbroidedProductById(id: number): Observable<ProductEmbroided | undefined> {
+        return this.http.get<ProductEmbroided>(`${this.apiUrl}/embroidedProducts/${id}`);
     }
 
-    createProduct(product: Product): Observable<Product> {
+    createEmbroidedProduct(product: ProductEmbroided): Observable<ProductEmbroided> {
         const newProduct = {
-            ...product,
-            id: this.generateId()
+            ...product
         };
-        return this.http.post<Product>(`${this.apiUrl}/products`, newProduct);
+        return this.http.post<ProductEmbroided>(`${this.apiUrl}/embroidedProducts`, newProduct);
     }
 
-    updateProduct(product: Product): Observable<Product> {
-        return this.http.put<Product>(`${this.apiUrl}/products/${product.id}`, product);
+    updateEmbroidedProduct(product: ProductEmbroided): Observable<ProductEmbroided> {
+        return this.http.put<ProductEmbroided>(`${this.apiUrl}/embroidedProducts/${product.id}`, product);
     }
 
-    deleteProduct(id: string): Observable<boolean> {
-        return this.http.delete<void>(`${this.apiUrl}/products/${id}`).pipe(
+    deleteEmbroidedProduct(id: number): Observable<boolean> {
+        return this.http.delete<void>(`${this.apiUrl}/embroidedProducts/${id}`).pipe(
             map(() => true),
             catchError(() => of(false))
         );
     }
 
-    searchProducts(query: string): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products?q=${query}`);
+    searchEmbroidedProducts(query: string): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?q=${query}`);
     }
 
-    getProductsByCategory(category: string): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products?category=${category}`);
+    getEmbroidedProductsByCategory(category: string): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?garmentType=${category}`);
     }
 
-    getFeaturedProducts(): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products?isFeatured=true`);
+    getFeaturedEmbroidedProducts(): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?isFeatured=true`);
     }
 
-    getNewProducts(): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products?isNew=true`);
+    getNewEmbroidedProducts(): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?isNew=true`);
     }
 
-    getProductsOnSale(): Observable<Product[]> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products?discount_gt=0`);
+    getEmbroidedProductsOnSale(): Observable<ProductEmbroided[]> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?discount_gt=0`);
     }
 
-    getLowStockProducts(): Observable<Product[]> {
+    getLowStockEmbroidedProducts(): Observable<ProductEmbroided[]> {
         // Note: This is a simplified version. In a real API, you might need a custom endpoint
-        return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
-            map(products => products.filter(product => 
-                product.variants.some(variant => 
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
+            map(products => products.filter(product =>
+                product.variants.some(variant =>
                     variant.sizes.some(size => size.stock <= 5)
                 )
             ))
         );
     }
 
-    private generateId(): string {
-        return Date.now().toString();
-    }
-
-    productExists(id: string): boolean {
+    productExists(id: number): boolean {
         // This would need to be implemented differently with HTTP
         // For now, we'll assume it doesn't exist
         return false;
     }
 
-    getTotalProducts(): Observable<number> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
+    getTotalEmbroidedProducts(): Observable<number> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
             map(products => products.length)
         );
     }
 
-    getProductsCountByCategory(): Observable<{ [key: string]: number }> {
-        return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
+    getEmbroidedProductsCountByCategory(): Observable<{ [key: string]: number }> {
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
             map(products => {
                 const counts: { [key: string]: number } = {};
                 products.forEach(product => {
-                    counts[product.category] = (counts[product.category] || 0) + 1;
+                    counts[product.garmentType] = (counts[product.garmentType] || 0) + 1;
                 });
                 return counts;
             })
@@ -106,8 +101,7 @@ export class ProductsService {
 
     createCustomizableProduct(product: ProductCustomizable): Observable<ProductCustomizable> {
         const newProduct = {
-            ...product,
-            id: this.generateCustomizableId()
+            ...product
         };
         return this.http.post<ProductCustomizable>(`${this.apiUrl}/customizableProducts`, newProduct);
     }
@@ -116,14 +110,11 @@ export class ProductsService {
         return this.http.put<ProductCustomizable>(`${this.apiUrl}/customizableProducts/${product.id}`, product);
     }
 
-    deleteCustomizableProduct(id: string): Observable<boolean> {
+    deleteCustomizableProduct(id: number): Observable<boolean> {
         return this.http.delete<void>(`${this.apiUrl}/customizableProducts/${id}`).pipe(
             map(() => true),
             catchError(() => of(false))
         );
     }
 
-    private generateCustomizableId(): string {
-        return `CUST-${Date.now().toString().slice(-6)}`;
-    }
 } 

@@ -1,4 +1,4 @@
-import { Component, ViewChildren, QueryList, ElementRef, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CartItem } from '../../models/cart-item';
 import { Button } from 'primeng/button';
 import { CommonModule } from '@angular/common';
@@ -80,10 +80,10 @@ export class CarritoComponent implements OnInit {
 
     // Check if quantity is valid
     if (cantidad && cantidad > 0 && cantidad <= maxStock) {
-      this.carritoService.actualizarCantidad(item.product.id, cantidad);
+      this.carritoService.actualizarCantidad(item.id, cantidad);
     } else if (cantidad > maxStock) {
       // If quantity exceeds max stock, reset the input to the previous item quantity
-      const itemIndex = this.items.findIndex(i => i.product.id === item.product.id);
+      const itemIndex = this.items.findIndex(i => i.id === item.id);
       if (itemIndex !== -1) {
         // Use the original item quantity before any changes
         setTimeout(() => {
@@ -97,7 +97,7 @@ export class CarritoComponent implements OnInit {
     }
   }
 
-  eliminar(id: string): void {
+  eliminar(cartItemId: string): void {
     this.confirmationService.confirm({
       header: 'Eliminar producto',
       message: '¿Estás seguro de querer eliminar este producto del carrito?',
@@ -116,7 +116,7 @@ export class CarritoComponent implements OnInit {
         severity: 'primary'
       },
       accept: () => {
-        this.carritoService.eliminarItem(id);
+        this.carritoService.eliminarItem(cartItemId);
         this.messageService.add({ severity: 'error', summary: 'Eliminado', detail: 'Has eliminado el producto del carrito.', life: 3000, icon: 'pi pi-trash' });
       }
     });

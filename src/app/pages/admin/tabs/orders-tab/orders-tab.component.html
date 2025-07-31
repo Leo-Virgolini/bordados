@@ -75,6 +75,9 @@
                 <th class="text-left">Cliente</th>
                 <th class="text-left">Fecha</th>
                 <th class="text-left">Productos</th>
+                <th class="text-left">Tipo</th>
+                <th class="text-left">Subtotal</th>
+                <th class="text-left">Envío</th>
                 <th class="text-left">Total</th>
                 <th class="text-left">Estado</th>
                 <th class="text-left">Acciones</th>
@@ -82,18 +85,39 @@
         </ng-template>
         <ng-template pTemplate="body" let-order>
             <tr>
-                <td class="font-semibold">{{ order.id }}</td>
-                <td>{{ order.customer?.fullName }}</td>
-                <td>{{ order.date | date: 'shortDate' }}</td>
+                <td class="font-semibold text-primary">{{ order.id }}</td>
+                <td>
+                    <div class="flex flex-column">
+                        <span class="font-semibold">{{ order.getCustomerName() }}</span>
+                        <span class="text-sm text-600">{{ order.getCustomerEmail() }}</span>
+                        <span class="text-sm text-600">{{ order.getCustomerPhone() }}</span>
+                    </div>
+                </td>
+                <td>{{ order.date | date: 'dd/MM/yyyy' }}</td>
                 <td>
                     <div class="flex flex-column gap-1">
                         <div *ngFor="let item of order.items" class="flex align-items-center gap-2">
                             <span class="font-semibold">{{ item.getProductName() }}</span>
                             <p-tag [value]="'x' + item.quantity" severity="info" [rounded]="true" size="small"></p-tag>
-                            <span *ngIf="item.product?.variants?.[0]" class="text-sm text-600">
-                                {{ item.product.variants[0]?.color || '-' }} | {{ item.product.variants[0]?.sizes?.[0]?.size || '-' }}
-                            </span>
+                            <p-tag *ngIf="item.productSnapshot.variant.color" [value]="item.productSnapshot.variant.color" severity="secondary" [rounded]="true" size="small"
+                                icon="pi pi-circle-fill"></p-tag>
+                            <p-tag *ngIf="item.productSnapshot.variant.size" [value]="item.productSnapshot.variant.size" severity="contrast" [rounded]="true" size="small"></p-tag>
                         </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex flex-column gap-1">
+                        <div *ngFor="let item of order.items" class="flex align-items-center gap-2">
+                            <p-tag *ngIf="isItemPersonalized(item)" value="Personalizado" severity="warn" [rounded]="true" size="small" icon="pi pi-palette"></p-tag>
+                            <p-tag *ngIf="!isItemPersonalized(item)" value="Listo" severity="success" [rounded]="true" size="small" icon="pi pi-check-circle"></p-tag>
+                        </div>
+                    </div>
+                </td>
+                <td class="font-bold text-blue-600">{{ order.subtotal | currency: 'ARS':'symbol':'1.0-0':'es-AR' }}</td>
+                <td>
+                    <div class="flex flex-column">
+                        <span class="font-semibold text-orange-600">{{ order.shippingPrice | currency: 'ARS':'symbol':'1.0-0':'es-AR' }}</span>
+                        <span class="text-sm text-600">{{ order.getShippingAddressSummary() }}</span>
                     </div>
                 </td>
                 <td class="font-bold text-primary">{{ order.total | currency: 'ARS':'symbol':'1.0-0':'es-AR' }}</td>
@@ -116,7 +140,7 @@
 <p-dialog [(visible)]="showOrderDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true"
     [header]="editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'" (onHide)="closeOrderDialog()">
 
-    <form [formGroup]="orderForm" class="flex flex-column gap-4">
+    <form [formGroup]="orderForm" class="flex flex-column gap-4" *ngIf="orderForm && formArrayReady">
         <!-- Order Header -->
         <div class="grid">
             <div class="col-12 md:col-6">
@@ -142,23 +166,172 @@
             </div>
         </div>
 
-        <!-- Customer Selection -->
-        <div class="grid">
+        <!-- Customer Selection (New Orders) -->
+        <div class="grid" *ngIf="!editingOrder">
             <div class="col-12">
-                <label for="orderCliente" class="block mb-2 font-semibold">Cliente *</label>
+                <label for="orderCliente" class="block mb-2 font-semibold">
+                    <i class="pi pi-user mr-2"></i>Cliente *
+                </label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
                         <i class="pi pi-user"></i>
                     </p-inputgroup-addon>
-                    <p-select id="orderCliente" formControlName="customerId" [options]="customers" optionLabel="fullName" optionValue="id" placeholder="Seleccionar cliente"
-                        class="w-full" />
+                    <p-select id="orderCliente" formControlName="customerId" [options]="customers" optionValue="id" placeholder="Seleccionar cliente" class="w-full" [showClear]="true">
+                        <ng-template pTemplate="selectedItem" let-customer>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-user"></i>
+                                <div>{{ getCustomerDisplayName(customer) }}</div>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-customer>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-user"></i>
+                                <div>
+                                    <div class="font-semibold">{{ getCustomerDisplayName(customer) }}</div>
+                                    <small class="text-500">{{ customer.email }}</small>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-select>
                 </p-inputgroup>
                 <app-error-helper [control]="orderForm.get('customerId')"></app-error-helper>
             </div>
         </div>
 
+        <!-- Customer Information (Read-only for Existing Orders) -->
+        <p-card styleClass="border-round-xl shadow-2 p-3" *ngIf="editingOrder">
+            <ng-template pTemplate="header">
+                <div class="flex align-items-center justify-content-between">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-user text-primary text-xl"></i>
+                        <h3 class="text-xl font-semibold text-primary m-0">Información del Cliente</h3>
+                    </div>
+                    <p-tag value="Solo lectura" severity="info" [rounded]="true" size="small"></p-tag>
+                </div>
+            </ng-template>
+
+            <div class="grid">
+                <!-- Personal Information -->
+                <div class="col-12 xl:col-6">
+                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                        <ng-template pTemplate="header">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-id-card text-primary"></i>
+                                <h4 class="text-lg font-semibold text-primary m-0">Datos Personales</h4>
+                            </div>
+                        </ng-template>
+
+                        <div class="flex flex-column gap-4">
+                            <!-- Name -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-primary-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-user text-primary text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Nombre Completo</span>
+                                    <span class="text-lg font-semibold text-900">{{ editingOrder ? getCustomerDisplayName(editingOrder.customerSnapshot) : 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-blue-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-envelope text-blue-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Email</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.email || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-green-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-phone text-green-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Teléfono</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.phone || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- DNI -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-orange-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-id-card text-orange-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">DNI</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.dni || 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </p-card>
+                </div>
+
+                <!-- Address Information -->
+                <div class="col-12 xl:col-6">
+                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                        <ng-template pTemplate="header">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-map-marker text-primary"></i>
+                                <h4 class="text-lg font-semibold text-primary m-0">Dirección de Residencia</h4>
+                            </div>
+                        </ng-template>
+
+                        <div class="flex flex-column gap-4">
+                            <!-- Address -->
+                            <div class="flex align-items-start gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-purple-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-home text-purple-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Dirección</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.address || 'N/A' }}</span>
+                                    <span *ngIf="editingOrder.customerSnapshot.floorApartment" class="text-sm text-600">{{ editingOrder.customerSnapshot.floorApartment }}</span>
+                                </div>
+                            </div>
+
+                            <!-- City -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-cyan-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-building text-cyan-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Ciudad</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.city || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Province -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-pink-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-map text-pink-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Provincia</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.province || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Postal Code -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-indigo-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-map-marker text-indigo-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Código Postal</span>
+                                    <span class="text-lg text-900">{{ editingOrder.customerSnapshot.postalCode || 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </p-card>
+                </div>
+            </div>
+        </p-card>
+
         <!-- Order Items -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card border-round">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-list mr-2"></i>Productos del Pedido
             </h3>
@@ -168,19 +341,40 @@
                     <div class="grid">
                         <div class="col-12 md:col-4">
                             <label class="block mb-2 font-semibold">Producto *</label>
-                            <p-select formControlName="product" [options]="products" optionLabel="name" placeholder="Seleccionar producto" class="w-full" (onChange)="onProductChange(i)" />
+                            <p-select formControlName="product" [options]="allProducts" optionLabel="name" placeholder="Seleccionar producto" class="w-full" (onChange)="onProductChange(i)"
+                                [showClear]="true">
+                                <ng-template pTemplate="selectedItem" let-product>
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-box"></i>
+                                        <div>{{ product.name }}</div>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="item" let-product>
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-box"></i>
+                                        <div>
+                                            <div class="font-semibold">{{ product.name }}</div>
+                                            <small class="text-500">{{ product.price | currency:'ARS':'symbol':'1.0-0' }}</small>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                            <!-- Product Type Indicator -->
+                            <div class="mt-2" *ngIf="orderItemsArray.at(i).get('product')?.value">
+                                <p-tag [value]="getProductTypeLabel(i)" [severity]="getProductTypeSeverity(i)" [rounded]="true" size="small"></p-tag>
+                            </div>
                         </div>
                         <div class="col-12 md:col-3">
                             <label for="color" class="block mb-2">Color:</label>
-                            <p-select id="color" formControlName="selectedColor" [options]="getAvailableColorsForItem(i)" [disabled]="!orderItemsArray.at(i).get('product')?.value"
-                                placeholder="Seleccione color"></p-select>
-                        </div>
-                        <div class="col-12 md:col-3">
-                            <label for="size" class="block mb-2">Talle:</label>
-                            <p-select id="size" formControlName="selectedSize" [options]="getAvailableSizesForItem(i)" [disabled]="!orderItemsArray.at(i).get('selectedColor')?.value"
-                                placeholder="Seleccione talle"></p-select>
+                            <p-select id="color" formControlName="selectedColor" [options]="getAvailableColorsForItem(i)" placeholder="Seleccione color" (onChange)="onColorChange(i)"
+                                [showClear]="true"></p-select>
                         </div>
                         <div class="col-12 md:col-2">
+                            <label for="size" class="block mb-2">Talle:</label>
+                            <p-select id="size" formControlName="selectedSize" [options]="getAvailableSizesForItem(i)" placeholder="Seleccione talle" (onChange)="onSizeChange()"
+                                [showClear]="true"></p-select>
+                        </div>
+                        <div class="col-12 md:col-4">
                             <label class="block mb-2 font-semibold">Cantidad *</label>
                             <p-inputnumber formControlName="quantity" [min]="1" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" inputStyleClass="text-center"
                                 decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
@@ -195,6 +389,59 @@
                         <div class="col-12 md:col-1">
                             <label class="block mb-2 font-semibold">Acciones</label>
                             <p-button icon="pi pi-trash" (onClick)="removeOrderItem(i)" [rounded]="true" severity="danger" size="small" pTooltip="Eliminar item" />
+                        </div>
+                    </div>
+
+                    <!-- Customization Details for Personalizado Products -->
+                    <div class="mt-3" *ngIf="isProductPersonalizado(i)">
+                        <div class="surface-200 p-3 border-round">
+                            <h4 class="text-sm font-semibold mb-2 text-primary">
+                                <i class="pi pi-palette mr-1"></i>Detalles de Personalización
+                            </h4>
+
+                            <!-- Thread Colors -->
+                            <div class="grid mb-2" *ngIf="getProductThreadColors(i).length > 0">
+                                <div class="col-12">
+                                    <span class="text-sm text-600">Colores de Hilo:</span>
+                                    <div class="flex gap-2 mt-1">
+                                        <div *ngFor="let color of getProductThreadColors(i)" class="flex align-items-center gap-2">
+                                            <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
+                                                [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                            </div>
+                                            <span class="text-sm font-medium">{{ color.name }} ({{ color.code }})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom Text -->
+                            <div class="grid mb-2" *ngIf="getProductCustomText(i)">
+                                <div class="col-12">
+                                    <span class="text-sm text-600">Texto Personalizado:</span>
+                                    <div class="flex align-items-center gap-2 mt-1">
+                                        <p-tag *ngIf="getProductCustomTextColor(i)?.code" [value]="getProductCustomText(i)" [style]="{'color': getProductCustomTextColor(i)?.code}"
+                                            [rounded]="true" size="small">
+                                        </p-tag>
+                                        <div class="flex align-items-center gap-2">
+                                            <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getProductCustomTextColor(i)?.name" tooltipPosition="top"
+                                                [ngStyle]="{'background-color': getProductCustomTextColor(i)?.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                            </div>
+                                            Color: <span class="text-sm font-medium">{{ getProductCustomTextColor(i)?.name }} ({{ getProductCustomTextColor(i)?.code }})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom Image -->
+                            <div class="grid mb-2" *ngIf="getProductCustomImage(i)">
+                                <div class="col-12">
+                                    <span class="text-sm text-600">Imagen Personalizada:</span>
+                                    <div class="mt-1">
+                                        <p-image [src]="getProductCustomImage(i)" alt="Imagen personalizada" width="100" height="100" [preview]="true" styleClass="border-round shadow-1">
+                                        </p-image>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -228,7 +475,7 @@
         </div>
 
         <!-- Coupon Section -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card border-round">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-ticket mr-2"></i>Cupón de Descuento
             </h3>
@@ -256,7 +503,7 @@
         </div>
 
         <!-- Shipping Information -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card border-round">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-truck mr-2"></i>Información de Envío
             </h3>
@@ -320,6 +567,13 @@
                     <p-inputnumber formControlName="shippingPrice" [min]="0" mode="currency" currency="ARS" locale="es-AR" class="w-full" (onInput)="calculateOrderTotals()" />
                 </div>
             </div>
+
+            <div class="grid">
+                <div class="col-12">
+                    <label for="orderNotas" class="block mb-2 font-semibold">Notas</label>
+                    <textarea pTextarea id="orderNotas" formControlName="notes" rows="3" placeholder="Notas adicionales del pedido..." class="w-full"></textarea>
+                </div>
+            </div>
         </div>
 
         <!-- Order Details -->
@@ -334,15 +588,8 @@
             </div>
         </div>
 
-        <div class="grid">
-            <div class="col-12">
-                <label for="orderNotas" class="block mb-2 font-semibold">Notas</label>
-                <textarea pTextarea id="orderNotas" formControlName="notes" rows="3" placeholder="Notas adicionales del pedido..." class="w-full"></textarea>
-            </div>
-        </div>
-
         <!-- Order Summary -->
-        <div class="surface-card p-4 border-round">
+        <div class="surface-card border-round">
             <h3 class="text-lg font-semibold mb-3 text-primary">
                 <i class="pi pi-calculator mr-2"></i>Resumen del Pedido
             </h3>
@@ -380,7 +627,7 @@
     </form>
 
     <ng-template pTemplate="footer">
-        <div class="flex justify-content-end gap-2">
+        <div class="flex justify-content-end gap-2 mt-3">
             <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="closeOrderDialog()" [disabled]="orderLoading" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveOrder()" [disabled]="!orderForm.valid || orderLoading" [loading]="orderLoading" />
         </div>
@@ -426,37 +673,136 @@
         </div>
 
         <!-- Customer Information -->
-        <div class="surface-card p-4 border-round mb-4">
-            <h3 class="text-lg font-semibold mb-3 text-primary">
-                <i class="pi pi-user mr-2"></i>Información del Cliente
-            </h3>
+        <p-card styleClass="border-round-xl shadow-2 p-3 mb-4">
+            <ng-template pTemplate="header">
+                <div class="flex align-items-center justify-content-between">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-user text-primary text-xl"></i>
+                        <h3 class="text-xl font-semibold text-primary m-0">Información del Cliente</h3>
+                    </div>
+                    <p-tag value="Cliente Registrado" severity="success" [rounded]="true" size="small"></p-tag>
+                </div>
+            </ng-template>
+
             <div class="grid">
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Nombre</span>
-                        <span class="font-bold text-900">{{ selectedOrder.getCustomerName() }}</span>
-                    </div>
+                <!-- Personal Information -->
+                <div class="col-12 xl:col-6">
+                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                        <ng-template pTemplate="header">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-id-card text-primary"></i>
+                                <h4 class="text-lg font-semibold text-primary m-0">Datos Personales</h4>
+                            </div>
+                        </ng-template>
+
+                        <div class="flex flex-column gap-4">
+                            <!-- Name -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-primary-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-user text-primary text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Nombre Completo</span>
+                                    <span class="text-lg font-semibold text-900">{{ selectedOrder.getCustomerName() }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-blue-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-envelope text-blue-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Email</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.getCustomerEmail() }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-green-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-phone text-green-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Teléfono</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.getCustomerPhone() }}</span>
+                                </div>
+                            </div>
+
+                            <!-- DNI -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-orange-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-id-card text-orange-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">DNI</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.customerSnapshot.dni || 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </p-card>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Email</span>
-                        <span class="text-900">{{ selectedOrder.getCustomerEmail() }}</span>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Teléfono</span>
-                        <span class="text-900">{{ selectedOrder.getCustomerPhone() }}</span>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">DNI</span>
-                        <span class="text-900">{{ selectedOrder.customerSnapshot.dni }}</span>
-                    </div>
+
+                <!-- Address Information -->
+                <div class="col-12 xl:col-6">
+                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                        <ng-template pTemplate="header">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-map-marker text-primary"></i>
+                                <h4 class="text-lg font-semibold text-primary m-0">Dirección de Residencia</h4>
+                            </div>
+                        </ng-template>
+
+                        <div class="flex flex-column gap-4">
+                            <!-- Address -->
+                            <div class="flex align-items-start gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-purple-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-home text-purple-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Dirección</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.customerSnapshot.address || 'N/A' }}</span>
+                                    <span *ngIf="selectedOrder.customerSnapshot.floorApartment" class="text-sm text-600">{{ selectedOrder.customerSnapshot.floorApartment }}</span>
+                                </div>
+                            </div>
+
+                            <!-- City -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-cyan-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-building text-cyan-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Ciudad</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.customerSnapshot.city || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Province -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-pink-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-map text-pink-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Provincia</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.customerSnapshot.province || 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Postal Code -->
+                            <div class="flex align-items-center gap-3 p-3 surface-50 border-round">
+                                <div class="flex align-items-center justify-content-center bg-indigo-50 border-round-xl w-3rem h-3rem">
+                                    <i class="pi pi-map-marker text-indigo-500 text-xl"></i>
+                                </div>
+                                <div class="flex flex-column">
+                                    <span class="text-sm text-600 font-medium">Código Postal</span>
+                                    <span class="text-lg text-900">{{ selectedOrder.customerSnapshot.postalCode || 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </p-card>
                 </div>
             </div>
-        </div>
+        </p-card>
 
         <!-- Shipping Address -->
         <div class="surface-card p-4 border-round mb-4">
@@ -516,11 +862,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of selectedOrder?.items" class="border-bottom-1 surface-border">
+                        <tr *ngFor="let item of selectedOrder?.items; let i = index" class="border-bottom-1 surface-border">
                             <td class="p-3">
                                 <div class="flex align-items-center gap-2">
                                     <img *ngIf="item.getProductImage()" [src]="item.getProductImage()" alt="Imagen" width="40" height="40" class="border-round shadow-1" />
-                                    <span>{{ item.getProductName() }}</span>
+                                    <div class="flex flex-column">
+                                        <span>{{ item.getProductName() }}</span>
+                                        <!-- Product Type Tag -->
+                                        <p-tag *ngIf="item.productSnapshot.type === 'personalizable'" value="Personalizado" severity="warn" [rounded]="true" size="small"
+                                            icon="pi pi-palette"></p-tag>
+                                        <p-tag *ngIf="item.productSnapshot.type === 'bordado'" value="Bordado" severity="success" [rounded]="true" size="small"
+                                            icon="pi pi-check-circle"></p-tag>
+                                    </div>
                                 </div>
                             </td>
                             <td class="p-3">{{ item.quantity }}</td>
@@ -533,6 +886,70 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Customization Details for Personalizable Products -->
+            <ng-container *ngFor="let item of selectedOrder?.items; let i = index">
+                <div *ngIf="item.productSnapshot.type === 'personalizable' && item.customization" class="mt-3">
+                    <div class="surface-200 p-3 border-round">
+                        <h4 class="text-sm font-semibold mb-2 text-primary">
+                            <i class="pi pi-palette mr-1"></i>Detalles de Personalización - {{ item.getProductName() }}
+                        </h4>
+
+                        <!-- Thread Colors -->
+                        <div class="grid mb-2" *ngIf="item.customization.threadColor1 || item.customization.threadColor2">
+                            <div class="col-12">
+                                <span class="text-sm text-600">Colores de Hilo:</span>
+                                <div class="flex gap-2 mt-1">
+                                    <div *ngIf="item.customization.threadColor1" class="flex align-items-center gap-2">
+                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.threadColor1)" tooltipPosition="top"
+                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor1), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                        </div>
+                                        <span class="text-sm font-medium">{{ getColorNameById(item.customization.threadColor1) }} ({{ getColorCodeById(item.customization.threadColor1)
+                                            }})</span>
+                                    </div>
+                                    <div *ngIf="item.customization.threadColor2" class="flex align-items-center gap-2">
+                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.threadColor2)" tooltipPosition="top"
+                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor2), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                        </div>
+                                        <span class="text-sm font-medium">{{ getColorNameById(item.customization.threadColor2) }} ({{ getColorCodeById(item.customization.threadColor2)
+                                            }})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Text -->
+                        <div class="grid mb-2" *ngIf="item.customization.customText">
+                            <div class="col-12">
+                                <span class="text-sm text-600">Texto Personalizado:</span>
+                                <div class="flex align-items-center gap-2 mt-1">
+                                    <p-tag *ngIf="item.customization.customTextColor" [value]="item.customization.customText"
+                                        [style]="{'color': getColorCodeById(item.customization.customTextColor)}" [rounded]="true" size="small">
+                                    </p-tag>
+                                    <div *ngIf="item.customization.customTextColor" class="flex align-items-center gap-2">
+                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.customTextColor)" tooltipPosition="top"
+                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.customTextColor), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                        </div>
+                                        Color: <span class="text-sm font-medium">{{ getColorNameById(item.customization.customTextColor) }} ({{
+                                            getColorCodeById(item.customization.customTextColor) }})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Image -->
+                        <div class="grid mb-2" *ngIf="item.customization.customImage">
+                            <div class="col-12">
+                                <span class="text-sm text-600">Imagen Personalizada:</span>
+                                <div class="mt-1">
+                                    <p-image [src]="item.customization.customImage" alt="Imagen personalizada" width="100" height="100" [preview]="true" styleClass="border-round shadow-1">
+                                    </p-image>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
         </div>
 
         <!-- Coupon Information -->

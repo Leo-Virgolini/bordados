@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CartItem } from '../models/cart-item';
+import { ProductCustomizable } from '../models/product-customizable';
 
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
@@ -16,41 +17,46 @@ export class CarritoService {
 
   agregarItem(item: CartItem) {
     const actuales = this.items.value;
-    // Check if the same variant (color/size) already exists in cart
+    
+    // For customized products, always add as new item (they're unique)
+    if (item.product.type === 'personalizable') {
+      actuales.push(item);
+      this.items.next([...actuales]);
+      return;
+    }
+
+    // For regular products, check if same variant already exists
     const existente = actuales.find(i =>
+      i.product.type === 'bordado' &&
       i.product.id === item.product.id &&
       i.product.variants[0]?.color === item.product.variants[0]?.color &&
       i.product.variants[0]?.sizes[0]?.size === item.product.variants[0]?.sizes[0]?.size
     );
 
     if (existente) {
-      // Update existing item quantity using variant-specific method
+      // Update existing item quantity
       const newQuantity = existente.quantity + item.quantity;
-      this.actualizarCantidadPorVariant(
-        item.product.id,
-        item.product.variants[0]?.color || '',
-        item.product.variants[0]?.sizes[0]?.size || '',
-        newQuantity
-      );
+      this.actualizarCantidad(existente.id, newQuantity);
     } else {
       actuales.push(item);
       this.items.next([...actuales]);
     }
   }
 
-  eliminarItem(id: string) {
-    const filtrados = this.items.value.filter(i => i.product.id !== id);
+  eliminarItem(cartItemId: string) {
+    const filtrados = this.items.value.filter(i => i.id !== cartItemId);
     this.items.next(filtrados);
   }
 
-  actualizarCantidad(id: string, cantidad: number) {
+  actualizarCantidad(cartItemId: string, cantidad: number) {
     const actuales = this.items.value;
-    const itemIndex = actuales.findIndex(i => i.product.id === id);
+    const itemIndex = actuales.findIndex(i => i.id === cartItemId);
 
     if (itemIndex !== -1) {
       const item = actuales[itemIndex];
       // Create a new CartItem with updated quantity
       const updatedItem = new CartItem({
+        id: item.id,
         product: item.product,
         quantity: cantidad
       });
@@ -61,25 +67,18 @@ export class CarritoService {
     }
   }
 
-  actualizarCantidadPorVariant(productId: string, color: string, size: string, cantidad: number) {
+  // Legacy method for backward compatibility - now uses CartItem ID
+  actualizarCantidadPorVariant(productId: number, color: string, size: string, cantidad: number) {
     const actuales = this.items.value;
-    const itemIndex = actuales.findIndex(i =>
+    const item = actuales.find(i =>
+      i.product.type === 'bordado' &&
       i.product.id === productId &&
       i.product.variants[0]?.color === color &&
       i.product.variants[0]?.sizes[0]?.size === size
     );
 
-    if (itemIndex !== -1) {
-      const item = actuales[itemIndex];
-      // Create a new CartItem with updated quantity
-      const updatedItem = new CartItem({
-        product: item.product,
-        quantity: cantidad
-      });
-
-      // Update the array
-      actuales[itemIndex] = updatedItem;
-      this.items.next([...actuales]);
+    if (item) {
+      this.actualizarCantidad(item.id, cantidad);
     }
   }
 
@@ -108,18 +107,43 @@ export class CarritoService {
     return this.items.value.filter(item => item.product.type === 'bordado');
   }
 
-  getCartItemQuantity(productId: string): number {
+  // Get cart item by ID
+  getCartItemById(cartItemId: string): CartItem | undefined {
+    return this.items.value.find(i => i.id === cartItemId);
+  }
+
+  // Legacy methods for backward compatibility
+  getCartItemQuantity(productId: number): number {
     const item = this.items.value.find(i => i.product.id === productId);
     return item ? item.quantity : 0;
   }
 
-  getCartItemQuantityForVariant(productId: string, color: string, size: string): number {
+  getCartItemQuantityForVariant(productId: number, color: string, size: string): number {
     const item = this.items.value.find(i =>
+      i.product.type === 'bordado' &&
       i.product.id === productId &&
       i.product.variants[0]?.color === color &&
       i.product.variants[0]?.sizes[0]?.size === size
     );
     return item ? item.quantity : 0;
+  }
+
+  // New method to check if a customized product is already in cart
+  isCustomizedProductInCart(customizedProduct: ProductCustomizable): boolean {
+    return this.items.value.some(item => 
+      item.product.type === 'personalizable' &&
+      item.product.id === customizedProduct.id
+    );
+  }
+
+  // Get cart item count
+  getCartItemCount(): number {
+    return this.items.value.length;
+  }
+
+  // Check if cart is empty
+  isCartEmpty(): boolean {
+    return this.items.value.length === 0;
   }
 
 }

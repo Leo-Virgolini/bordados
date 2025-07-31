@@ -37,16 +37,16 @@ export interface CustomizationData {
 }
 
 export class OrderItem {
-    id: string;
-    productId: string;
+    id: number;
+    productId: number;
     productSnapshot: ProductSnapshot;
     quantity: number;
     subtotal: number;
     customization?: CustomizationData;
 
     constructor(init?: Partial<OrderItem>) {
-        this.id = init?.id || '';
-        this.productId = init?.productId || '';
+        this.id = init?.id || 0;
+        this.productId = init?.productId || 0;
         this.productSnapshot = init?.productSnapshot || {
             name: '',
             description: '',
@@ -152,9 +152,9 @@ export class OrderItem {
 }
 
 export class Order {
-    id: string;
+    id: number;
     date: Date;
-    customerId: string;
+    customerId: number;
     customerSnapshot: CustomerSnapshot;
     items: OrderItem[];
     couponCode?: string;
@@ -173,9 +173,9 @@ export class Order {
     notes?: string;
 
     constructor(init?: Partial<Order>) {
-        this.id = init?.id || '';
+        this.id = init?.id || 0;
         this.date = init?.date || new Date();
-        this.customerId = init?.customerId || '';
+        this.customerId = init?.customerId || 0;
         this.customerSnapshot = init?.customerSnapshot || {
             name: '',
             lastName: '',

@@ -1,18 +1,29 @@
-<!-- Contact Settings -->
-<p-card class="border-round-xl shadow-3 p-3 mb-4">
-    <ng-template #header>
-        <div class="flex justify-content-between align-items-center">
-            <h3 class="text-lg font-bold m-0">
-                <i class="pi pi-phone mr-2"></i>Configuración de Contacto
-            </h3>
-        </div>
-    </ng-template>
+<!-- Settings Loading State -->
+<div *ngIf="settingsLoading" class="flex justify-content-center align-items-center" style="min-height: 400px;">
+    <div class="text-center">
+        <i class="pi pi-spin pi-spinner text-6xl text-primary mb-3"></i>
+        <h3 class="text-xl font-semibold text-600">Cargando configuración...</h3>
+        <p class="text-500">Espera mientras se cargan los datos</p>
+    </div>
+</div>
 
-    <form [formGroup]="contactForm" class="flex flex-column gap-4">
-        <div class="grid">
-            <div class="col-12 md:col-6">
+<!-- Settings Content -->
+<div *ngIf="!settingsLoading">
+    <!-- Contact Settings -->
+    <p-card class="border-round-xl shadow-3 p-3 mb-4">
+        <ng-template #header>
+            <div class="flex justify-content-between align-items-center">
+                <h3 class="text-lg font-bold m-0">
+                    <i class="pi pi-phone mr-2"></i>Configuración de Contacto
+                </h3>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="contactForm" class="flex flex-column gap-4" *ngIf="contactForm">
+
+            <div>
                 <label for="whatsappPhone" class="block mb-2 font-semibold">Número de WhatsApp *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-whatsapp"></i>
                     </p-inputgroup-addon>
@@ -24,45 +35,123 @@
                 <app-error-helper [control]="contactForm.get('whatsappPhone')"></app-error-helper>
                 <small class="text-color-secondary">Número que se usará para el botón de WhatsApp</small>
             </div>
-        </div>
 
-        <div class="flex justify-content-end gap-2 mt-3">
-            <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveContactSettings()" [disabled]="!contactForm.valid || contactLoading" [loading]="contactLoading" />
-        </div>
-    </form>
-</p-card>
 
-<!-- Free Shipping Settings -->
-<p-card class="border-round-xl shadow-3 p-3 mb-4">
-    <ng-template #header>
-        <div class="flex justify-content-between align-items-center">
-            <h3 class="text-lg font-bold m-0">
-                <i class="pi pi-truck mr-2"></i>Configuración de Envío Gratis
-            </h3>
-        </div>
-    </ng-template>
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveContactSettings()" [disabled]="!contactForm.valid || phoneLoading" [loading]="phoneLoading" />
+            </div>
+        </form>
+    </p-card>
 
-    <form [formGroup]="shippingForm" class="flex flex-column gap-4">
-        <div class="grid">
-            <div class="col-12 md:col-6">
-                <label for="freeShippingThreshold" class="block mb-2 font-semibold">Monto mínimo para envío gratis *</label>
-                <p-inputgroup>
+    <!-- Free Shipping Settings -->
+    <p-card class="border-round-xl shadow-3 p-3 mb-4">
+        <ng-template #header>
+            <div class="flex justify-content-between align-items-center">
+                <h3 class="text-lg font-bold m-0">
+                    <i class="pi pi-truck mr-2"></i>Configuración de Envío Gratis
+                </h3>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="shippingForm" class="flex flex-column gap-4" *ngIf="shippingForm">
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <label for="freeShippingThreshold" class="block mb-2 font-semibold">Monto mínimo para envío gratis *</label>
+                    <p-inputgroup class="max-w-max">
+                        <p-inputgroup-addon>
+                            <i class="pi pi-dollar"></i>
+                        </p-inputgroup-addon>
+                        <p-inputnumber id="freeShippingThreshold" formControlName="freeShippingThreshold" class="w-full" placeholder="0" [min]="0" [max]="999999" [showButtons]="true"
+                            buttonLayout="horizontal" spinnerMode="horizontal" [step]="1000" mode="currency" currency="ARS" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="shippingForm.get('freeShippingThreshold')"></app-error-helper>
+                    <small class="text-color-secondary">Los pedidos con este monto o superior tendrán envío gratis</small>
+                </div>
+            </div>
+
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveShippingSettings()" [disabled]="!shippingForm.valid || shippingLoading"
+                    [loading]="shippingLoading" />
+            </div>
+        </form>
+    </p-card>
+
+    <!-- Prices Settings -->
+    <p-card class="border-round-xl shadow-3 p-3 mb-4">
+        <ng-template #header>
+            <div class="flex justify-content-between align-items-center">
+                <h3 class="text-lg font-bold m-0">
+                    <i class="pi pi-palette mr-2"></i>Configuración de Personalización
+                </h3>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="priceForm" class="flex flex-column gap-4" *ngIf="priceForm">
+
+            <div>
+                <label for="maxImageSize" class="block mb-2 font-semibold">Tamaño máximo de imagen *</label>
+                <p-inputgroup class="max-w-max">
+                    <p-inputgroup-addon>
+                        <i class="pi pi-image"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="maxImageSize" formControlName="maxImageSize" class="w-full" placeholder="10485760" [min]="1024 * 1024" [max]="50 * 1024 * 1024" [showButtons]="true"
+                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="1024 * 1024" />
+                    <p-inputgroup-addon class="bg-gray-100 font-semibold text-gray-600">
+                        bytes
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+                <app-error-helper [control]="priceForm.get('maxImageSize')"></app-error-helper>
+                <small class="text-color-secondary">Límite actual: {{ formatFileSize(maxImageSize) }} (1MB - 50MB)</small>
+            </div>
+
+            <div>
+                <label for="secondColorPrice" class="block mb-2 font-semibold">Precio por segundo color de hilado *</label>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-dollar"></i>
                     </p-inputgroup-addon>
-                    <p-inputnumber id="freeShippingThreshold" formControlName="freeShippingThreshold" class="w-full" placeholder="0" [min]="0" [max]="999999" [showButtons]="true"
-                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="1000" mode="currency" currency="ARS" />
+                    <p-inputnumber id="secondColorPrice" formControlName="secondColorPrice" class="w-full" placeholder="0" [min]="0" [max]="99999" [showButtons]="true"
+                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="100" mode="currency" currency="ARS" />
                 </p-inputgroup>
-                <app-error-helper [control]="shippingForm.get('freeShippingThreshold')"></app-error-helper>
-                <small class="text-color-secondary">Los pedidos con este monto o superior tendrán envío gratis</small>
+                <app-error-helper [control]="priceForm.get('secondColorPrice')"></app-error-helper>
+                <small class="text-color-secondary">Este precio se aplicará a todos los colores cuando se seleccione un segundo color</small>
             </div>
-        </div>
 
-        <div class="flex justify-content-end gap-2 mt-3">
-            <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveShippingSettings()" [disabled]="!shippingForm.valid || shippingLoading" [loading]="shippingLoading" />
-        </div>
-    </form>
-</p-card>
+            <div>
+                <label for="customTextPrice" class="block mb-2 font-semibold">Precio texto personalizado *</label>
+                <p-inputgroup class="max-w-max">
+                    <p-inputgroup-addon>
+                        <i class="pi pi-dollar"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="customTextPrice" formControlName="customTextPrice" class="w-full" placeholder="0" [min]="0" [max]="99999" [showButtons]="true"
+                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="100" mode="currency" currency="ARS" />
+                </p-inputgroup>
+                <app-error-helper [control]="priceForm.get('customTextPrice')"></app-error-helper>
+                <small class="text-color-secondary">Este precio se aplicará cuando se agregue texto personalizado</small>
+            </div>
+
+            <div>
+                <label for="maxTextLength" class="block mb-2 font-semibold">Longitud máxima de texto personalizado *</label>
+                <p-inputgroup class="max-w-max">
+                    <p-inputgroup-addon>
+                        <i class="pi pi-align-left"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="maxTextLength" formControlName="maxTextLength" class="w-full" placeholder="20" [min]="5" [max]="50" [showButtons]="true" buttonLayout="horizontal"
+                        spinnerMode="horizontal" [step]="5" />
+                    <p-inputgroup-addon class="pl-3 pr-3 bg-gray-100 font-semibold text-gray-600">
+                        caracteres
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+                <app-error-helper [control]="priceForm.get('maxTextLength')"></app-error-helper>
+                <small class="text-color-secondary">Límite actual: {{ maxTextLength }} caracteres (5 - 50)</small>
+            </div>
+
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="savePrices()" [disabled]="!priceForm.valid || priceLoading" [loading]="priceLoading" />
+            </div>
+        </form>
+    </p-card>
+</div>
 
 <!-- Discount Coupons Management -->
 <p-card class="border-round-xl shadow-3 p-3">
@@ -76,10 +165,11 @@
     </ng-template>
 
     <p-table [value]="discountCoupons" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} cupones"
-        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm">
+        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm" [loading]="couponLoading">
 
         <ng-template #header>
             <tr>
+                <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                 <th pSortableColumn="code">Código <p-sortIcon field="code"></p-sortIcon></th>
                 <th>Descripción</th>
                 <th pSortableColumn="discountType">Tipo <p-sortIcon field="discountType"></p-sortIcon></th>
@@ -95,6 +185,9 @@
 
         <ng-template #body let-coupon>
             <tr>
+                <td>
+                    <span class="font-semibold text-600">{{ coupon.id }}</span>
+                </td>
                 <td>
                     <span class="font-bold text-primary">{{ coupon.code }}</span>
                 </td>
@@ -144,7 +237,7 @@
 
         <ng-template #emptymessage>
             <tr>
-                <td colspan="10" class="text-center py-6">
+                <td colspan="11" class="text-center py-6">
                     <i class="pi pi-ticket text-6xl text-300 mb-3 block"></i>
                     <h3 class="text-xl font-semibold text-600 mb-2">No hay cupones</h3>
                     <p class="text-500 mb-4">Crea tu primer cupón de descuento para comenzar</p>
@@ -155,15 +248,16 @@
     </p-table>
 </p-card>
 
+
 <!-- Coupon Dialog -->
 <p-dialog [(visible)]="showCouponDialog" modal="true" styleClass="w-full md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
     [header]="editingCoupon ? 'Editar Cupón' : 'Nuevo Cupón'" (onHide)="showCouponDialog = false">
 
-    <form [formGroup]="couponForm" class="flex flex-column gap-4">
+    <form [formGroup]="couponForm" class="flex flex-column gap-4" *ngIf="couponForm">
         <div class="grid">
             <div class="col-12 md:col-6">
                 <label for="couponCode" class="block mb-2 font-semibold">Código del Cupón *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-ticket"></i>
                     </p-inputgroup-addon>
@@ -174,7 +268,7 @@
 
             <div class="col-12 md:col-6">
                 <label for="couponDescription" class="block mb-2 font-semibold">Descripción</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-file-edit"></i>
                     </p-inputgroup-addon>
@@ -187,7 +281,7 @@
         <div class="grid">
             <div class="col-12 md:col-4">
                 <label for="couponDiscountType" class="block mb-2 font-semibold">Tipo de Descuento *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-percentage"></i>
                     </p-inputgroup-addon>
@@ -199,7 +293,7 @@
 
             <div class="col-12 md:col-4">
                 <label for="couponDiscountValue" class="block mb-2 font-semibold">Valor del Descuento *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-dollar"></i>
                     </p-inputgroup-addon>
@@ -213,7 +307,7 @@
 
             <div class="col-12 md:col-4">
                 <label for="couponMinOrderAmount" class="block mb-2 font-semibold">Monto Mínimo de Pedido</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-shopping-cart"></i>
                     </p-inputgroup-addon>
@@ -228,7 +322,7 @@
         <div class="grid">
             <div class="col-12 md:col-4">
                 <label for="couponMaxUses" class="block mb-2 font-semibold">Usos Máximos *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-users"></i>
                     </p-inputgroup-addon>
@@ -240,7 +334,7 @@
 
             <div class="col-12 md:col-4">
                 <label for="couponValidFrom" class="block mb-2 font-semibold">Válido Desde *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-calendar"></i>
                     </p-inputgroup-addon>
@@ -254,7 +348,7 @@
 
             <div class="col-12 md:col-4">
                 <label for="couponValidTo" class="block mb-2 font-semibold">Válido Hasta *</label>
-                <p-inputgroup>
+                <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-calendar"></i>
                     </p-inputgroup-addon>

@@ -1,0 +1,238 @@
+<div class="flex justify-content-end mb-3">
+    <p-button label="Nuevo Producto Personalizable" icon="pi pi-plus" [raised]="true" (onClick)="openCustomizableProductDialog()" />
+</div>
+
+<p-table [value]="customizableProducts" [loading]="customizableProductsLoading" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos personalizables" [rowsPerPageOptions]="[5, 10, 25]" responsiveLayout="scroll"
+    [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-sm">
+
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="id" class="text-center">ID <p-sortIcon field="id"></p-sortIcon></th>
+            <th pSortableColumn="name" class="text-center">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+            <th pSortableColumn="garmentType" class="text-center">Categoría <p-sortIcon field="garmentType"></p-sortIcon></th>
+            <th class="text-center">Imagen</th>
+            <th pSortableColumn="price" class="text-center">Precio Base <p-sortIcon field="price"></p-sortIcon></th>
+            <th class="text-center">Variantes y Stock por Talle</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </ng-template>
+
+    <ng-template #body let-product>
+        <tr>
+            <td class="text-center">
+                <span class="font-bold text-primary">{{ product.id }}</span>
+            </td>
+            <td class="text-center">
+                <div class="flex flex-column align-items-center">
+                    <span class="font-semibold text-900">{{ product.name }}</span>
+                    <span class="text-sm text-600">{{ product.description }}</span>
+                </div>
+            </td>
+            <td class="text-center">
+                <p-tag [value]="getCategoryLabel(product.garmentType)" severity="info" [rounded]="true"></p-tag>
+            </td>
+            <td class="text-center">
+                <p-image [src]="getCustomizableProductImage(product)" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" [preview]="true" />
+            </td>
+            <td class="text-center">
+                <span class="font-semibold text-primary">{{ product.price | currency:'ARS':'symbol':'1.0-0' }}</span>
+            </td>
+            <td class="text-center">
+                <div class="flex flex-column gap-2">
+                    <div *ngFor="let variant of product.variants.slice(0, 3)" class="flex flex-column gap-1">
+                        <div class="flex align-items-center gap-2">
+                            <div class="w-1rem h-1rem border-circle border-1 border-gray-300" [style.background-color]="getColorValue(variant.color)"></div>
+                            <span class="text-sm font-semibold">{{ variant.color }}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 ml-3">
+                            <span *ngFor="let size of variant.sizes" class="text-xs bg-primary-50 text-primary-700 px-2 py-1 border-round">
+                                {{ size.size }}: {{ size.stock }}
+                            </span>
+                        </div>
+                    </div>
+                    <p-tag *ngIf="product.variants.length > 3" [value]="'+' + (product.variants.length - 3) + ' más'" severity="secondary" [rounded]="true" size="small"></p-tag>
+                </div>
+            </td>
+            <td class="text-center">
+                <div class="flex gap-2 justify-content-center">
+                    <p-button icon="pi pi-pencil" (onClick)="editCustomizableProduct(product)" [rounded]="true" size="small" />
+                    <p-button icon="pi pi-trash" (onClick)="confirmDeleteCustomizableProduct(product)" [rounded]="true" severity="danger" size="small" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+        <tr>
+            <td colspan="7" class="text-center py-6">
+                <i class="pi pi-palette text-6xl text-300 mb-3 block"></i>
+                <h3 class="text-xl font-semibold text-600 mb-2">No hay productos personalizables</h3>
+                <p class="text-500 mb-4">Agrega tu primer producto personalizable para comenzar</p>
+                <p-button label="Agregar Producto Personalizable" icon="pi pi-plus" (onClick)="openCustomizableProductDialog()" [rounded]="true"></p-button>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Customizable Product Dialog -->
+<p-dialog [(visible)]="showCustomizableProductDialog" [modal]="true" [style]="{width: '40rem', maxHeight: '90vh'}" [draggable]="false" [resizable]="false" [closable]="true"
+    [closeOnEscape]="true" [dismissableMask]="false" styleClass="admin-dialog" [header]="editingCustomizableProduct ? 'Editar Producto Personalizable' : 'Nuevo Producto Personalizable'"
+    (onHide)="showCustomizableProductDialog = false">
+
+    <form [formGroup]="customizableProductForm" class="flex flex-column gap-4">
+        <!-- Basic Information -->
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customizableProductId" class="block mb-2 font-semibold">ID del Producto *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-box"></i>
+                    </p-inputgroup-addon>
+                    <input id="customizableProductId" type="text" pInputText formControlName="id" class="w-full" placeholder="Ej: CUST-001" />
+                </p-inputgroup>
+                <app-error-helper [control]="customizableProductForm.get('id')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customizableProductName" class="block mb-2 font-semibold">Nombre *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-tag"></i>
+                    </p-inputgroup-addon>
+                    <input id="customizableProductName" type="text" pInputText formControlName="name" class="w-full" placeholder="Ej: Remera Personalizable" />
+                </p-inputgroup>
+                <app-error-helper [control]="customizableProductForm.get('name')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12">
+                <label for="customizableProductDescription" class="block mb-2 font-semibold">Descripción *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-file-edit"></i>
+                    </p-inputgroup-addon>
+                    <textarea pTextarea id="customizableProductDescription" formControlName="description" class="w-full" rows="3"
+                        placeholder="Descripción del producto personalizable"></textarea>
+                </p-inputgroup>
+                <app-error-helper [control]="customizableProductForm.get('description')"></app-error-helper>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="col-12 md:col-6">
+                <label for="customizableProductPrice" class="block mb-2 font-semibold">Precio Base *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-dollar"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="customizableProductPrice" formControlName="price" class="w-full" mode="currency" currency="ARS" locale="es-AR" [minFractionDigits]="0"
+                        [maxFractionDigits]="0" placeholder="0" [showButtons]="true" [step]="100"></p-inputnumber>
+                </p-inputgroup>
+                <app-error-helper [control]="customizableProductForm.get('price')"></app-error-helper>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="customizableProductGarmentType" class="block mb-2 font-semibold">Tipo de Prenda *</label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-tag"></i>
+                    </p-inputgroup-addon>
+                    <p-select id="customizableProductGarmentType" formControlName="garmentType" [options]="garmentTypes" optionLabel="label" optionValue="value"
+                        placeholder="Seleccionar tipo" class="w-full" appendTo="body"></p-select>
+                </p-inputgroup>
+                <app-error-helper [control]="customizableProductForm.get('garmentType')"></app-error-helper>
+            </div>
+        </div>
+
+        <!-- Variants Section -->
+        <div class="grid">
+            <div class="col-12">
+                <div class="surface-50 p-3 border-round">
+                    <h4 class="font-semibold mb-3 flex align-items-center gap-2">
+                        <i class="pi pi-palette text-primary"></i>
+                        Variantes del Producto
+                    </h4>
+
+                    <!-- Add Variant Button -->
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <p class="text-sm text-600 m-0">Configura los colores, talles y stock disponibles</p>
+                        <p-button label="Agregar Variante" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addCustomizableVariant()" />
+                    </div>
+
+                    <!-- Variants List -->
+                    <div formArrayName="variants" class="flex flex-column gap-3">
+                        <div *ngFor="let variant of customizableVariantsArray.controls; let i = index" [formGroupName]="i" class="surface-100 p-3 border-round">
+                            <div class="flex justify-content-between align-items-center mb-2">
+                                <h5 class="font-semibold m-0">Variante {{ i + 1 }}</h5>
+                                <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true" (onClick)="removeCustomizableVariant(i)" />
+                            </div>
+
+                            <!-- Color and Image -->
+                            <div class="grid mb-3">
+                                <div class="col-6">
+                                    <label class="block mb-2 font-semibold">Color *</label>
+                                    <p-inputgroup>
+                                        <p-inputgroup-addon>
+                                            <i class="pi pi-palette"></i>
+                                        </p-inputgroup-addon>
+                                        <p-select [formControlName]="'color'" [options]="availableColors" optionLabel="label" optionValue="value" placeholder="Seleccionar color"
+                                            class="w-full" appendTo="body" />
+                                    </p-inputgroup>
+                                </div>
+                                <div class="col-6">
+                                    <label class="block mb-2 font-semibold">URL de Imagen</label>
+                                    <p-inputgroup>
+                                        <p-inputgroup-addon>
+                                            <i class="pi pi-image"></i>
+                                        </p-inputgroup-addon>
+                                        <input type="text" pInputText [formControlName]="'image'" class="w-full" placeholder="https://ejemplo.com/imagen.jpg" />
+                                    </p-inputgroup>
+                                </div>
+                            </div>
+
+                            <!-- Sizes and Stock -->
+                            <div class="mb-3">
+                                <div class="flex justify-content-between align-items-center mb-2">
+                                    <label class="font-semibold">Talles y Stock</label>
+                                    <p-button label="Agregar Talle" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addSizeToCustomizableVariant(i)" />
+                                </div>
+
+                                <div [formArrayName]="'sizes'" class="flex flex-column gap-2">
+                                    <div *ngFor="let sizeControl of getCustomizableVariantSizes(i).controls; let j = index" [formGroupName]="j" class="flex align-items-center gap-2">
+                                        <div class="flex-1">
+                                            <p-select [formControlName]="'size'" [options]="availableSizes" optionLabel="label" optionValue="value" placeholder="Talle" class="w-full"
+                                                appendTo="body" />
+                                        </div>
+                                        <div class="flex-1">
+                                            <p-inputnumber [formControlName]="'stock'" [min]="0" placeholder="Stock" class="w-full" [showButtons]="true" />
+                                        </div>
+                                        <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [rounded]="true"
+                                            (onClick)="removeSizeFromCustomizableVariant(i, j)" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Variants Message -->
+                    <div *ngIf="customizableVariantsArray.length === 0" class="text-center py-4">
+                        <i class="pi pi-palette text-4xl text-300 mb-2 block"></i>
+                        <p class="text-500 mb-3">No hay variantes configuradas</p>
+                        <p-button label="Agregar Primera Variante" icon="pi pi-plus" [outlined]="true" (onClick)="addCustomizableVariant()" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2 mt-2">
+            <p-button label="Cancelar" (onClick)="showCustomizableProductDialog = false" [outlined]="true" [rounded]="true" [disabled]="savingCustomizableProduct"></p-button>
+            <p-button [label]="editingCustomizableProduct ? 'Actualizar' : 'Guardar'" (onClick)="saveCustomizableProduct()"
+                [disabled]="customizableProductForm.invalid || savingCustomizableProduct" [rounded]="true" [loading]="savingCustomizableProduct">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

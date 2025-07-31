@@ -6,7 +6,6 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 // PrimeNG Components
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
-import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Dialog } from 'primeng/dialog';
 import { Card } from 'primeng/card';
@@ -28,7 +27,6 @@ import { CustomersService } from '../../../../services/customers.service';
         TableModule,
         Button,
         InputText,
-        InputNumber,
         Select,
         Dialog,
         Card,
@@ -136,19 +134,19 @@ export class CustomersTabComponent implements OnInit {
     }
 
     // Customer Management Methods
-    getCustomerOrderCount(customerId: string): number {
+    getCustomerOrderCount(customerId: number): number {
         // This would need to be updated to get orders from a service
         // For now, returning 0 as placeholder
         return 0;
     }
 
-    getCustomerTotalSpent(customerId: string): number {
+    getCustomerTotalSpent(customerId: number): number {
         // This would need to be updated to get orders from a service
         // For now, returning 0 as placeholder
         return 0;
     }
 
-    getCustomerOrders(customerId: string): Order[] {
+    getCustomerOrders(customerId: number): Order[] {
         // This would need to be updated to get orders from a service
         // For now, returning empty array as placeholder
         return [];

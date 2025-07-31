@@ -1,6 +1,6 @@
 export class Customer {
 
-    id: string;
+    id: number;
     name: string;
     lastName: string;
     email: string;
@@ -14,7 +14,7 @@ export class Customer {
     registrationDate?: Date;
 
     constructor(init?: Partial<Customer>) {
-        this.id = init?.id || '';
+        this.id = init?.id || 0;
         this.name = init?.name || '';
         this.email = init?.email || '';
         this.phone = init?.phone || '';
@@ -32,7 +32,7 @@ export class Customer {
         return this.name;
     }
 
-    get key(): string {
+    get key(): number {
         return this.id;
     }
 

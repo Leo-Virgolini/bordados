@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Customer } from '../models/customer';
 import { map } from 'rxjs/operators';
@@ -17,14 +17,13 @@ export class CustomersService {
         return this.http.get<Customer[]>(`${this.apiUrl}/customers`);
     }
 
-    getCustomerById(id: string): Observable<Customer | undefined> {
+    getCustomerById(id: number): Observable<Customer | undefined> {
         return this.http.get<Customer>(`${this.apiUrl}/customers/${id}`);
     }
 
-    createCustomer(customer: Omit<Customer, 'id' | 'registrationDate'>): Observable<Customer> {
+    createCustomer(customer: Omit<Customer, 'registrationDate'>): Observable<Customer> {
         const newCustomer = {
             ...customer,
-            id: `CUST-${Date.now().toString().slice(-6)}`,
             registrationDate: new Date().toISOString()
         };
         return this.http.post<Customer>(`${this.apiUrl}/customers`, newCustomer);
@@ -34,7 +33,7 @@ export class CustomersService {
         return this.http.put<Customer>(`${this.apiUrl}/customers/${customer.id}`, customer);
     }
 
-    deleteCustomer(id: string): Observable<void> {
+    deleteCustomer(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/customers/${id}`);
     }
 
@@ -49,7 +48,7 @@ export class CustomersService {
     getNewCustomers(days: number = 30): Observable<Customer[]> {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
-        
+
         return this.http.get<Customer[]>(`${this.apiUrl}/customers?registrationDate_gte=${cutoffDate.toISOString()}`);
     }
 
@@ -62,9 +61,10 @@ export class CustomersService {
     getNewCustomerCount(days: number = 30): Observable<number> {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
-        
+
         return this.http.get<Customer[]>(`${this.apiUrl}/customers?registrationDate_gte=${cutoffDate.toISOString()}`).pipe(
             map(customers => customers.length)
         );
     }
+
 } 

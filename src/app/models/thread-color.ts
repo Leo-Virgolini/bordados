@@ -1,13 +1,13 @@
 export class ThreadColor {
 
-    id: string;
+    id: number;
     name: string;
     active: boolean;
     code: string;
     stock: number;
 
     constructor(init?: Partial<ThreadColor>) {
-        this.id = init?.id || '';
+        this.id = init?.id || 0;
         this.name = init?.name || '';
         this.active = init?.active ?? true;
         this.code = init?.code || '';
@@ -19,7 +19,7 @@ export class ThreadColor {
         return this.name;
     }
 
-    get key(): string {
+    get key(): number {
         return this.id;
     }
 
