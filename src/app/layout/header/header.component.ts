@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -17,11 +17,11 @@ import { CarritoService } from '../../services/carrito.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
 
   private carritoService = inject(CarritoService);
 
-  isDark = false;
+  isDark = signal<boolean>(false);
 
   // Reactive cart data using signals
   cartUniqueItems = signal<number>(0);
@@ -62,11 +62,43 @@ export class HeaderComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.initializeDarkMode();
+  }
+
+  private initializeDarkMode(): void {
+    // Check for saved theme preference or default to system preference
+    const savedTheme = localStorage.getItem('theme');
+    const htmlElement = document.documentElement;
+
+    if (savedTheme) {
+      // Use saved preference
+      this.isDark.set(savedTheme === 'dark');
+      if (this.isDark()) {
+        htmlElement.classList.add('my-app-dark');
+      }
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.isDark.set(prefersDark);
+      if (prefersDark) {
+        htmlElement.classList.add('my-app-dark');
+      }
+    }
+  }
+
   toggleDarkMode(): void {
-    this.isDark = !this.isDark;
-    const element = document.querySelector('html');
-    if (element !== null)
-      element.classList.toggle('my-app-dark');
+    const newDarkMode = !this.isDark();
+    this.isDark.set(newDarkMode);
+
+    const htmlElement = document.documentElement;
+    if (newDarkMode) {
+      htmlElement.classList.add('my-app-dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      htmlElement.classList.remove('my-app-dark');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
 }

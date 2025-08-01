@@ -16,7 +16,6 @@ import { Panel } from 'primeng/panel';
 import { Dialog } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.component';
-import { es } from '../../es.json'
 import { CarritoService } from '../../services/carrito.service';
 import { CartItem } from '../../models/cart-item';
 import { ThreadColor } from '../../models/thread-color';
@@ -49,8 +48,8 @@ export class CustomizeComponent implements OnInit {
   formulario!: FormGroup;
   imageURL: string | undefined;
   imageFile: File | undefined;
-  invalidFileSizeMessageSummary: string = es.invalidFileSizeMessageSummary
-  invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
+  // invalidFileSizeMessageSummary: string = es.invalidFileSizeMessageSummary
+  // invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
   isLoading: boolean = false;
   showSizeGuide: boolean = false;
   isLoadingProducts: boolean = true;

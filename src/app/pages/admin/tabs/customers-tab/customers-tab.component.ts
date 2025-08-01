@@ -18,6 +18,7 @@ import { ErrorHelperComponent } from '../../../../shared/error-helper/error-help
 import { Customer } from '../../../../models/customer';
 import { Order } from '../../../../models/order';
 import { CustomersService } from '../../../../services/customers.service';
+import { OrdersService } from '../../../../services/orders.service';
 
 @Component({
     selector: 'app-customers-tab',
@@ -56,6 +57,10 @@ export class CustomersTabComponent implements OnInit {
     showCustomerDetailsDialog: boolean = false;
     selectedCustomer: Customer | null = null;
 
+    // Orders data
+    orders: Order[] = [];
+    ordersLoading: boolean = false;
+
     // Provinces for Argentina
     readonly provinces: { label: string, value: string }[] = [
         { label: 'Buenos Aires', value: 'Buenos Aires' },
@@ -89,11 +94,12 @@ export class CustomersTabComponent implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private customersService: CustomersService,
-        private cdr: ChangeDetectorRef
+        private ordersService: OrdersService
     ) { }
 
     ngOnInit() {
         this.loadCustomers();
+        this.loadOrders();
         this.initForms();
     }
 
@@ -133,23 +139,39 @@ export class CustomersTabComponent implements OnInit {
         });
     }
 
+    private loadOrders(): void {
+        this.ordersLoading = true;
+
+        // Load orders
+        this.ordersService.getOrders().subscribe({
+            next: (orders) => {
+                this.orders = orders;
+                this.ordersLoading = false;
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al cargar los pedidos: ' + error.message
+                });
+                this.ordersLoading = false;
+            }
+        });
+    }
+
     // Customer Management Methods
     getCustomerOrderCount(customerId: number): number {
-        // This would need to be updated to get orders from a service
-        // For now, returning 0 as placeholder
-        return 0;
+        return this.orders.filter(order => order.customerId === customerId).length;
     }
 
     getCustomerTotalSpent(customerId: number): number {
-        // This would need to be updated to get orders from a service
-        // For now, returning 0 as placeholder
-        return 0;
+        return this.orders
+            .filter(order => order.customerId === customerId)
+            .reduce((total, order) => total + order.total, 0);
     }
 
     getCustomerOrders(customerId: number): Order[] {
-        // This would need to be updated to get orders from a service
-        // For now, returning empty array as placeholder
-        return [];
+        return this.orders.filter(order => order.customerId === customerId);
     }
 
     openCustomerDialog(customer?: Customer): void {

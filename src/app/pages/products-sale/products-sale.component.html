@@ -175,14 +175,13 @@
 
                         <!-- Product Info -->
                         <div class="flex flex-column gap-3">
-                            <!-- Title and Rating -->
+                            <!-- Title -->
                             <div>
                                 <h3 class="text-lg font-bold mb-2 line-height-1-2">{{ product.name }}</h3>
-                                <div class="flex align-items-center gap-2 mb-2">
+                                <!-- <div class="flex align-items-center gap-2 mb-2">
                                     <i class="pi pi-star-fill text-yellow-500"></i>
                                     <span class="font-semibold">{{ product.rating }}</span>
-                                    <span class="text-color-secondary">({{ getRandomReviews(product.rating) }} reseñas)</span>
-                                </div>
+                                </div> -->
                             </div>
 
                             <!-- Description -->
@@ -212,9 +211,10 @@
                             <!-- Price -->
                             <div class="flex align-items-center gap-2">
                                 <!-- Show original price crossed out and discounted price when there's a discount -->
-                                <div *ngIf="product.discount > 0" class="flex flex-row gap-1 align-items-center">
+                                <div *ngIf="product.discount > 0" class="flex flex-row gap-2 align-items-center">
                                     <span class="text-2xl font-bold text-teal-500">${{ getDiscountedPrice(product) | number }}</span>
                                     <span class="line-through text-color-secondary">${{ product.price | number }}</span>
+                                    <p-tag [value]="'-' + product.discount + '%'" [severity]="getDiscountColor(product.discount)" [rounded]="true" styleClass="text-xs font-bold" />
                                 </div>
                                 <!-- Show only original price when there's no discount -->
                                 <span *ngIf="product.discount === 0" class="text-2xl font-bold text-teal-500">${{ product.price | number }}</span>

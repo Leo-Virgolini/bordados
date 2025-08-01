@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface AppSettings {
     secondColorPrice: number;
@@ -10,6 +11,10 @@ export interface AppSettings {
     whatsAppPhone: string;
     maxImageSize: number;
     maxTextLength: number;
+    facebookUrl: string;
+    instagramUrl: string;
+    twitterUrl: string;
+    tiktokUrl: string;
 }
 
 @Injectable({
@@ -17,19 +22,19 @@ export interface AppSettings {
 })
 export class SettingsService {
 
-    private apiUrl = 'http://localhost:3000';
+    private apiUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 
     getSettings(): Observable<AppSettings> {
-        return this.http.get<AppSettings>(`${this.apiUrl}/settings`);
+        return this.http.get<AppSettings>(`${this.apiUrl}${environment.endpoints.settings}`);
     }
 
     updateSettings(settings: Partial<AppSettings>): Observable<AppSettings> {
-        return this.http.get<AppSettings>(`${this.apiUrl}/settings`).pipe(
+        return this.http.get<AppSettings>(`${this.apiUrl}${environment.endpoints.settings}`).pipe(
             map(currentSettings => {
                 const updatedSettings = { ...currentSettings, ...settings };
-                return this.http.put<AppSettings>(`${this.apiUrl}/settings`, updatedSettings);
+                return this.http.put<AppSettings>(`${this.apiUrl}${environment.endpoints.settings}`, updatedSettings);
             }),
             switchMap(observable => observable)
         );
@@ -92,6 +97,55 @@ export class SettingsService {
     updateMaxTextLength(length: number): Observable<number> {
         return this.updateSettings({ maxTextLength: length }).pipe(
             map(settings => settings.maxTextLength)
+        );
+    }
+
+    // Social Media URLs
+    getFacebookUrl(): Observable<string> {
+        return this.getSettings().pipe(
+            map(settings => settings.facebookUrl || '')
+        );
+    }
+
+    getInstagramUrl(): Observable<string> {
+        return this.getSettings().pipe(
+            map(settings => settings.instagramUrl || '')
+        );
+    }
+
+    getTwitterUrl(): Observable<string> {
+        return this.getSettings().pipe(
+            map(settings => settings.twitterUrl || '')
+        );
+    }
+
+    getTikTokUrl(): Observable<string> {
+        return this.getSettings().pipe(
+            map(settings => settings.tiktokUrl || '')
+        );
+    }
+
+    updateFacebookUrl(url: string): Observable<string> {
+        return this.updateSettings({ facebookUrl: url }).pipe(
+            map(settings => settings.facebookUrl)
+        );
+    }
+
+    updateInstagramUrl(url: string): Observable<string> {
+        return this.updateSettings({ instagramUrl: url }).pipe(
+            map(settings => settings.instagramUrl)
+        );
+    }
+
+    updateTwitterUrl(url: string): Observable<string> {
+        return this.updateSettings({ twitterUrl: url }).pipe(
+            map(settings => settings.twitterUrl)
+        );
+    }
+
+    updateTikTokUrl(url: string): Observable<string> {
+        return this.updateSettings({ tiktokUrl: url }).pipe(
+            map(settings => settings.tiktokUrl)
         );
     }
 

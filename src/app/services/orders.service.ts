@@ -6,13 +6,14 @@ import { Order } from '../models/order';
 import { SalesSummary } from '../models/sales-summary';
 import { CustomersService } from './customers.service';
 import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class OrdersService {
 
-    private apiUrl = 'http://localhost:3000';
+    private apiUrl = environment.apiUrl;
 
     constructor(
         private http: HttpClient,
@@ -20,7 +21,7 @@ export class OrdersService {
     ) { }
 
     getOrders(): Observable<Order[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/orders`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.orders}`).pipe(
             map(orders => orders.map(order => ({
                 ...order,
                 date: new Date(order.date)
@@ -30,7 +31,7 @@ export class OrdersService {
     }
 
     getOrderById(id: number): Observable<Order | undefined> {
-        return this.http.get<any>(`${this.apiUrl}/orders/${id}`).pipe(
+        return this.http.get<any>(`${this.apiUrl}${environment.endpoints.orders}/${id}`).pipe(
             map(order => ({
                 ...order,
                 date: new Date(order.date)
@@ -43,7 +44,7 @@ export class OrdersService {
         const newOrder = {
             ...order
         };
-        return this.http.post<any>(`${this.apiUrl}/orders`, newOrder).pipe(
+        return this.http.post<any>(`${this.apiUrl}${environment.endpoints.orders}`, newOrder).pipe(
             map(createdOrder => ({
                 ...createdOrder,
                 date: new Date(createdOrder.date)
@@ -56,7 +57,7 @@ export class OrdersService {
         const orderData = {
             ...order
         };
-        return this.http.put<any>(`${this.apiUrl}/orders/${order.id}`, orderData).pipe(
+        return this.http.put<any>(`${this.apiUrl}${environment.endpoints.orders}/${order.id}`, orderData).pipe(
             map(updatedOrder => ({
                 ...updatedOrder,
                 date: new Date(updatedOrder.date)
@@ -66,7 +67,7 @@ export class OrdersService {
     }
 
     deleteOrder(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/orders/${id}`);
+        return this.http.delete<void>(`${this.apiUrl}${environment.endpoints.orders}/${id}`);
     }
 
     getCustomers(): Observable<Customer[]> {

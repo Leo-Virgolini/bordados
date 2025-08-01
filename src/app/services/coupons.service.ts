@@ -3,30 +3,31 @@ import { Observable, of, switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { Coupon } from '../models/coupon';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CouponsService {
 
-    private apiUrl = 'http://localhost:3000';
+    private apiUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 
     getCoupons(): Observable<Coupon[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/coupons`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.coupons}`).pipe(
             map(coupons => coupons.map(coupon => new Coupon(coupon)))
         );
     }
 
     getCouponByCode(code: string): Observable<Coupon | undefined> {
-        return this.http.get<any[]>(`${this.apiUrl}/coupons?code=${code}`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.coupons}?code=${code}`).pipe(
             map(coupons => coupons[0] ? new Coupon(coupons[0]) : undefined)
         );
     }
 
     getCouponById(id: number): Observable<Coupon | undefined> {
-        return this.http.get<any>(`${this.apiUrl}/coupons/${id}`).pipe(
+        return this.http.get<any>(`${this.apiUrl}${environment.endpoints.coupons}/${id}`).pipe(
             map(coupon => coupon ? new Coupon(coupon) : undefined)
         );
     }
@@ -38,7 +39,7 @@ export class CouponsService {
             validFrom: coupon.validFrom?.toISOString(),
             validTo: coupon.validTo?.toISOString()
         };
-        return this.http.post<any>(`${this.apiUrl}/coupons`, newCoupon).pipe(
+        return this.http.post<any>(`${this.apiUrl}${environment.endpoints.coupons}`, newCoupon).pipe(
             map(couponData => new Coupon(couponData))
         );
     }
@@ -49,13 +50,13 @@ export class CouponsService {
             validFrom: coupon.validFrom.toISOString(),
             validTo: coupon.validTo.toISOString()
         };
-        return this.http.put<any>(`${this.apiUrl}/coupons/${coupon.id}`, couponData).pipe(
+        return this.http.put<any>(`${this.apiUrl}${environment.endpoints.coupons}/${coupon.id}`, couponData).pipe(
             map(couponData => new Coupon(couponData))
         );
     }
 
     deleteCoupon(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/coupons/${id}`);
+        return this.http.delete<void>(`${this.apiUrl}${environment.endpoints.coupons}/${id}`);
     }
 
     validateCoupon(code: string, orderAmount: number): Observable<{ valid: boolean; coupon?: Coupon; error?: string }> {

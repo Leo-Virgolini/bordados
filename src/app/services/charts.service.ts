@@ -6,13 +6,14 @@ import { Observable, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ChartData } from '../models/chart-data';
 import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ChartsService {
 
-    private apiUrl = 'http://localhost:3000';
+    private apiUrl = environment.apiUrl;
 
     constructor(
         private http: HttpClient,
@@ -59,7 +60,7 @@ export class ChartsService {
     }
 
     getProductAnalytics(): Observable<ChartData> {
-        return this.http.get<any[]>(`${this.apiUrl}/embroidedProducts`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.products.embroided}`).pipe(
             map(products => {
                 const categoryData = this.aggregateProductsByCategory(products);
 
@@ -83,7 +84,7 @@ export class ChartsService {
     }
 
     getRevenueTrend(): Observable<ChartData> {
-        return this.http.get<any[]>(`${this.apiUrl}/orders`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.orders}`).pipe(
             map(orders => {
                 const revenueData = this.generateRevenueTrendData(orders);
 
@@ -113,7 +114,7 @@ export class ChartsService {
     }
 
     getCustomerGrowth(): Observable<ChartData> {
-        return this.http.get<any[]>(`${this.apiUrl}/customers`).pipe(
+        return this.http.get<any[]>(`${this.apiUrl}${environment.endpoints.customers}`).pipe(
             map(customers => {
                 const growthData = this.generateCustomerGrowthData(customers);
 

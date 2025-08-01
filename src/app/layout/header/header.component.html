@@ -55,8 +55,7 @@
                 </div>
 
                 <!-- Dark Mode Toggle -->
-                <p-button [raised]="true" [rounded]="true" [outlined]="true" severity="primary" [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'" (click)="toggleDarkMode()"
-                    styleClass="hover:shadow-3 transition-shadow transition-duration-200" />
+                <p-button [raised]="true" [rounded]="true" [outlined]="true" severity="primary" [icon]="isDark() ? 'pi pi-moon' : 'pi pi-sun'" (click)="toggleDarkMode()" />
             </div>
         </ng-template>
     </p-menubar>

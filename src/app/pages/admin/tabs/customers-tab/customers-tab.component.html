@@ -163,7 +163,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-user"></i>
                     </p-inputgroup-addon>
-                    <input id="customerNombre" type="text" pInputText formControlName="name" class="w-full" placeholder="Juan" />
+                    <input id="customerNombre" type="text" pInputText formControlName="name" class="w-full" placeholder="Juan"
+                        [invalid]="customerForm.get('name')?.invalid && customerForm.get('name')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('name')"></app-error-helper>
             </div>
@@ -174,7 +175,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-user"></i>
                     </p-inputgroup-addon>
-                    <input id="customerApellido" type="text" pInputText formControlName="lastName" class="w-full" placeholder="Pérez" />
+                    <input id="customerApellido" type="text" pInputText formControlName="lastName" class="w-full" placeholder="Pérez"
+                        [invalid]="customerForm.get('lastName')?.invalid && customerForm.get('lastName')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('lastName')"></app-error-helper>
             </div>
@@ -187,7 +189,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-envelope"></i>
                     </p-inputgroup-addon>
-                    <input id="customerEmail" type="email" pInputText formControlName="email" class="w-full" placeholder="juan@email.com" />
+                    <input id="customerEmail" type="email" pInputText formControlName="email" class="w-full" placeholder="juan@email.com"
+                        [invalid]="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('email')"></app-error-helper>
             </div>
@@ -198,7 +201,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-phone"></i>
                     </p-inputgroup-addon>
-                    <p-inputmask id="customerTelefono" formControlName="phone" mask="(999) 999-9999" placeholder="(11) 1234-5678" class="w-full" />
+                    <p-inputmask id="customerTelefono" formControlName="phone" mask="99 9999-9999" placeholder="11 2345-6789" styleClass="w-full"
+                        [invalid]="customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('phone')"></app-error-helper>
             </div>
@@ -211,7 +215,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-id-card"></i>
                     </p-inputgroup-addon>
-                    <input id="customerDNI" type="text" pInputText formControlName="dni" class="w-full" placeholder="12345678" maxlength="8" />
+                    <input id="customerDNI" type="text" pInputText formControlName="dni" class="w-full" placeholder="12345678" maxlength="8"
+                        [invalid]="customerForm.get('dni')?.invalid && customerForm.get('dni')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('dni')"></app-error-helper>
             </div>
@@ -223,7 +228,7 @@
                         <i class="pi pi-map-marker"></i>
                     </p-inputgroup-addon>
                     <p-select id="customerProvincia" formControlName="province" [options]="provinces" optionLabel="label" optionValue="value" placeholder="Seleccionar provincia"
-                        class="w-full" />
+                        class="w-full" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('province')"></app-error-helper>
             </div>
@@ -236,7 +241,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-map"></i>
                     </p-inputgroup-addon>
-                    <input id="customerLocalidad" type="text" pInputText formControlName="city" class="w-full" placeholder="Ciudad" />
+                    <input id="customerLocalidad" type="text" pInputText formControlName="city" class="w-full" placeholder="Ciudad"
+                        [invalid]="customerForm.get('city')?.invalid && customerForm.get('city')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('city')"></app-error-helper>
             </div>
@@ -247,7 +253,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-map"></i>
                     </p-inputgroup-addon>
-                    <input id="customerCodigoPostal" type="text" pInputText formControlName="postalCode" class="w-full" placeholder="1234" maxlength="5" />
+                    <input id="customerCodigoPostal" type="text" pInputText formControlName="postalCode" class="w-full" placeholder="1234" maxlength="5"
+                        [invalid]="customerForm.get('postalCode')?.invalid && customerForm.get('postalCode')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('postalCode')"></app-error-helper>
             </div>
@@ -260,7 +267,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-home"></i>
                     </p-inputgroup-addon>
-                    <input id="customerDireccion" type="text" pInputText formControlName="address" class="w-full" placeholder="Calle y número" />
+                    <input id="customerDireccion" type="text" pInputText formControlName="address" class="w-full" placeholder="Calle y número"
+                        [invalid]="customerForm.get('address')?.invalid && customerForm.get('address')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('address')"></app-error-helper>
             </div>
@@ -271,7 +279,8 @@
                     <p-inputgroup-addon>
                         <i class="pi pi-building"></i>
                     </p-inputgroup-addon>
-                    <input id="customerPisoDepto" type="text" pInputText formControlName="floorApartment" class="w-full" placeholder="Piso 2, Depto A" />
+                    <input id="customerPisoDepto" type="text" pInputText formControlName="floorApartment" class="w-full" placeholder="Piso 2, Depto A"
+                        [invalid]="customerForm.get('floorApartment')?.invalid && customerForm.get('floorApartment')?.touched" required />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('floorApartment')"></app-error-helper>
             </div>

@@ -1,69 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { ConfirmationService } from 'primeng/api';
 
 // PrimeNG Components
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { InputNumber } from 'primeng/inputnumber';
-import { Dialog } from 'primeng/dialog';
 import { Card } from 'primeng/card';
-import { Tag } from 'primeng/tag';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { InputMask } from 'primeng/inputmask';
-import { Checkbox } from 'primeng/checkbox';
-import { DatePicker } from 'primeng/datepicker';
-import { TableModule } from 'primeng/table';
-import { Select } from 'primeng/select';
 import { ErrorHelperComponent } from '../../../../shared/error-helper/error-helper.component';
-import { Message } from 'primeng/message';
-import { CouponsService } from '../../../../services/coupons.service';
 import { AppSettings, SettingsService } from '../../../../services/settings.service';
-import { Coupon } from '../../../../models/coupon';
 
-// Custom validator for date range
-function dateRangeValidator(control: AbstractControl): ValidationErrors | null {
-    const validFrom = control.get('validFrom')?.value;
-    const validTo = control.get('validTo')?.value;
 
-    if (validFrom && validTo) {
-        const fromDate = new Date(validFrom);
-        const toDate = new Date(validTo);
-
-        // Reset time to compare only dates
-        fromDate.setHours(0, 0, 0, 0);
-        toDate.setHours(0, 0, 0, 0);
-
-        if (fromDate > toDate) {
-            return { dateRangeInvalid: true };
-        }
-    }
-
-    return null;
-}
 
 @Component({
     selector: 'app-settings-tab',
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        TableModule,
         Button,
         InputText,
         InputNumber,
-        Dialog,
         Card,
-        Tag,
         InputGroup,
         InputGroupAddon,
         InputMask,
-        Checkbox,
-        DatePicker,
-        Select,
-        Message,
         ErrorHelperComponent
     ],
     providers: [],
@@ -79,34 +43,28 @@ export class SettingsTabComponent implements OnInit {
     customTextPrice!: number; // Custom text price
     maxImageSize!: number; // Maximum image size in bytes
     maxTextLength!: number; // Maximum text length for custom text
-    discountCoupons: Coupon[] = [];
+
+    // Social Media URLs
+    facebookUrl!: string;
+    instagramUrl!: string;
+    tiktokUrl!: string;
 
     // Forms
     shippingForm!: FormGroup;
     contactForm!: FormGroup;
+    socialMediaForm!: FormGroup;
     priceForm!: FormGroup;
-    couponForm!: FormGroup;
 
-    // Dialog states
-    showCouponDialog: boolean = false;
-    editingCoupon: Coupon | null = null;
-    couponLoading: boolean = false;
+    // Loading states
     shippingLoading: boolean = false;
     priceLoading: boolean = false;
     phoneLoading: boolean = false;
+    socialMediaLoading: boolean = false;
     settingsLoading: boolean = false;
-
-    // Coupon options
-    discountTypes = [
-        { label: 'Porcentaje (%)', value: 'percentage' },
-        { label: 'Monto Fijo (ARS)', value: 'fixed' }
-    ];
 
     constructor(
         private fb: FormBuilder,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService,
-        private couponsService: CouponsService,
         private settingsService: SettingsService
     ) { }
 
@@ -116,7 +74,6 @@ export class SettingsTabComponent implements OnInit {
 
     private loadSettings(): void {
         this.settingsLoading = true;
-        this.couponLoading = true;
         this.settingsService.getSettings().subscribe({
             next: (settings: AppSettings) => {
                 this.whatsappPhone = settings.whatsAppPhone || '';
@@ -125,6 +82,11 @@ export class SettingsTabComponent implements OnInit {
                 this.customTextPrice = settings.customTextPrice;
                 this.maxImageSize = settings.maxImageSize || 10485760; // Default 10MB
                 this.maxTextLength = settings.maxTextLength || 20; // Default 20 characters
+
+                // Social Media URLs
+                this.facebookUrl = settings.facebookUrl || '';
+                this.instagramUrl = settings.instagramUrl || '';
+                this.tiktokUrl = settings.tiktokUrl || '';
                 this.settingsLoading = false;
                 console.log('Settings loaded:', settings);
 
@@ -137,20 +99,6 @@ export class SettingsTabComponent implements OnInit {
                     detail: 'Error al cargar la configuración: ' + error.message
                 });
                 this.settingsLoading = false;
-            }
-        });
-        this.couponsService.getCoupons().subscribe({
-            next: (coupons: Coupon[]) => {
-                this.discountCoupons = coupons;
-                this.couponLoading = false;
-            },
-            error: (error: any) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Error al cargar los cupones: ' + error.message
-                });
-                this.couponLoading = false;
             }
         });
     }
@@ -174,33 +122,18 @@ export class SettingsTabComponent implements OnInit {
             freeShippingThreshold: [this.freeShippingThreshold, [Validators.required, Validators.min(0)]]
         });
 
+        // Social Media form
+        this.socialMediaForm = this.fb.group({
+            facebookUrl: [this.facebookUrl, [Validators.pattern(/^https?:\/\/.+/)]],
+            instagramUrl: [this.instagramUrl, [Validators.pattern(/^https?:\/\/.+/)]],
+            tiktokUrl: [this.tiktokUrl, [Validators.pattern(/^https?:\/\/.+/)]]
+        });
+
         this.priceForm = this.fb.group({
             secondColorPrice: [this.secondColorPrice, [Validators.required, Validators.min(0)]],
             customTextPrice: [this.customTextPrice, [Validators.required, Validators.min(0)]],
             maxImageSize: [this.maxImageSize, [Validators.required, Validators.min(1024 * 1024), Validators.max(50 * 1024 * 1024)]], // 1MB to 50MB
             maxTextLength: [this.maxTextLength, [Validators.required, Validators.min(5), Validators.max(50)]] // 5 to 50 characters
-        });
-
-        // Coupon form with date range validation
-        this.couponForm = this.fb.group({
-            code: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
-            discountType: ['percentage', Validators.required],
-            discountValue: [0, [Validators.required, Validators.min(0)]],
-            minOrderAmount: [0, [Validators.min(0)]],
-            maxUses: [100, [Validators.required, Validators.min(0)]],
-            validFrom: [new Date(), Validators.required],
-            validTo: [new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), Validators.required], // 30 days from now
-            active: [true],
-            description: ['']
-        }, { validators: dateRangeValidator });
-
-        // Listen for date changes to trigger validation
-        this.couponForm.get('validFrom')?.valueChanges.subscribe(() => {
-            this.couponForm.updateValueAndValidity();
-        });
-
-        this.couponForm.get('validTo')?.valueChanges.subscribe(() => {
-            this.couponForm.updateValueAndValidity();
         });
     }
 
@@ -256,6 +189,64 @@ export class SettingsTabComponent implements OnInit {
                         detail: 'Error al guardar la configuración: ' + error.message
                     });
                     this.shippingLoading = false;
+                }
+            });
+        }
+    }
+
+    saveSocialMediaSettings(): void {
+        if (this.socialMediaForm.valid) {
+            this.socialMediaLoading = true;
+            const facebookUrl = this.socialMediaForm.get('facebookUrl')?.value;
+            const instagramUrl = this.socialMediaForm.get('instagramUrl')?.value;
+            const tiktokUrl = this.socialMediaForm.get('tiktokUrl')?.value;
+
+            // Update all social media URLs in sequence
+            this.settingsService.updateFacebookUrl(facebookUrl).subscribe({
+                next: (updatedFacebookUrl) => {
+                    this.facebookUrl = updatedFacebookUrl;
+
+                    this.settingsService.updateInstagramUrl(instagramUrl).subscribe({
+                        next: (updatedInstagramUrl) => {
+                            this.instagramUrl = updatedInstagramUrl;
+
+                            this.settingsService.updateTikTokUrl(tiktokUrl).subscribe({
+                                next: (updatedTikTokUrl) => {
+                                    this.tiktokUrl = updatedTikTokUrl;
+                                    this.messageService.add({
+                                        severity: 'success',
+                                        summary: 'Configuración guardada',
+                                        detail: 'URLs de redes sociales actualizadas correctamente'
+                                    });
+                                    this.socialMediaLoading = false;
+                                },
+                                error: (error) => {
+                                    this.messageService.add({
+                                        severity: 'error',
+                                        summary: 'Error',
+                                        detail: 'Error al actualizar TikTok: ' + error.message
+                                    });
+                                    this.socialMediaLoading = false;
+                                }
+                            });
+                        },
+                        error: (error) => {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'Error al actualizar Instagram: ' + error.message
+                            });
+                            this.socialMediaLoading = false;
+                        }
+                    });
+                },
+                error: (error) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error al actualizar Facebook: ' + error.message
+                    });
+                    this.socialMediaLoading = false;
                 }
             });
         }
@@ -344,200 +335,6 @@ export class SettingsTabComponent implements OnInit {
         if (bytes === 0) return '0 Bytes';
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-    }
-
-    openCouponDialog(coupon?: Coupon): void {
-        this.editingCoupon = coupon || null;
-
-        if (coupon) {
-            this.couponForm.patchValue({
-                ...coupon,
-                validFrom: new Date(coupon.validFrom),
-                validTo: new Date(coupon.validTo)
-            });
-        } else {
-            this.couponForm.reset({
-                discountType: 'percentage',
-                discountValue: 0,
-                minOrderAmount: 0,
-                maxUses: 100,
-                validFrom: new Date(),
-                validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                active: true,
-                description: ''
-            });
-        }
-
-        this.showCouponDialog = true;
-    }
-
-    saveCoupon(): void {
-        if (this.couponForm.valid && !this.couponForm.errors?.['dateRangeInvalid']) {
-            this.couponLoading = true;
-            const formValue = this.couponForm.value;
-
-            // Validate discount value based on type
-            if (formValue.discountType === 'percentage' && formValue.discountValue > 100) {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'El descuento porcentual no puede ser mayor al 100%'
-                });
-                this.couponLoading = false;
-                return;
-            }
-
-            const couponData = {
-                code: formValue.code.toUpperCase(),
-                discountType: formValue.discountType,
-                discountValue: formValue.discountValue,
-                minOrderAmount: formValue.minOrderAmount || 0,
-                maxUses: formValue.maxUses,
-                currentUses: this.editingCoupon?.currentUses || 0,
-                validFrom: formValue.validFrom,
-                validTo: formValue.validTo,
-                active: formValue.active,
-                description: formValue.description
-            };
-
-            if (this.editingCoupon) {
-                // Update existing coupon
-                const updatedCoupon = new Coupon({
-                    ...this.editingCoupon,
-                    ...couponData
-                });
-
-                this.couponsService.updateCoupon(updatedCoupon).subscribe({
-                    next: (coupon) => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Cupón actualizado',
-                            detail: `El cupón ID: ${coupon.id} - ${coupon.code} ha sido actualizado correctamente`
-                        });
-                        this.loadSettings(); // Reload coupons
-                        this.showCouponDialog = false;
-                        this.editingCoupon = null;
-                        this.couponLoading = false;
-                    },
-                    error: (error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: error.message || 'Error al actualizar el cupón'
-                        });
-                        this.couponLoading = false;
-                    }
-                });
-            } else {
-                // Create new coupon
-                this.couponsService.createCoupon(couponData).subscribe({
-                    next: (coupon) => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Cupón creado',
-                            detail: `El cupón "${coupon.code}" ha sido creado correctamente`
-                        });
-                        this.loadSettings(); // Reload coupons
-                        this.showCouponDialog = false;
-                        this.editingCoupon = null;
-                        this.couponLoading = false;
-                    },
-                    error: (error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: error.message || 'Error al crear el cupón'
-                        });
-                        this.couponLoading = false;
-                    }
-                });
-            }
-        }
-    }
-
-    confirmDeleteCoupon(coupon: Coupon): void {
-        this.confirmationService.confirm({
-            message: `¿Estás seguro de eliminar el cupón ID: ${coupon.id} - ${coupon.code}? Esta acción no se puede deshacer.`,
-            header: 'Confirmar eliminación',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.deleteCoupon(coupon);
-            }
-        });
-    }
-
-    deleteCoupon(coupon: Coupon): void {
-        this.couponsService.deleteCoupon(coupon.id).subscribe({
-            next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Cupón eliminado',
-                    detail: `El cupón ID: ${coupon.id} - ${coupon.code} ha sido eliminado correctamente`
-                });
-                this.loadSettings(); // Reload coupons
-            },
-            error: (error) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: error.message || 'Error al eliminar el cupón'
-                });
-            }
-        });
-    }
-
-    getCouponStatus(coupon: Coupon): { severity: string; value: string } {
-        const now = new Date();
-        const validFrom = new Date(coupon.validFrom);
-        const validTo = new Date(coupon.validTo);
-
-        if (!coupon.active) {
-            return { severity: 'danger', value: 'Inactivo' };
-        }
-
-        if (now < validFrom) {
-            return { severity: 'warn', value: 'Pendiente' };
-        }
-
-        if (now > validTo) {
-            return { severity: 'danger', value: 'Expirado' };
-        }
-
-        if (coupon.currentUses >= coupon.maxUses) {
-            return { severity: 'danger', value: 'Agotado' };
-        }
-
-        return { severity: 'success', value: 'Activo' };
-    }
-
-    getDiscountDisplay(coupon: Coupon): string {
-        if (coupon.discountType === 'percentage') {
-            return `${coupon.discountValue}%`;
-        } else {
-            return `$${coupon.discountValue.toLocaleString('es-AR')}`;
-        }
-    }
-
-    getUsageDisplay(coupon: Coupon): string {
-        return `${coupon.currentUses}/${coupon.maxUses}`;
-    }
-
-    isCouponExpired(coupon: Coupon): boolean {
-        const now = new Date();
-        const validTo = new Date(coupon.validTo);
-        return now > validTo;
-    }
-
-    isCouponExhausted(coupon: Coupon): boolean {
-        return coupon.currentUses >= coupon.maxUses;
-    }
-
-    hasDateRangeError(): boolean {
-        return this.couponForm.errors?.['dateRangeInvalid'] === true;
-    }
-
-    isFormValid(): boolean {
-        return this.couponForm.valid && !this.hasDateRangeError();
     }
 
 }

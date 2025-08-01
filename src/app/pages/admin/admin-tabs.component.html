@@ -1,8 +1,11 @@
 <p-toast />
 <p-confirmdialog />
 
+<!-- Header Component -->
+<app-header></app-header>
+
 <main class="surface-ground p-3">
-    <!-- Header with Navigation and Logout -->
+    <!-- Admin Header with Navigation and Logout -->
     <div class="flex justify-content-between align-items-center mb-4">
         <p-button label="Volver al Inicio" icon="pi pi-arrow-left" routerLink="/" [outlined]="true" [rounded]="true" severity="primary" />
         <div class="flex align-items-center gap-2">
@@ -11,7 +14,7 @@
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- Admin Panel Header -->
     <section class="text-center mb-4">
         <h1 class="flex align-items-center justify-content-center text-4xl font-bold text-primary-900 mb-2">
             <i class="pi pi-cog text-primary mr-3 text-4xl"></i>Panel de Administración
@@ -38,6 +41,9 @@
                 <i class="pi pi-chart-bar mr-2"></i>Estadísticas
             </p-tab>
             <p-tab value="5">
+                <i class="pi pi-ticket mr-2"></i>Cupones
+            </p-tab>
+            <p-tab value="6">
                 <i class="pi pi-cog mr-2"></i>Configuración
             </p-tab>
         </p-tablist>
@@ -67,8 +73,13 @@
                 <app-analytics-tab></app-analytics-tab>
             </p-tabpanel>
 
-            <!-- Settings Tab Panel -->
+            <!-- Coupons Tab Panel -->
             <p-tabpanel value="5">
+                <app-coupons-tab></app-coupons-tab>
+            </p-tabpanel>
+
+            <!-- Settings Tab Panel -->
+            <p-tabpanel value="6">
                 <app-settings-tab></app-settings-tab>
             </p-tabpanel>
 

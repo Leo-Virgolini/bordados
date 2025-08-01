@@ -457,10 +457,6 @@ export class ProductsSaleComponent implements OnInit {
         return { severity: 'success', value: 'En stock' };
     }
 
-    getRandomReviews(rating: number): number {
-        return Math.floor(Math.random() * (100 - rating) + rating);
-    }
-
     getActualPage(): number {
         return Math.floor(this.first / this.rows) + 1;
     }

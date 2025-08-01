@@ -4,10 +4,11 @@ import { RouterOutlet } from '@angular/router';
 import { FooterComponent } from "./footer/footer.component";
 import { ScrollTop } from 'primeng/scrolltop';
 import { SettingsService } from '../services/settings.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-layout',
-  imports: [HeaderComponent, FooterComponent, RouterOutlet, ScrollTop],
+  imports: [CommonModule, HeaderComponent, FooterComponent, RouterOutlet, ScrollTop],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss'
 })
@@ -25,8 +26,11 @@ export class LayoutComponent implements OnInit {
 
   getWhatsAppUrl(): string {
     // Remove any non-digit characters except + for the WhatsApp URL
-    const cleanPhone = this.whatsappPhone.replace(/[^\d+]/g, '');
-    return `https://wa.me/${cleanPhone}`;
+    if (this.whatsappPhone) {
+      const cleanPhone = this.whatsappPhone.replace(/[^\d+]/g, '');
+      return `https://wa.me/${cleanPhone}`;
+    }
+    return '';
   }
 
 }

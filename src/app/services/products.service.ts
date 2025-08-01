@@ -4,65 +4,66 @@ import { HttpClient } from '@angular/common/http';
 import { ProductEmbroided } from '../models/product-embroided';
 import { ProductCustomizable } from '../models/product-customizable';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ProductsService {
 
-    private apiUrl = 'http://localhost:3000';
+    private apiUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 
     getEmbroidedProducts(): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}`);
     }
 
     getEmbroidedProductById(id: number): Observable<ProductEmbroided | undefined> {
-        return this.http.get<ProductEmbroided>(`${this.apiUrl}/embroidedProducts/${id}`);
+        return this.http.get<ProductEmbroided>(`${this.apiUrl}${environment.endpoints.products.embroided}/${id}`);
     }
 
     createEmbroidedProduct(product: ProductEmbroided): Observable<ProductEmbroided> {
         const newProduct = {
             ...product
         };
-        return this.http.post<ProductEmbroided>(`${this.apiUrl}/embroidedProducts`, newProduct);
+        return this.http.post<ProductEmbroided>(`${this.apiUrl}${environment.endpoints.products.embroided}`, newProduct);
     }
 
     updateEmbroidedProduct(product: ProductEmbroided): Observable<ProductEmbroided> {
-        return this.http.put<ProductEmbroided>(`${this.apiUrl}/embroidedProducts/${product.id}`, product);
+        return this.http.put<ProductEmbroided>(`${this.apiUrl}${environment.endpoints.products.embroided}/${product.id}`, product);
     }
 
     deleteEmbroidedProduct(id: number): Observable<boolean> {
-        return this.http.delete<void>(`${this.apiUrl}/embroidedProducts/${id}`).pipe(
+        return this.http.delete<void>(`${this.apiUrl}${environment.endpoints.products.embroided}/${id}`).pipe(
             map(() => true),
             catchError(() => of(false))
         );
     }
 
     searchEmbroidedProducts(query: string): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?q=${query}`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}?q=${query}`);
     }
 
     getEmbroidedProductsByCategory(category: string): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?garmentType=${category}`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}?garmentType=${category}`);
     }
 
     getFeaturedEmbroidedProducts(): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?isFeatured=true`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}?isFeatured=true`);
     }
 
     getNewEmbroidedProducts(): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?isNew=true`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}?isNew=true`);
     }
 
     getEmbroidedProductsOnSale(): Observable<ProductEmbroided[]> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts?discount_gt=0`);
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}?discount_gt=0`);
     }
 
     getLowStockEmbroidedProducts(): Observable<ProductEmbroided[]> {
         // Note: This is a simplified version. In a real API, you might need a custom endpoint
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}`).pipe(
             map(products => products.filter(product =>
                 product.variants.some(variant =>
                     variant.sizes.some(size => size.stock <= 5)
@@ -78,13 +79,13 @@ export class ProductsService {
     }
 
     getTotalEmbroidedProducts(): Observable<number> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}`).pipe(
             map(products => products.length)
         );
     }
 
     getEmbroidedProductsCountByCategory(): Observable<{ [key: string]: number }> {
-        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}/embroidedProducts`).pipe(
+        return this.http.get<ProductEmbroided[]>(`${this.apiUrl}${environment.endpoints.products.embroided}`).pipe(
             map(products => {
                 const counts: { [key: string]: number } = {};
                 products.forEach(product => {
@@ -96,22 +97,22 @@ export class ProductsService {
     }
 
     getCustomizableProducts(): Observable<ProductCustomizable[]> {
-        return this.http.get<ProductCustomizable[]>(`${this.apiUrl}/customizableProducts`);
+        return this.http.get<ProductCustomizable[]>(`${this.apiUrl}${environment.endpoints.products.customizable}`);
     }
 
     createCustomizableProduct(product: ProductCustomizable): Observable<ProductCustomizable> {
         const newProduct = {
             ...product
         };
-        return this.http.post<ProductCustomizable>(`${this.apiUrl}/customizableProducts`, newProduct);
+        return this.http.post<ProductCustomizable>(`${this.apiUrl}${environment.endpoints.products.customizable}`, newProduct);
     }
 
     updateCustomizableProduct(product: ProductCustomizable): Observable<ProductCustomizable> {
-        return this.http.put<ProductCustomizable>(`${this.apiUrl}/customizableProducts/${product.id}`, product);
+        return this.http.put<ProductCustomizable>(`${this.apiUrl}${environment.endpoints.products.customizable}/${product.id}`, product);
     }
 
     deleteCustomizableProduct(id: number): Observable<boolean> {
-        return this.http.delete<void>(`${this.apiUrl}/customizableProducts/${id}`).pipe(
+        return this.http.delete<void>(`${this.apiUrl}${environment.endpoints.products.customizable}/${id}`).pipe(
             map(() => true),
             catchError(() => of(false))
         );

@@ -52,7 +52,10 @@
                 </div>
 
                 <!-- Submit Button -->
-                <p-button type="submit" label="Iniciar Sesión" icon="pi pi-sign-in" [loading]="isLoading" [disabled]="loginForm.invalid || isLoading" class="w-full" size="large" />
+                <div class="flex justify-content-center">
+                    <p-button type="submit" label="Iniciar Sesión" icon="pi pi-sign-in" [loading]="isLoading" [disabled]="loginForm.invalid || isLoading" class="w-full md:w-auto"
+                        size="large" />
+                </div>
 
                 <!-- Demo Credentials -->
                 <div class="bg-blue-50 border-round p-3">

@@ -43,6 +43,61 @@
         </form>
     </p-card>
 
+    <!-- Social Media Settings -->
+    <p-card class="border-round-xl shadow-3 p-3 mb-4">
+        <ng-template #header>
+            <div class="flex justify-content-between align-items-center">
+                <h3 class="text-lg font-bold m-0">
+                    <i class="pi pi-share-alt mr-2"></i>Configuración de Redes Sociales
+                </h3>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="socialMediaForm" class="flex flex-column gap-4" *ngIf="socialMediaForm">
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <label for="facebookUrl" class="block mb-2 font-semibold">URL de Facebook</label>
+                    <p-inputgroup class="max-w-max">
+                        <p-inputgroup-addon>
+                            <i class="pi pi-facebook text-blue-600"></i>
+                        </p-inputgroup-addon>
+                        <input pInputText id="facebookUrl" formControlName="facebookUrl" placeholder="https://facebook.com/tu-pagina" class="w-full" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="socialMediaForm.get('facebookUrl')"></app-error-helper>
+                    <small class="text-color-secondary">URL completa de tu página de Facebook</small>
+                </div>
+
+                <div class="col-12 md:col-6">
+                    <label for="instagramUrl" class="block mb-2 font-semibold">URL de Instagram</label>
+                    <p-inputgroup class="max-w-max">
+                        <p-inputgroup-addon>
+                            <i class="pi pi-instagram text-pink-600"></i>
+                        </p-inputgroup-addon>
+                        <input pInputText id="instagramUrl" formControlName="instagramUrl" placeholder="https://instagram.com/tu-usuario" class="w-full" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="socialMediaForm.get('instagramUrl')"></app-error-helper>
+                    <small class="text-color-secondary">URL completa de tu perfil de Instagram</small>
+                </div>
+
+                <div class="col-12 md:col-6">
+                    <label for="tiktokUrl" class="block mb-2 font-semibold">URL de TikTok</label>
+                    <p-inputgroup class="max-w-max">
+                        <p-inputgroup-addon>
+                            <i class="pi-tiktok text-black"></i>
+                        </p-inputgroup-addon>
+                        <input pInputText id="tiktokUrl" formControlName="tiktokUrl" placeholder="https://tiktok.com/@tu-usuario" class="w-full" />
+                    </p-inputgroup>
+                    <app-error-helper [control]="socialMediaForm.get('tiktokUrl')"></app-error-helper>
+                    <small class="text-color-secondary">URL completa de tu perfil de TikTok</small>
+                </div>
+            </div>
+
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveSocialMediaSettings()" [disabled]="!socialMediaForm.valid || socialMediaLoading" [loading]="socialMediaLoading" />
+            </div>
+        </form>
+    </p-card>
+
     <!-- Free Shipping Settings -->
     <p-card class="border-round-xl shadow-3 p-3 mb-4">
         <ng-template #header>
@@ -152,222 +207,3 @@
         </form>
     </p-card>
 </div>
-
-<!-- Discount Coupons Management -->
-<p-card class="border-round-xl shadow-3 p-3">
-    <ng-template #header>
-        <div class="flex justify-content-between align-items-center">
-            <h2 class="text-xl font-bold m-0">
-                <i class="pi pi-ticket mr-2"></i>Gestión de Cupones de Descuento
-            </h2>
-            <p-button label="Nuevo Cupón" icon="pi pi-plus" [raised]="true" (onClick)="openCouponDialog()" />
-        </div>
-    </ng-template>
-
-    <p-table [value]="discountCoupons" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} cupones"
-        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm" [loading]="couponLoading">
-
-        <ng-template #header>
-            <tr>
-                <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
-                <th pSortableColumn="code">Código <p-sortIcon field="code"></p-sortIcon></th>
-                <th>Descripción</th>
-                <th pSortableColumn="discountType">Tipo <p-sortIcon field="discountType"></p-sortIcon></th>
-                <th pSortableColumn="discountValue">Descuento <p-sortIcon field="discountValue"></p-sortIcon></th>
-                <th pSortableColumn="minOrderAmount">Monto Mínimo <p-sortIcon field="minOrderAmount"></p-sortIcon></th>
-                <th pSortableColumn="currentUses">Uso <p-sortIcon field="currentUses"></p-sortIcon></th>
-                <th pSortableColumn="validFrom">Válido Desde <p-sortIcon field="validFrom"></p-sortIcon></th>
-                <th pSortableColumn="validTo">Válido Hasta <p-sortIcon field="validTo"></p-sortIcon></th>
-                <th pSortableColumn="active">Estado <p-sortIcon field="active"></p-sortIcon></th>
-                <th>Acciones</th>
-            </tr>
-        </ng-template>
-
-        <ng-template #body let-coupon>
-            <tr>
-                <td>
-                    <span class="font-semibold text-600">{{ coupon.id }}</span>
-                </td>
-                <td>
-                    <span class="font-bold text-primary">{{ coupon.code }}</span>
-                </td>
-                <td>
-                    <span *ngIf="coupon.description" class="text-sm">{{ coupon.description }}</span>
-                    <span *ngIf="!coupon.description" class="text-400 text-sm">Sin descripción</span>
-                </td>
-                <td>
-                    <p-tag [value]="coupon.discountType === 'percentage' ? 'Porcentaje' : 'Monto Fijo'" [severity]="coupon.discountType === 'percentage' ? 'success' : 'warn'"
-                        [rounded]="true" />
-                </td>
-                <td>
-                    <span class="font-bold text-primary">{{ getDiscountDisplay(coupon) }}</span>
-                </td>
-                <td>
-                    <span *ngIf="coupon.minOrderAmount > 0" class="font-semibold">
-                        ${{ coupon.minOrderAmount.toLocaleString('es-AR') }}
-                    </span>
-                    <span *ngIf="coupon.minOrderAmount === 0" class="text-400">Sin mínimo</span>
-                </td>
-                <td>
-                    <div class="flex align-items-center gap-2">
-                        <span class="font-semibold">{{ getUsageDisplay(coupon) }}</span>
-                        <p-tag *ngIf="isCouponExhausted(coupon)" value="Agotado" severity="danger" [rounded]="true" size="small"></p-tag>
-                    </div>
-                </td>
-                <td>
-                    <span class="font-semibold">{{ coupon.validFrom | date:'dd/MM/yyyy' }}</span>
-                </td>
-                <td>
-                    <div class="flex align-items-center gap-2">
-                        <span class="font-semibold">{{ coupon.validTo | date:'dd/MM/yyyy' }}</span>
-                        <p-tag *ngIf="isCouponExpired(coupon)" value="Expirado" severity="danger" [rounded]="true" size="small"></p-tag>
-                    </div>
-                </td>
-                <td>
-                    <p-tag [value]="getCouponStatus(coupon).value" [severity]="getCouponStatus(coupon).severity" [rounded]="true" />
-                </td>
-                <td>
-                    <div class="flex gap-2">
-                        <p-button icon="pi pi-pencil" [outlined]="true" size="small" (onClick)="openCouponDialog(coupon)" />
-                        <p-button icon="pi pi-trash" [outlined]="true" severity="danger" size="small" (onClick)="confirmDeleteCoupon(coupon)" />
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-
-        <ng-template #emptymessage>
-            <tr>
-                <td colspan="11" class="text-center py-6">
-                    <i class="pi pi-ticket text-6xl text-300 mb-3 block"></i>
-                    <h3 class="text-xl font-semibold text-600 mb-2">No hay cupones</h3>
-                    <p class="text-500 mb-4">Crea tu primer cupón de descuento para comenzar</p>
-                    <p-button label="Crear Cupón" icon="pi pi-plus" (onClick)="openCouponDialog()" [rounded]="true"></p-button>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</p-card>
-
-
-<!-- Coupon Dialog -->
-<p-dialog [(visible)]="showCouponDialog" modal="true" styleClass="w-full md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
-    [header]="editingCoupon ? 'Editar Cupón' : 'Nuevo Cupón'" (onHide)="showCouponDialog = false">
-
-    <form [formGroup]="couponForm" class="flex flex-column gap-4" *ngIf="couponForm">
-        <div class="grid">
-            <div class="col-12 md:col-6">
-                <label for="couponCode" class="block mb-2 font-semibold">Código del Cupón *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-ticket"></i>
-                    </p-inputgroup-addon>
-                    <input id="couponCode" type="text" pInputText formControlName="code" class="w-full" placeholder="Ej: DESCUENTO20" />
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('code')"></app-error-helper>
-            </div>
-
-            <div class="col-12 md:col-6">
-                <label for="couponDescription" class="block mb-2 font-semibold">Descripción</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-file-edit"></i>
-                    </p-inputgroup-addon>
-                    <input id="couponDescription" type="text" pInputText formControlName="description" class="w-full" placeholder="Descripción opcional" />
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('description')"></app-error-helper>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="col-12 md:col-4">
-                <label for="couponDiscountType" class="block mb-2 font-semibold">Tipo de Descuento *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-percentage"></i>
-                    </p-inputgroup-addon>
-                    <p-select id="couponDiscountType" formControlName="discountType" [options]="discountTypes" optionLabel="label" optionValue="value" placeholder="Seleccionar tipo"
-                        class="w-full" appendTo="body"></p-select>
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('discountType')"></app-error-helper>
-            </div>
-
-            <div class="col-12 md:col-4">
-                <label for="couponDiscountValue" class="block mb-2 font-semibold">Valor del Descuento *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-dollar"></i>
-                    </p-inputgroup-addon>
-                    <p-inputnumber *ngIf="couponForm.get('discountType')?.value === 'percentage'" id="couponDiscountValue" formControlName="discountValue" class="w-full" placeholder="0"
-                        [min]="0" [max]="100" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" [step]="5" suffix="%" />
-                    <p-inputnumber *ngIf="couponForm.get('discountType')?.value === 'fixed'" id="couponDiscountValue" formControlName="discountValue" class="w-full" placeholder="0"
-                        [min]="0" [max]="99999" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" [step]="100" mode="currency" currency="ARS" />
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('discountValue')"></app-error-helper>
-            </div>
-
-            <div class="col-12 md:col-4">
-                <label for="couponMinOrderAmount" class="block mb-2 font-semibold">Monto Mínimo de Pedido</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-shopping-cart"></i>
-                    </p-inputgroup-addon>
-                    <p-inputnumber id="couponMinOrderAmount" formControlName="minOrderAmount" class="w-full" placeholder="0" [min]="0" [max]="999999" [showButtons]="true"
-                        buttonLayout="horizontal" spinnerMode="horizontal" [step]="1000" mode="currency" currency="ARS" />
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('minOrderAmount')"></app-error-helper>
-                <small class="text-color-secondary">0 = Sin monto mínimo</small>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="col-12 md:col-4">
-                <label for="couponMaxUses" class="block mb-2 font-semibold">Usos Máximos *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-users"></i>
-                    </p-inputgroup-addon>
-                    <p-inputnumber id="couponMaxUses" formControlName="maxUses" class="w-full" placeholder="100" [min]="0" [max]="9999" [showButtons]="true" buttonLayout="horizontal"
-                        spinnerMode="horizontal" [step]="10" />
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('maxUses')"></app-error-helper>
-            </div>
-
-            <div class="col-12 md:col-4">
-                <label for="couponValidFrom" class="block mb-2 font-semibold">Válido Desde *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-calendar"></i>
-                    </p-inputgroup-addon>
-                    <p-datepicker id="couponValidFrom" formControlName="validFrom" class="w-full" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" appendTo="body"></p-datepicker>
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('validFrom')"></app-error-helper>
-                <div *ngIf="couponForm.errors?.['dateRangeInvalid']" class="p-error text-sm mt-1">
-                    <p-message icon="pi pi-exclamation-circle" severity="error" size="small" variant="simple">La fecha de inicio no puede ser posterior a la fecha de fin</p-message>
-                </div>
-            </div>
-
-            <div class="col-12 md:col-4">
-                <label for="couponValidTo" class="block mb-2 font-semibold">Válido Hasta *</label>
-                <p-inputgroup class="max-w-max">
-                    <p-inputgroup-addon>
-                        <i class="pi pi-calendar"></i>
-                    </p-inputgroup-addon>
-                    <p-datepicker id="couponValidTo" formControlName="validTo" class="w-full" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" appendTo="body"></p-datepicker>
-                </p-inputgroup>
-                <app-error-helper [control]="couponForm.get('validTo')"></app-error-helper>
-            </div>
-        </div>
-
-        <div class="flex align-items-center gap-2">
-            <p-checkbox formControlName="active" [binary]="true" [inputId]="'couponActive'" />
-            <label for="couponActive" class="cursor-pointer">Cupón Activo</label>
-        </div>
-    </form>
-
-    <ng-template #footer>
-        <div class="flex justify-content-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showCouponDialog = false" [disabled]="couponLoading" />
-            <p-button label="Guardar" icon="pi pi-check" (onClick)="saveCoupon()" [disabled]="!isFormValid() || couponLoading" [loading]="couponLoading" />
-        </div>
-    </ng-template>
-</p-dialog>

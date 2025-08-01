@@ -18,7 +18,7 @@
     <p-scrolltop [threshold]="100" icon="pi pi-arrow-up" [buttonProps]="{ severity: 'help', raised: true, rounded: true }" class="fixed hidden md:block" />
 
     <!-- WhatsApp button -->
-    <a [href]="getWhatsAppUrl()" target="_blank"
+    <a *ngIf="whatsappPhone" [href]="getWhatsAppUrl()" target="_blank"
         class="fixed no-underline flex align-items-center justify-content-center bg-green-500 hover:bg-green-600 transition-colors border-circle shadow-4 w-4rem h-4rem"
         style="bottom: 1rem; right: 5rem;"
         [title]="'Contactar por WhatsApp: ' + whatsappPhone">

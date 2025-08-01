@@ -2,7 +2,6 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { RouterLink } from '@angular/router';
-import { Router } from '@angular/router';
 
 import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
@@ -14,8 +13,10 @@ import { AnalyticsTabComponent } from './tabs/analytics-tab/analytics-tab.compon
 import { AdminUser } from '../../models/admin-user';
 import { HiladosTabComponent } from './tabs/hilados-tab/hilados-tab.component';
 import { SettingsTabComponent } from './tabs/settings-tab/settings-tab.component';
+import { CouponsTabComponent } from './tabs/coupons-tab/coupons-tab.component';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { CustomersTabComponent } from './tabs/customers-tab/customers-tab.component';
+import { HeaderComponent } from '../../layout/header/header.component';
 
 @Component({
     selector: 'app-admin-customization',
@@ -31,7 +32,9 @@ import { CustomersTabComponent } from './tabs/customers-tab/customers-tab.compon
         HiladosTabComponent,
         AnalyticsTabComponent,
         SettingsTabComponent,
-        CustomersTabComponent
+        CustomersTabComponent,
+        CouponsTabComponent,
+        HeaderComponent
     ],
     providers: [],
     templateUrl: './admin-tabs.component.html',

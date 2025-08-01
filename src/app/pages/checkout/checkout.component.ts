@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { Router, RouterLink } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { CartItem } from '../../models/cart-item';
@@ -226,8 +226,15 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.initForm();
     this.loadOrderItems();
+
+    // Check if cart is empty and redirect if necessary
+    if (this.orderItems.length === 0) {
+      this.router.navigate(['/carrito']);
+      return;
+    }
+
+    this.initForm();
     this.loadSettings();
     this.calculateTotals();
 

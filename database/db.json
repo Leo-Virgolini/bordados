@@ -1,11 +1,22 @@
 {
+  "settings": {
+    "whatsAppPhone": "+54 9 11 5840-5319",
+    "freeShippingThreshold": 65000,
+    "maxImageSize": 10485760,
+    "secondColorPrice": 3000,
+    "customTextPrice": 3500,
+    "maxTextLength": 20,
+    "facebookUrl": "http://localhost:4200/admin",
+    "instagramUrl": "http://localhost:4200/admin",
+    "tiktokUrl": "http://localhost:4200/admin"
+  },
   "customers": [
     {
       "id": "1",
       "name": "María",
       "lastName": "González",
       "email": "maria.gonzalez@email.com",
-      "phone": "11 2345-6789",
+      "phone": "11 1111-1111",
       "dni": "12345678",
       "province": "Buenos Aires",
       "city": "CABA",
@@ -19,7 +30,7 @@
       "name": "Carlos",
       "lastName": "Rodríguez",
       "email": "carlos.rodriguez@email.com",
-      "phone": "11 3456-7890",
+      "phone": "33 4343-4343",
       "dni": "87654321",
       "province": "Buenos Aires",
       "city": "CABA",
@@ -33,13 +44,14 @@
       "name": "Ana",
       "lastName": "Martínez",
       "email": "ana.martinez@email.com",
-      "phone": "11 4567-8901",
+      "phone": "32 4324-3242",
       "dni": "23456789",
       "province": "Córdoba",
       "city": "Córdoba",
       "postalCode": "5000",
       "address": "San Martín 789",
-      "registrationDate": "2024-01-22T00:00:00.000Z"
+      "registrationDate": "2024-01-22T00:00:00.000Z",
+      "floorApartment": "Piso 3, Depto A"
     },
     {
       "id": "4",
@@ -102,7 +114,7 @@
       "name": "Remera Oversize Bordada",
       "description": "Remera oversize de algodón premium con bordado minimalista",
       "garmentType": "remera",
-      "price": 18000,
+      "price": 20500,
       "discount": 33,
       "type": "bordado",
       "variants": [
@@ -741,7 +753,7 @@
     {
       "id": "1",
       "date": "2024-01-15T10:30:00.000Z",
-      "customerId": 3,
+      "customerId": "1",
       "customerSnapshot": {
         "name": "María",
         "lastName": "González",
@@ -756,8 +768,8 @@
       },
       "items": [
         {
-          "id": 1,
-          "productId": 7,
+          "id": "1",
+          "productId": "7",
           "productSnapshot": {
             "name": "Remera Personalizada",
             "description": "Remera con bordado personalizado a elección del cliente",
@@ -799,7 +811,7 @@
     {
       "id": "2",
       "date": "2024-01-20T14:15:00.000Z",
-      "customerId": 3,
+      "customerId": "2",
       "customerSnapshot": {
         "name": "Carlos",
         "lastName": "Rodríguez",
@@ -814,8 +826,8 @@
       },
       "items": [
         {
-          "id": 2,
-          "productId": 2,
+          "id": "2",
+          "productId": "2",
           "productSnapshot": {
             "name": "Buzo Capucha Bordado",
             "description": "Buzo con capucha de frisa suave con bordado deportivo",
@@ -833,8 +845,8 @@
           "subtotal": 14975
         },
         {
-          "id": 3,
-          "productId": 5,
+          "id": "3",
+          "productId": "5",
           "productSnapshot": {
             "name": "Remera Básica Bordada",
             "description": "Remera básica de algodón con bordado personalizado",
@@ -869,7 +881,7 @@
     {
       "id": "3",
       "date": "2024-01-25T09:45:00.000Z",
-      "customerId": 3,
+      "customerId": "3",
       "customerSnapshot": {
         "name": "Ana",
         "lastName": "Martínez",
@@ -883,8 +895,8 @@
       },
       "items": [
         {
-          "id": 4,
-          "productId": 3,
+          "id": "4",
+          "productId": "3",
           "quantity": 1,
           "subtotal": 16200,
           "productSnapshot": {
@@ -917,7 +929,7 @@
     {
       "id": "4",
       "date": "2024-01-28T16:20:00.000Z",
-      "customerId": 4,
+      "customerId": "4",
       "customerSnapshot": {
         "name": "Luis",
         "lastName": "Fernández",
@@ -932,8 +944,8 @@
       },
       "items": [
         {
-          "id": 5,
-          "productId": 4,
+          "id": "5",
+          "productId": "4",
           "quantity": 2,
           "subtotal": 15000,
           "productSnapshot": {
@@ -951,8 +963,8 @@
           }
         },
         {
-          "id": 6,
-          "productId": 8,
+          "id": "6",
+          "productId": "8",
           "quantity": 1,
           "subtotal": 12000,
           "productSnapshot": {
@@ -994,7 +1006,7 @@
     {
       "id": "5",
       "date": "2024-07-30T11:15:00.000Z",
-      "customerId": 6,
+      "customerId": "6",
       "customerSnapshot": {
         "name": "Diego",
         "lastName": "Martínez",
@@ -1009,8 +1021,8 @@
       },
       "items": [
         {
-          "id": 7,
-          "productId": 1,
+          "id": "7",
+          "productId": "1",
           "quantity": 3,
           "subtotal": 25500,
           "productSnapshot": {
@@ -1028,8 +1040,8 @@
           }
         },
         {
-          "id": 8,
-          "productId": 3,
+          "id": "8",
+          "productId": "3",
           "quantity": 1,
           "subtotal": 18000,
           "productSnapshot": {
@@ -1063,7 +1075,7 @@
     {
       "id": "6",
       "date": "2024-02-15T13:30:00.000Z",
-      "customerId": 5,
+      "customerId": "5",
       "customerSnapshot": {
         "name": "Sofía",
         "lastName": "López",
@@ -1077,8 +1089,8 @@
       },
       "items": [
         {
-          "id": 9,
-          "productId": 12,
+          "id": "9",
+          "productId": "12",
           "quantity": 1,
           "subtotal": 14000,
           "productSnapshot": {
@@ -1102,8 +1114,8 @@
           }
         },
         {
-          "id": 10,
-          "productId": 13,
+          "id": "10",
+          "productId": "13",
           "quantity": 1,
           "subtotal": 18000,
           "productSnapshot": {
@@ -1147,7 +1159,7 @@
       "id": "1",
       "code": "DESCUENTO10",
       "discountType": "percentage",
-      "discountValue": 10,
+      "discountValue": 30,
       "minOrderAmount": 15000,
       "maxUses": 50,
       "currentUses": 3,
@@ -1265,13 +1277,5 @@
       "stock": 500,
       "active": true
     }
-  ],
-  "settings": {
-    "whatsAppPhone": "+54 9 11 5840-5319",
-    "freeShippingThreshold": 65000,
-    "maxImageSize": 10485760,
-    "secondColorPrice": 3000,
-    "customTextPrice": 3500,
-    "maxTextLength": 20
-  }
+  ]
 }
