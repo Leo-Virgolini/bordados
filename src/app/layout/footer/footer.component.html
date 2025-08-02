@@ -5,13 +5,16 @@
         <div class="flex flex-column">
             <h4 class="mb-2 mt-0" style="font-size: 1.5rem">Seguinos</h4>
             <div class="flex align-items-center gap-3 text-xl">
-                <a *ngIf="instagramUrl" [href]="instagramUrl" target="_blank" class="text-white hover:text-pink-300">
+                <a *ngIf="instagramUrl" [href]="instagramUrl" target="_blank"
+                    class="text-white p-1 hover:text-blue-300 hover:text-primary-200 transition-colors transition-duration-200 border-round hover:bg-white-alpha-10">
                     <i class="pi pi-instagram text-pink-600" style="font-size: 2.5rem"></i>
                 </a>
-                <a *ngIf="tiktokUrl" [href]="tiktokUrl" target="_blank" class="text-white hover:text-black">
+                <a *ngIf="tiktokUrl" [href]="tiktokUrl" target="_blank"
+                    class="text-white p-1 hover:text-blue-300 hover:text-primary-200 transition-colors transition-duration-200 border-round hover:bg-white-alpha-10">
                     <i class="pi pi-tiktok text-black" style="font-size: 2.5rem"></i>
                 </a>
-                <a *ngIf="facebookUrl" [href]="facebookUrl" target="_blank" class="text-white hover:text-blue-300">
+                <a *ngIf="facebookUrl" [href]="facebookUrl" target="_blank"
+                    class="text-white p-1 hover:text-blue-300 hover:text-primary-200 transition-colors transition-duration-200 border-round hover:bg-white-alpha-10">
                     <i class="pi pi-facebook text-blue-600" style="font-size: 2.5rem"></i>
                 </a>
             </div>
@@ -19,17 +22,41 @@
 
         <!-- Secciones -->
         <div class="flex flex-column">
-            <h4 class="mb-2 text-lg mt-0">Secciones</h4>
-            <a routerLink="/" class="mb-1 text-white hover:text-primary-200">Inicio</a>
-            <a routerLink="/productos" class="mb-1 text-white hover:text-primary-200">Productos</a>
-            <a routerLink="/personalizar" class="mb-1 text-white hover:text-primary-200">Personalizar</a>
-            <a routerLink="/contacto" class="text-white hover:text-primary-200">Contacto</a>
+            <h4 class="mb-1 text-lg mt-0 font-bold">Secciones</h4>
+            <div class="flex flex-column">
+                <a routerLink="/"
+                    class="flex align-items-center gap-2 text-white no-underline hover:text-primary-200 transition-colors transition-duration-200 p-2 border-round hover:bg-white-alpha-10">
+                    <i class="pi pi-home text-sm"></i>
+                    <span class="font-medium">Inicio</span>
+                </a>
+                <a routerLink="/productos"
+                    class="flex align-items-center gap-2 text-white no-underline hover:text-primary-200 transition-colors transition-duration-200 p-2 border-round hover:bg-white-alpha-10">
+                    <i class="pi pi-shopping-bag text-sm"></i>
+                    <span class="font-medium">Productos</span>
+                </a>
+                <a routerLink="/personalizar"
+                    class="flex align-items-center gap-2 text-white no-underline hover:text-primary-200 transition-colors transition-duration-200 p-2 border-round hover:bg-white-alpha-10">
+                    <i class="pi pi-palette text-sm"></i>
+                    <span class="font-medium">Personalizar</span>
+                </a>
+                <a routerLink="/contacto"
+                    class="flex align-items-center gap-2 text-white no-underline hover:text-primary-200 transition-colors transition-duration-200 p-2 border-round hover:bg-white-alpha-10">
+                    <i class="pi pi-envelope text-sm"></i>
+                    <span class="font-medium">Contacto</span>
+                </a>
+            </div>
         </div>
 
         <!-- Logo y derechos -->
-        <div class="flex flex-column">
-            <img src="logos/logo2.png" alt="Logo" style="width: 130px;" class="mb-2 border-round-md" />
-            <small class="text-white-alpha-70">© 2025 BorDados. Todos los derechos reservados.</small>
+        <div class="flex flex-column align-items-center">
+            <div class="mb-1 p-2 bg-white-alpha-10 border-round-lg">
+                <img src="logos/logo2.png" alt="Logo" style="width: 130px;" class="border-round-md" />
+            </div>
+            <div class="text-center">
+                <small class="text-white-alpha-80 font-medium">© 2025 BorDados</small>
+                <br>
+                <small class="text-white-alpha-60">Todos los derechos reservados</small>
+            </div>
         </div>
 
     </div>

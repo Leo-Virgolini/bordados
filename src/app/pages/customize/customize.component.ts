@@ -118,10 +118,10 @@ export class CustomizeComponent implements OnInit {
       colorPrenda: [undefined, Validators.required],
       colorHilado1: [undefined, Validators.required],
       usarSegundoColor: [false],
-      colorHilado2: [undefined],
+      colorHilado2: [undefined], // No initial validators - will be added dynamically
       usarTextoPersonalizado: [false],
-      textoPersonalizado: [undefined],
-      colorTextoPersonalizado: [undefined],
+      textoPersonalizado: [undefined], // No initial validators - will be added dynamically
+      colorTextoPersonalizado: [undefined], // No initial validators - will be added dynamically
       imagen: [undefined, Validators.required],
       cantidad: [1, Validators.required]
     });
@@ -352,6 +352,49 @@ export class CustomizeComponent implements OnInit {
 
   resetCantidad() {
     this.formulario.get('cantidad')?.setValue(1);
+  }
+
+  onUsarSegundoColorChange() {
+    const usarSegundoColor = this.formulario.get('usarSegundoColor')?.value;
+    const colorHilado2Control = this.formulario.get('colorHilado2');
+
+    if (usarSegundoColor) {
+      // Add required validation when toggle is turned on
+      colorHilado2Control?.setValidators([Validators.required]);
+    } else {
+      // Remove required validation and reset when toggle is turned off
+      colorHilado2Control?.clearValidators();
+      colorHilado2Control?.reset();
+      colorHilado2Control?.markAsUntouched();
+    }
+
+    // Update validation state
+    colorHilado2Control?.updateValueAndValidity();
+  }
+
+  onUsarTextoPersonalizadoChange() {
+    const usarTextoPersonalizado = this.formulario.get('usarTextoPersonalizado')?.value;
+    const textoPersonalizadoControl = this.formulario.get('textoPersonalizado');
+    const colorTextoPersonalizadoControl = this.formulario.get('colorTextoPersonalizado');
+
+    if (usarTextoPersonalizado) {
+      // Add required validation when toggle is turned on
+      textoPersonalizadoControl?.setValidators([Validators.required, Validators.maxLength(this.maxTextLength)]);
+      colorTextoPersonalizadoControl?.setValidators([Validators.required]);
+    } else {
+      // Remove required validation and reset when toggle is turned off
+      textoPersonalizadoControl?.clearValidators();
+      textoPersonalizadoControl?.reset();
+      textoPersonalizadoControl?.markAsUntouched();
+
+      colorTextoPersonalizadoControl?.clearValidators();
+      colorTextoPersonalizadoControl?.reset();
+      colorTextoPersonalizadoControl?.markAsUntouched();
+    }
+
+    // Update validation state
+    textoPersonalizadoControl?.updateValueAndValidity();
+    colorTextoPersonalizadoControl?.updateValueAndValidity();
   }
 
   private capitalize(str: string): string {

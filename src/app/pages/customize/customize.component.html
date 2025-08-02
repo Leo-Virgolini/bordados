@@ -20,7 +20,7 @@
                     <!-- Tipo de prenda -->
                     <div>
                         <label for="tipo" class="block mb-2 text-lg font-semibold">Seleccione prenda: *</label>
-                        <p-selectbutton id="tipoPrenda" formControlName="tipo" class="w-auto" size="large" [options]="availableTypes" optionLabel="label" optionValue="value"
+                        <p-selectbutton id="tipo" formControlName="tipo" class="w-auto" size="large" [options]="availableTypes" optionLabel="label" optionValue="value"
                             aria-labelledby="basic" required (onChange)="onTipoPrendaChange()" [disabled]="isLoadingProducts">
                             <ng-template #item let-type>
                                 <ng-container>
@@ -37,8 +37,8 @@
                     <!-- Color de prenda -->
                     <div *ngIf="formulario.get('tipo')?.value">
                         <label for="colorPrenda" class="block mb-2 text-lg font-semibold">Color de la prenda: *</label>
-                        <p-selectbutton [options]="availableColors" class="w-auto" formControlName="colorPrenda" size="large" optionLabel="label" optionValue="value"
-                            aria-labelledby="basic" required (onChange)="onColorPrendaChange()">
+                        <p-selectbutton id="colorPrenda" [options]="availableColors" class="w-full max-w-fit" formControlName="colorPrenda" size="large" optionLabel="label"
+                            optionValue="value" aria-labelledby="basic" required (onChange)="onColorPrendaChange()">
                             <ng-template #item let-color>
                                 <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.label" tooltipPosition="top"
                                     [ngStyle]="{'background-color': getColorValue(color.label), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
@@ -52,8 +52,8 @@
                     <div *ngIf="formulario.get('tipo')?.value && formulario.get('colorPrenda')?.value">
                         <label for="talle" class="block mb-2 text-lg font-semibold">Talle: *</label>
                         <div class="flex align-items-center gap-3">
-                            <p-selectbutton [options]="availableSizes" class="w-auto" formControlName="talle" size="large" optionLabel="label" optionValue="value" aria-labelledby="basic"
-                                required (onChange)="onTalleChange()" />
+                            <p-selectbutton id="talle" [options]="availableSizes" class="w-auto" formControlName="talle" size="large" optionLabel="label" optionValue="value"
+                                aria-labelledby="basic" required (onChange)="onTalleChange()" />
                             <p-button label="Guía de Talles" icon="pi pi-tags" severity="info" [rounded]="true" [raised]="true" size="small" (onClick)="openSizeGuide()" />
                         </div>
                         <app-error-helper [control]="formulario.get('talle')"></app-error-helper>
@@ -62,8 +62,8 @@
                     <!-- 1° Color del hilado -->
                     <div>
                         <label for="colorHilado1" class="block mb-2 text-lg font-semibold">Color del hilado: *</label>
-                        <p-selectbutton [options]="coloresHilado" class="w-auto" formControlName="colorHilado1" size="large" optionLabel="name" optionValue="id" aria-labelledby="basic"
-                            required>
+                        <p-selectbutton id="colorHilado1" [options]="coloresHilado" class="w-full max-w-fit" formControlName="colorHilado1" size="large" optionLabel="name" optionValue="id"
+                            aria-labelledby="basic" required>
                             <ng-template #item let-color>
                                 <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
                                     [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
@@ -78,8 +78,8 @@
                         <label for="usarSegundoColor" class="block mb-2 text-lg font-semibold">¿Querés usar un segundo color de hilado?
                             <p-badge value="Opcional" severity="warn" class="ml-2" />
                         </label>
-                        <p-togglebutton formControlName="usarSegundoColor" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
-                            aria-label="Confirmation"></p-togglebutton>
+                        <p-togglebutton id="usarSegundoColor" formControlName="usarSegundoColor" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
+                            aria-label="Confirmation" (onChange)="onUsarSegundoColorChange()"></p-togglebutton>
                         <p-badge *ngIf="formulario.get('usarSegundoColor')?.value" value="+{{ precioSegundoColor | currency:'ARS':'symbol':'1.0-0' }}" severity="success" badgeSize="large"
                             class="ml-2" />
                     </div>
@@ -87,8 +87,8 @@
                     <!-- 2° Color del hilado (Opcional) -->
                     <div *ngIf="formulario.get('usarSegundoColor')?.value">
                         <label for="colorHilado2" class="block mb-2 text-lg font-semibold">Segundo color del hilado: *</label>
-                        <p-selectbutton [options]="coloresHilado" formControlName="colorHilado2" size="large" optionLabel="name" optionValue="id" aria-labelledby="basic"
-                            [required]="formulario.get('usarSegundoColor')?.value">
+                        <p-selectbutton id="colorHilado2" [options]="coloresHilado" formControlName="colorHilado2" size="large" class="w-full max-w-fit" optionLabel="name" optionValue="id"
+                            aria-labelledby="basic">
                             <ng-template #item let-color>
                                 <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
                                     [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
@@ -103,8 +103,8 @@
                         <label for="usarTextoPersonalizado" class="block mb-2 text-lg font-semibold">¿Querés agregar texto personalizado debajo de la imagen?
                             <p-badge value="Opcional" severity="warn" class="ml-2" />
                         </label>
-                        <p-togglebutton formControlName="usarTextoPersonalizado" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times" size="large"
-                            aria-label="Texto personalizado"></p-togglebutton>
+                        <p-togglebutton id="usarTextoPersonalizado" formControlName="usarTextoPersonalizado" onLabel="Sí" offLabel="No" onIcon="pi pi-check" offIcon="pi pi-times"
+                            size="large" aria-label="Texto personalizado" (onChange)="onUsarTextoPersonalizadoChange()"></p-togglebutton>
                         <p-badge *ngIf="formulario.get('usarTextoPersonalizado')?.value" value="+{{ precioTextoPersonalizado | currency:'ARS':'symbol':'1.0-0' }}" severity="success"
                             badgeSize="large" class="ml-2" />
                     </div>
@@ -116,8 +116,8 @@
                             <p-inputgroup-addon>
                                 <i class="pi pi-language"></i>
                             </p-inputgroup-addon>
-                            <input pInputText id="textoPersonalizado" formControlName="textoPersonalizado" class="w-full" placeholder="Ej: Mi nombre, fecha especial, etc."
-                                [maxlength]="maxTextLength" [required]="formulario.get('usarTextoPersonalizado')?.value" />
+                            <input pInputText id="textoPersonalizado" formControlName="textoPersonalizado" class="w-full" placeholder="Ej: Mi nombre, fecha, etc."
+                                [maxlength]="maxTextLength" />
                             <p-inputgroup-addon *ngIf="formulario.get('colorTextoPersonalizado')?.value" class="p-0">
                                 <div class="w-2rem h-2rem border-circle border-1 border-300 flex align-items-center justify-content-center"
                                     [ngStyle]="{'background-color': getThreadColorCode(formulario.get('colorTextoPersonalizado')?.value)}">
@@ -134,8 +134,8 @@
                     <!-- Color del texto personalizado (Opcional) -->
                     <div *ngIf="formulario.get('usarTextoPersonalizado')?.value">
                         <label for="colorTextoPersonalizado" class="block mb-2 text-lg font-semibold">Color del texto: *</label>
-                        <p-selectButton id="colorTextoPersonalizado" formControlName="colorTextoPersonalizado" [options]="coloresHilado" optionLabel="name" optionValue="id" class="w-full"
-                            [disabled]="!formulario.get('usarTextoPersonalizado')?.value" [required]="formulario.get('usarTextoPersonalizado')?.value">
+                        <p-selectButton id="colorTextoPersonalizado" formControlName="colorTextoPersonalizado" [options]="coloresHilado" optionLabel="name" optionValue="id"
+                            class="w-full max-w-fit" [disabled]="!formulario.get('usarTextoPersonalizado')?.value">
                             <ng-template #item let-color>
                                 <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
                                     [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
@@ -148,8 +148,8 @@
                     <!-- Imagen -->
                     <div>
                         <label for="imagen" class="block mb-2 text-lg font-semibold">Imagen: *</label>
-                        <p-fileupload name="imagen" mode="advanced" accept="image/*" [maxFileSize]="maxImageSize" (onSelect)="onImageSelect($event)" [multiple]="false" [auto]="false"
-                            required>
+                        <p-fileupload id="imagen" name="imagen" mode="advanced" accept="image/*" [maxFileSize]="maxImageSize" (onSelect)="onImageSelect($event)" [multiple]="false"
+                            [auto]="false" required>
                             <ng-template #header let-chooseCallback="chooseCallback">
                                 <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
                                     <div class="flex gap-2">
@@ -194,12 +194,12 @@
                             <p-badge [value]="'Stock disponible: ' + getCurrentStock()" severity="warn" badgeSize="large" styleClass="ml-1" [pTooltip]="'Stock disponible'"
                                 tooltipPosition="top"></p-badge>
                         </div>
-                        <p-inputgroup>
+                        <p-inputgroup class="max-w-max">
                             <p-inputgroup-addon>
                                 <i class="pi pi-box"></i>
                             </p-inputgroup-addon>
-                            <p-inputnumber formControlName="cantidad" [min]="1" [max]="getCurrentStock()" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" [step]="1"
-                                class="w-min" placeholder="1" />
+                            <p-inputnumber id="cantidad" formControlName="cantidad" [min]="1" [max]="getCurrentStock()" [showButtons]="true" buttonLayout="horizontal"
+                                spinnerMode="horizontal" [step]="1" class="w-auto" placeholder="1" />
                         </p-inputgroup>
                         <app-error-helper [control]="formulario.get('cantidad')"></app-error-helper>
                     </div>
@@ -403,9 +403,11 @@
                         </div>
 
                         <!-- Add to Cart Button -->
-                        <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
-                            [loading]="isLoading" [label]="formulario.valid? 'Agregar al Carrito' : 'Selecciona todos los campos'" [severity]="formulario.valid? 'success' : 'secondary'"
-                            class="w-full" />
+                        <div class="flex align-items-center justify-content-center mt-3">
+                            <p-button [disabled]="!formulario.valid" [icon]="!formulario.valid ? 'pi pi-lock' : 'pi pi-cart-plus'" [raised]="true" size="large" (click)="confirmar()"
+                                [loading]="isLoading" [label]="formulario.valid? 'Agregar al Carrito' : 'Selecciona todos los campos'"
+                                [severity]="formulario.valid? 'success' : 'secondary'" class="w-full md:w-auto" />
+                        </div>
                     </div>
                 </p-panel>
             </div>
@@ -653,7 +655,7 @@
         <ng-template #footer>
             <div class="flex justify-content-end gap-2 mt-3">
                 <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showConfirmationDialog = false" />
-                <p-button label="Confirmar Pedido" icon="pi pi-check" severity="success" (onClick)="confirmOrder()" [loading]="isLoading" />
+                <p-button label="Confirmar" icon="pi pi-check" severity="success" (onClick)="confirmOrder()" [loading]="isLoading" />
             </div>
         </ng-template>
     </p-dialog>
