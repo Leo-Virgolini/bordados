@@ -9,10 +9,11 @@
     </ng-template>
 
     <p-table [value]="hiladosColors" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} colores"
-        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm">
+        [rowsPerPageOptions]="[5, 10, 25]" class="p-datatable-sm">
 
         <ng-template #header>
             <tr>
+                <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                 <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
                 <th pSortableColumn="code">Código <p-sortIcon field="code"></p-sortIcon></th>
                 <th pSortableColumn="stock">Stock <p-sortIcon field="stock"></p-sortIcon></th>
@@ -23,6 +24,9 @@
 
         <ng-template #body let-hilado>
             <tr>
+                <td>
+                    <span class="font-semibold text-primary">{{ hilado.id }}</span>
+                </td>
                 <td>
                     <div class="flex align-items-center gap-2">
                         <div class="w-2rem h-2rem border-round border-2 border-500" [style.background-color]="hilado.code"></div>
@@ -57,6 +61,23 @@
     [header]="editingHilado ? 'Editar Color de Hilado' : 'Nuevo Color de Hilado'" (onHide)="showHiladoDialog = false">
 
     <form [formGroup]="hiladoForm" class="flex flex-column gap-4">
+        <!-- ID Field (only when editing) -->
+        <div class="grid" *ngIf="editingHilado">
+            <div class="col-12 md:col-6">
+                <label for="hiladoId" class="block mb-2 font-semibold">
+                    ID del Color *
+                    <span class="text-xs text-500 font-normal">(Solo lectura)</span>
+                </label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-id-card"></i>
+                    </p-inputgroup-addon>
+                    <input id="hiladoId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del color" readonly [class.surface-200]="true" />
+                </p-inputgroup>
+                <app-error-helper [control]="hiladoForm.get('id')"></app-error-helper>
+            </div>
+        </div>
+
         <div class="grid">
             <div class="col-12 md:col-6">
                 <label for="name" class="block mb-2 font-semibold">Nombre *</label>

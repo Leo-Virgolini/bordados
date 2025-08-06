@@ -295,6 +295,7 @@ export class ProductsSaleComponent implements OnInit {
 
     addToCart(event: Event, product: ProductEmbroided): void {
         this.selectedProduct = product;
+
         // Reset form values
         this.productSelectionForm.patchValue({
             selectedColor: '',
@@ -302,143 +303,156 @@ export class ProductsSaleComponent implements OnInit {
             selectedQuantity: 1
         });
 
-        // Close any existing popup first to ensure proper repositioning
-        this.confirmationService.close();
+        // Show the confirm popup with the form
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: `¿Agregar ${product.name} al carrito?`,
+            icon: 'pi pi-shopping-cart',
+            acceptLabel: 'Agregar',
+            acceptIcon: 'pi pi-cart-plus',
+            acceptButtonStyleClass: 'p-button-primary',
+            rejectLabel: 'Cancelar',
+            rejectIcon: 'pi pi-times',
+            rejectButtonStyleClass: 'p-button-secondary',
+            accept: () => {
+                // Get form values directly from the form
+                const formValues = this.productSelectionForm.value;
 
-        // Use setTimeout to ensure the previous popup is fully closed
-        setTimeout(() => {
-            this.confirmationService.confirm({
-                target: event.target as EventTarget,
-                message: `¿Agregar ${product.name} al carrito?`,
-                icon: 'pi pi-shopping-cart',
-                acceptLabel: 'Agregar',
-                acceptIcon: 'pi pi-cart-plus',
-                acceptButtonStyleClass: 'p-button-primary',
-                rejectLabel: 'Cancelar',
-                rejectIcon: 'pi pi-times',
-                rejectButtonStyleClass: 'p-button-secondary',
-                accept: () => {
-                    const selectedColor = this.productSelectionForm.get('selectedColor')?.value;
-                    const selectedSize = this.productSelectionForm.get('selectedSize')?.value;
-                    const selectedQuantity = this.productSelectionForm.get('selectedQuantity')?.value;
+                let selectedColor = formValues.selectedColor;
+                let selectedSize = formValues.selectedSize;
+                const selectedQuantity = formValues.selectedQuantity;
 
-                    // Validate color and size selection
-                    if (!selectedColor) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Color requerido',
-                            detail: 'Debes seleccionar un color',
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    if (!selectedSize) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Talle requerido',
-                            detail: 'Debes seleccionar un talle',
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    // Validate quantity
-                    if (selectedQuantity < 1) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Cantidad inválida',
-                            detail: 'La cantidad debe ser al menos 1',
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    const availableStock = this.getStockForColorAndSize(product, selectedColor, selectedSize);
-                    if (selectedQuantity > availableStock) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Stock insuficiente',
-                            detail: `Solo hay ${availableStock} ${availableStock === 1 ? 'unidad' : 'unidades'} disponible${availableStock === 1 ? '' : 's'} para ${selectedColor} - T: ${selectedSize}`,
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    // Check if adding this quantity would exceed available stock
-                    const currentCartQuantity = this.carritoService.getCartItemQuantityForVariant(product.id, selectedColor, selectedSize);
-                    const totalQuantity = currentCartQuantity + selectedQuantity;
-
-                    if (totalQuantity > availableStock) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Stock insuficiente',
-                            detail: `Ya tienes ${currentCartQuantity} x '${product.name}' ${selectedColor} - T: ${selectedSize}. ${currentCartQuantity === availableStock ? 'No puedes agregar más' : `Solo puedes agregar ${availableStock - currentCartQuantity} más.`}`,
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    // Add loading state for this specific product
-                    this.loadingProducts.add(product.id);
-
-                    // Create a product with only the selected variant and size
-                    const selectedVariant = product.variants?.find(v => v.color === selectedColor);
-                    const selectedSizeStock = selectedVariant?.sizes?.find(s => s.size === selectedSize);
-
-                    if (!selectedVariant || !selectedSizeStock) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'No se pudo encontrar la variante seleccionada',
-                            life: 3000
-                        });
-                        return;
-                    }
-
-                    const productWithSelectedVariant = new ProductEmbroided({
-                        ...product,
-                        variants: [{
-                            color: selectedVariant.color,
-                            image: selectedVariant.image,
-                            sizes: [selectedSizeStock]
-                        }]
-                    });
-
-                    this.carritoService.agregarItem(new CartItem({
-                        product: productWithSelectedVariant,
-                        quantity: selectedQuantity
-                    }));
+                // Validate color and size selection
+                if (!selectedColor) {
                     this.messageService.add({
-                        severity: 'info',
+                        severity: 'error',
+                        summary: 'Color requerido',
+                        detail: 'Debes seleccionar un color',
+                        life: 3000
+                    });
+                    return;
+                }
+
+                if (!selectedSize) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Talle requerido',
+                        detail: 'Debes seleccionar un talle',
+                        life: 3000
+                    });
+                    return;
+                }
+
+                // Validate quantity
+                if (selectedQuantity < 1) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Cantidad inválida',
+                        detail: 'La cantidad debe ser al menos 1',
+                        life: 3000
+                    });
+                    return;
+                }
+
+                const availableStock = this.getStockForColorAndSize(product, selectedColor, selectedSize);
+                if (selectedQuantity > availableStock) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Stock insuficiente',
+                        detail: `Solo hay ${availableStock} ${availableStock === 1 ? 'unidad' : 'unidades'} disponible${availableStock === 1 ? '' : 's'} para ${selectedColor} - T: ${selectedSize}`,
+                        life: 3000
+                    });
+                    return;
+                }
+
+                // Check if adding this quantity would exceed available stock
+                const currentCartQuantity = this.carritoService.getCartItemQuantityForVariant(product.id, selectedColor, selectedSize);
+                const totalQuantity = currentCartQuantity + selectedQuantity;
+
+                if (totalQuantity > availableStock) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Stock insuficiente',
+                        detail: `Ya tienes ${currentCartQuantity} x '${product.name}' ${selectedColor} - T: ${selectedSize}. ${currentCartQuantity === availableStock ? 'No puedes agregar más' : `Solo puedes agregar ${availableStock - currentCartQuantity} más.`}`,
+                        life: 3000
+                    });
+                    return;
+                }
+
+                // Add loading state for this specific product
+                this.loadingProducts.add(product.id);
+
+                // Create a product with only the selected variant and size
+                const selectedVariant = product.variants?.find(v => v.color === selectedColor);
+                const selectedSizeStock = selectedVariant?.sizes?.find(s => s.size === selectedSize);
+
+                if (!selectedVariant || !selectedSizeStock) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'No se pudo encontrar la variante seleccionada',
+                        life: 3000
+                    });
+                    this.loadingProducts.delete(product.id);
+                    return;
+                }
+
+                const productWithSelectedVariant = new ProductEmbroided({
+                    ...product,
+                    id: Number(product.id), // Ensure ID is a number
+                    variants: [{
+                        color: selectedVariant.color,
+                        image: selectedVariant.image,
+                        sizes: [selectedSizeStock]
+                    }]
+                });
+
+                const cartItem = new CartItem({
+                    product: productWithSelectedVariant,
+                    quantity: selectedQuantity
+                });
+
+                const success = this.carritoService.agregarItem(cartItem);
+
+                if (success) {
+                    this.messageService.add({
+                        severity: 'success',
                         summary: 'Producto agregado',
                         detail: `'${product.name}' ${selectedColor} - T: ${selectedSize} x ${selectedQuantity} agregado al carrito`,
                         icon: 'pi pi-cart-plus',
                         life: 3000
                     });
-
-                    // Remove loading state
-                    this.loadingProducts.delete(product.id);
-                    this.selectedProduct = null;
-                    // Reset form
-                    this.productSelectionForm.patchValue({
-                        selectedColor: '',
-                        selectedSize: '',
-                        selectedQuantity: 1
-                    });
-
-                },
-                reject: () => {
-                    this.selectedProduct = null;
-                    // Reset form
-                    this.productSelectionForm.patchValue({
-                        selectedColor: '',
-                        selectedSize: '',
-                        selectedQuantity: 1
+                } else {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error al agregar',
+                        detail: 'No se pudo agregar el producto al carrito. Verifica el stock disponible.',
+                        life: 3000
                     });
                 }
-            });
-        }, 100); // Small delay to ensure proper repositioning
+
+                // Remove loading state
+                this.loadingProducts.delete(product.id);
+                this.selectedProduct = null;
+
+                // Reset form
+                this.productSelectionForm.patchValue({
+                    selectedColor: '',
+                    selectedSize: '',
+                    selectedQuantity: 1
+                });
+
+            },
+            reject: () => {
+                this.selectedProduct = null;
+                // Reset form
+                this.productSelectionForm.patchValue({
+                    selectedColor: '',
+                    selectedSize: '',
+                    selectedQuantity: 1
+                });
+            }
+        });
     }
 
     isProductLoading(productId: number): boolean {
@@ -509,18 +523,13 @@ export class ProductsSaleComponent implements OnInit {
     }
 
     getAvailableSizes(product: ProductEmbroided, color?: string): { label: string, value: string }[] {
-        console.log('getAvailableSizes called with:', { productId: product.id, color, productVariants: product.variants });
-
         if (!color) {
-            console.log('No color provided, returning empty array');
             return [];
         }
 
         const variant = product.variants?.find(v => v.color === color);
-        console.log('Found variant:', variant);
 
         if (!variant || !variant.sizes) {
-            console.log('No variant or sizes found, returning empty array');
             return [];
         }
 
@@ -541,7 +550,6 @@ export class ProductsSaleComponent implements OnInit {
                 value: sizeStock.size
             }));
 
-        console.log('Available sizes for color', color, ':', availableSizes);
         return availableSizes;
     }
 
@@ -600,12 +608,8 @@ export class ProductsSaleComponent implements OnInit {
     }
 
     onColorChange() {
-        console.log('Color changed to:', this.productSelectionForm.get('selectedColor')?.value);
         this.productSelectionForm.get('selectedSize')?.setValue(''); // Reset size selection
-        // Force change detection
-        setTimeout(() => {
-            console.log('Available sizes after color change:', this.getAvailableSizes(this.selectedProduct!, this.productSelectionForm.get('selectedColor')?.value));
-        }, 0);
+        this.productSelectionForm.get('selectedQuantity')?.setValue(1); // Reset quantity to 1
     }
 
 } 

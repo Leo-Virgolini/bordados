@@ -1,7 +1,7 @@
 <div class="grid">
     <!-- Orders Summary Cards -->
     <div class="col-12 lg:col-3">
-        <p-card styleClass="border-round-xl shadow-3">
+        <p-card class="border-round-xl shadow-3">
             <div class="flex align-items-center justify-content-between">
                 <div>
                     <span class="block text-500 font-medium mb-3">Ventas del Mes</span>
@@ -14,7 +14,7 @@
         </p-card>
     </div>
     <div class="col-12 lg:col-3">
-        <p-card styleClass="border-round-xl shadow-3">
+        <p-card class="border-round-xl shadow-3">
             <div class="flex align-items-center justify-content-between">
                 <div>
                     <span class="block text-500 font-medium mb-3">Pedidos del Mes</span>
@@ -27,7 +27,7 @@
         </p-card>
     </div>
     <div class="col-12 lg:col-3">
-        <p-card styleClass="border-round-xl shadow-3">
+        <p-card class="border-round-xl shadow-3">
             <div class="flex align-items-center justify-content-between">
                 <div>
                     <span class="block text-500 font-medium mb-3">Clientes Nuevos</span>
@@ -40,7 +40,7 @@
         </p-card>
     </div>
     <div class="col-12 lg:col-3">
-        <p-card styleClass="border-round-xl shadow-3">
+        <p-card class="border-round-xl shadow-3">
             <div class="flex align-items-center justify-content-between">
                 <div>
                     <span class="block text-500 font-medium mb-3">Ticket Promedio</span>
@@ -68,7 +68,7 @@
         </div>
     </ng-template>
 
-    <p-table [value]="orders" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" styleClass="p-datatable-sm">
+    <p-table [value]="orders" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" class="p-datatable-sm">
         <ng-template pTemplate="header">
             <tr>
                 <th class="text-left">Pedido</th>
@@ -140,16 +140,19 @@
 <p-dialog [(visible)]="showOrderDialog" modal="true" styleClass="w-full md:w-9" [draggable]="false" [resizable]="false" [closable]="true"
     [header]="editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'" (onHide)="closeOrderDialog()">
 
-    <form [formGroup]="orderForm" class="flex flex-column gap-4" *ngIf="orderForm && formArrayReady">
+    <form [formGroup]="orderForm" class="flex flex-column gap-4" *ngIf="orderForm">
         <!-- Order Header -->
         <div class="grid">
-            <div class="col-12 md:col-6">
-                <label for="orderId" class="block mb-2 font-semibold">ID del Pedido *</label>
+            <div class="col-12 md:col-6" *ngIf="editingOrder">
+                <label for="orderId" class="block mb-2 font-semibold">
+                    ID del Pedido *
+                    <span class="text-xs text-500 font-normal">(Solo lectura)</span>
+                </label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
-                        <i class="pi pi-shopping-cart"></i>
+                        <i class="pi pi-id-card"></i>
                     </p-inputgroup-addon>
-                    <input id="orderId" type="text" pInputText formControlName="id" class="w-full" placeholder="ORD-001" />
+                    <input id="orderId" type="text" pInputText formControlName="id" class="w-full font-semibold" readonly />
                 </p-inputgroup>
                 <app-error-helper [control]="orderForm.get('id')"></app-error-helper>
             </div>
@@ -199,7 +202,7 @@
         </div>
 
         <!-- Customer Information (Read-only for Existing Orders) -->
-        <p-card styleClass="border-round-xl shadow-2 p-3" *ngIf="editingOrder">
+        <p-card class="border-round-xl shadow-2 p-3" *ngIf="editingOrder">
             <ng-template pTemplate="header">
                 <div class="flex align-items-center justify-content-between">
                     <div class="flex align-items-center gap-2">
@@ -213,7 +216,7 @@
             <div class="grid">
                 <!-- Personal Information -->
                 <div class="col-12 xl:col-6">
-                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                    <p-card class="border-round-lg shadow-1 p-3">
                         <ng-template pTemplate="header">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-id-card text-primary"></i>
@@ -271,7 +274,7 @@
 
                 <!-- Address Information -->
                 <div class="col-12 xl:col-6">
-                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                    <p-card class="border-round-lg shadow-1 p-3">
                         <ng-template pTemplate="header">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-map-marker text-primary"></i>
@@ -402,13 +405,24 @@
                             <!-- Thread Colors -->
                             <div class="grid mb-2" *ngIf="getProductThreadColors(i).length > 0">
                                 <div class="col-12">
-                                    <span class="text-sm text-600">Colores de Hilo:</span>
-                                    <div class="flex gap-2 mt-1">
-                                        <div *ngFor="let color of getProductThreadColors(i)" class="flex align-items-center gap-2">
-                                            <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="color.name" tooltipPosition="top"
-                                                [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                    <div class="surface-100 p-3 border-round">
+                                        <div class="flex align-items-center gap-2 mb-2">
+                                            <i class="pi pi-palette text-primary text-lg"></i>
+                                            <span class="text-sm font-semibold text-700">Colores de Hilo</span>
+                                        </div>
+                                        <div class="flex flex-column gap-2">
+                                            <div *ngFor="let color of getProductThreadColors(i); let colorIndex = index"
+                                                class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1 hover:shadow-2 transition-all transition-duration-300">
+                                                <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle border-2 border-300 shadow-2" [pTooltip]="color.name"
+                                                    tooltipPosition="top"
+                                                    [ngStyle]="{'background-color': color.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                                    <i class="pi pi-circle-fill text-white text-sm" *ngIf="color.code === '#FFFFFF'"></i>
+                                                </div>
+                                                <div class="flex flex-column">
+                                                    <span class="text-sm font-bold text-900">{{ colorIndex === 0 ? '1° Hilado' : '2° Hilado' }}</span>
+                                                    <span class="text-xs text-600">{{ color.name }} ({{ color.code }})</span>
+                                                </div>
                                             </div>
-                                            <span class="text-sm font-medium">{{ color.name }} ({{ color.code }})</span>
                                         </div>
                                     </div>
                                 </div>
@@ -417,16 +431,25 @@
                             <!-- Custom Text -->
                             <div class="grid mb-2" *ngIf="getProductCustomText(i)">
                                 <div class="col-12">
-                                    <span class="text-sm text-600">Texto Personalizado:</span>
-                                    <div class="flex align-items-center gap-2 mt-1">
-                                        <p-tag *ngIf="getProductCustomTextColor(i)?.code" [value]="getProductCustomText(i)" [style]="{'color': getProductCustomTextColor(i)?.code}"
-                                            [rounded]="true" size="small">
-                                        </p-tag>
-                                        <div class="flex align-items-center gap-2">
-                                            <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getProductCustomTextColor(i)?.name" tooltipPosition="top"
-                                                [ngStyle]="{'background-color': getProductCustomTextColor(i)?.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                    <div class="surface-100 p-3 border-round">
+                                        <div class="flex align-items-center gap-2 mb-2">
+                                            <i class="pi pi-align-center text-primary text-lg"></i>
+                                            <span class="text-sm font-semibold text-700">Texto Personalizado</span>
+                                        </div>
+                                        <div class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1">
+                                            <div class="flex flex-column gap-2">
+                                                <p-tag *ngIf="getProductCustomTextColor(i)?.code" [value]="getProductCustomText(i)"
+                                                    [style]="{'color': getProductCustomTextColor(i)?.code, 'font-weight': 'bold'}" [rounded]="true" size="small">
+                                                </p-tag>
+                                                <div class="flex align-items-center gap-2">
+                                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle border-2 border-300 shadow-1"
+                                                        [pTooltip]="getProductCustomTextColor(i)?.name" tooltipPosition="top"
+                                                        [ngStyle]="{'background-color': getProductCustomTextColor(i)?.code, 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                                        <i class="pi pi-circle-fill text-white text-xs" *ngIf="getProductCustomTextColor(i)?.code === '#FFFFFF'"></i>
+                                                    </div>
+                                                    <span class="text-xs text-600">Color: {{ getProductCustomTextColor(i)?.name }} ({{ getProductCustomTextColor(i)?.code }})</span>
+                                                </div>
                                             </div>
-                                            Color: <span class="text-sm font-medium">{{ getProductCustomTextColor(i)?.name }} ({{ getProductCustomTextColor(i)?.code }})</span>
                                         </div>
                                     </div>
                                 </div>
@@ -435,10 +458,20 @@
                             <!-- Custom Image -->
                             <div class="grid mb-2" *ngIf="getProductCustomImage(i)">
                                 <div class="col-12">
-                                    <span class="text-sm text-600">Imagen Personalizada:</span>
-                                    <div class="mt-1">
-                                        <p-image [src]="getProductCustomImage(i)" alt="Imagen personalizada" width="100" height="100" [preview]="true" styleClass="border-round shadow-1">
-                                        </p-image>
+                                    <div class="surface-100 p-3 border-round">
+                                        <div class="flex align-items-center gap-2 mb-2">
+                                            <i class="pi pi-image text-primary text-lg"></i>
+                                            <span class="text-sm font-semibold text-700">Imagen Personalizada</span>
+                                        </div>
+                                        <div class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1">
+                                            <p-image [src]="getProductCustomImage(i)" alt="Imagen personalizada" width="80" height="80" [preview]="true" imageClass="border-round shadow-2"
+                                                class="border-round">
+                                            </p-image>
+                                            <div class="flex flex-column">
+                                                <span class="text-xs text-600">Imagen subida por el cliente</span>
+                                                <span class="text-xs text-500">Haz clic para ampliar</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -673,7 +706,7 @@
         </div>
 
         <!-- Customer Information -->
-        <p-card styleClass="border-round-xl shadow-2 p-3 mb-4">
+        <p-card class="border-round-xl shadow-2 p-3 mb-4">
             <ng-template pTemplate="header">
                 <div class="flex align-items-center justify-content-between">
                     <div class="flex align-items-center gap-2">
@@ -687,7 +720,7 @@
             <div class="grid">
                 <!-- Personal Information -->
                 <div class="col-12 xl:col-6">
-                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                    <p-card class="border-round-lg shadow-1 p-3">
                         <ng-template pTemplate="header">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-id-card text-primary"></i>
@@ -745,7 +778,7 @@
 
                 <!-- Address Information -->
                 <div class="col-12 xl:col-6">
-                    <p-card styleClass="border-round-lg shadow-1 p-3">
+                    <p-card class="border-round-lg shadow-1 p-3">
                         <ng-template pTemplate="header">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-map-marker text-primary"></i>
@@ -898,21 +931,38 @@
                         <!-- Thread Colors -->
                         <div class="grid mb-2" *ngIf="item.customization.threadColor1 || item.customization.threadColor2">
                             <div class="col-12">
-                                <span class="text-sm text-600">Colores de Hilo:</span>
-                                <div class="flex gap-2 mt-1">
-                                    <div *ngIf="item.customization.threadColor1" class="flex align-items-center gap-2">
-                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.threadColor1)" tooltipPosition="top"
-                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor1), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
-                                        </div>
-                                        <span class="text-sm font-medium">{{ getColorNameById(item.customization.threadColor1) }} ({{ getColorCodeById(item.customization.threadColor1)
-                                            }})</span>
+                                <div class="surface-100 p-3 border-round">
+                                    <div class="flex align-items-center gap-2 mb-2">
+                                        <i class="pi pi-palette text-primary text-lg"></i>
+                                        <span class="text-sm font-semibold text-700">Colores de Hilo</span>
                                     </div>
-                                    <div *ngIf="item.customization.threadColor2" class="flex align-items-center gap-2">
-                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.threadColor2)" tooltipPosition="top"
-                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor2), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                    <div class="flex flex-column gap-2">
+                                        <div *ngIf="item.customization.threadColor1"
+                                            class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1 hover:shadow-2 transition-all transition-duration-300">
+                                            <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle border-2 border-300 shadow-2"
+                                                [pTooltip]="getColorNameById(item.customization.threadColor1)" tooltipPosition="top"
+                                                [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor1), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                                <i class="pi pi-circle-fill text-white text-sm" *ngIf="getColorCodeById(item.customization.threadColor1) === '#FFFFFF'"></i>
+                                            </div>
+                                            <div class="flex flex-column">
+                                                <span class="text-sm font-bold text-900">1° Hilado</span>
+                                                <span class="text-xs text-600">{{ getColorNameById(item.customization.threadColor1) }} ({{ getColorCodeById(item.customization.threadColor1)
+                                                    }})</span>
+                                            </div>
                                         </div>
-                                        <span class="text-sm font-medium">{{ getColorNameById(item.customization.threadColor2) }} ({{ getColorCodeById(item.customization.threadColor2)
-                                            }})</span>
+                                        <div *ngIf="item.customization.threadColor2"
+                                            class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1 hover:shadow-2 transition-all transition-duration-300">
+                                            <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle border-2 border-300 shadow-2"
+                                                [pTooltip]="getColorNameById(item.customization.threadColor2)" tooltipPosition="top"
+                                                [ngStyle]="{'background-color': getColorCodeById(item.customization.threadColor2), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                                <i class="pi pi-circle-fill text-white text-sm" *ngIf="getColorCodeById(item.customization.threadColor2) === '#FFFFFF'"></i>
+                                            </div>
+                                            <div class="flex flex-column">
+                                                <span class="text-sm font-bold text-900">2° Hilado</span>
+                                                <span class="text-xs text-600">{{ getColorNameById(item.customization.threadColor2) }} ({{ getColorCodeById(item.customization.threadColor2)
+                                                    }})</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -921,17 +971,26 @@
                         <!-- Custom Text -->
                         <div class="grid mb-2" *ngIf="item.customization.customText">
                             <div class="col-12">
-                                <span class="text-sm text-600">Texto Personalizado:</span>
-                                <div class="flex align-items-center gap-2 mt-1">
-                                    <p-tag *ngIf="item.customization.customTextColor" [value]="item.customization.customText"
-                                        [style]="{'color': getColorCodeById(item.customization.customTextColor)}" [rounded]="true" size="small">
-                                    </p-tag>
-                                    <div *ngIf="item.customization.customTextColor" class="flex align-items-center gap-2">
-                                        <div class="border-circle border-1 border-300 w-2rem h-2rem" [pTooltip]="getColorNameById(item.customization.customTextColor)" tooltipPosition="top"
-                                            [ngStyle]="{'background-color': getColorCodeById(item.customization.customTextColor), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                <div class="surface-100 p-3 border-round">
+                                    <div class="flex align-items-center gap-2 mb-2">
+                                        <i class="pi pi-align-center text-primary text-lg"></i>
+                                        <span class="text-sm font-semibold text-700">Texto Personalizado</span>
+                                    </div>
+                                    <div class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1">
+                                        <div class="flex flex-column gap-2">
+                                            <p-tag *ngIf="item.customization.customTextColor" [value]="item.customization.customText"
+                                                [style]="{'color': getColorCodeById(item.customization.customTextColor), 'font-weight': 'bold'}" [rounded]="true" size="small">
+                                            </p-tag>
+                                            <div *ngIf="item.customization.customTextColor" class="flex align-items-center gap-2">
+                                                <div class="flex align-items-center justify-content-center w-2rem h-2rem border-circle border-2 border-300 shadow-1"
+                                                    [pTooltip]="getColorNameById(item.customization.customTextColor)" tooltipPosition="top"
+                                                    [ngStyle]="{'background-color': getColorCodeById(item.customization.customTextColor), 'background-image': 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 4px)'}">
+                                                    <i class="pi pi-circle-fill text-white text-xs" *ngIf="getColorCodeById(item.customization.customTextColor) === '#FFFFFF'"></i>
+                                                </div>
+                                                <span class="text-xs text-600">Color: {{ getColorNameById(item.customization.customTextColor) }} ({{
+                                                    getColorCodeById(item.customization.customTextColor) }})</span>
+                                            </div>
                                         </div>
-                                        Color: <span class="text-sm font-medium">{{ getColorNameById(item.customization.customTextColor) }} ({{
-                                            getColorCodeById(item.customization.customTextColor) }})</span>
                                     </div>
                                 </div>
                             </div>
@@ -940,10 +999,24 @@
                         <!-- Custom Image -->
                         <div class="grid mb-2" *ngIf="item.customization.customImage">
                             <div class="col-12">
-                                <span class="text-sm text-600">Imagen Personalizada:</span>
-                                <div class="mt-1">
-                                    <p-image [src]="item.customization.customImage" alt="Imagen personalizada" width="100" height="100" [preview]="true" styleClass="border-round shadow-1">
-                                    </p-image>
+                                <div class="surface-100 p-3 border-round">
+                                    <div class="flex align-items-center justify-content-between mb-2">
+                                        <div class="flex align-items-center gap-2">
+                                            <i class="pi pi-image text-primary text-lg"></i>
+                                            <span class="text-sm font-semibold text-700">Imagen Personalizada</span>
+                                        </div>
+                                        <p-button icon="pi pi-download" label="Descargar" size="small" [outlined]="true"
+                                            (onClick)="downloadCustomImage(item.customization.customImage, item.getProductName())" pTooltip="Descargar imagen personalizada"></p-button>
+                                    </div>
+                                    <div class="flex align-items-center gap-3 p-2 surface-0 border-round shadow-1">
+                                        <p-image [src]="item.customization.customImage" alt="Imagen personalizada" width="80" height="80" [preview]="true"
+                                            imageClass="border-round shadow-2" class="border-round">
+                                        </p-image>
+                                        <div class="flex flex-column">
+                                            <span class="text-xs text-600">Imagen subida por el cliente</span>
+                                            <span class="text-xs text-500">Haz clic para ampliar</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1037,6 +1110,8 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Descargar Datos Completos" icon="pi pi-download" [outlined]="true" (onClick)="downloadOrderData(selectedOrder!)"
+                pTooltip="Descargar todos los datos del pedido incluyendo imágenes" />
             <p-button label="Editar Pedido" icon="pi pi-pencil" [outlined]="true" (onClick)="editOrder(selectedOrder!)" />
             <p-button label="Cerrar" icon="pi pi-times" (onClick)="showOrderDetailsDialog = false" />
         </div>

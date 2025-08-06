@@ -4,7 +4,7 @@
 
 <p-table [value]="customizableProducts" [loading]="customizableProductsLoading" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
     currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos personalizables" [rowsPerPageOptions]="[5, 10, 25]" responsiveLayout="scroll"
-    [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-sm">
+    [tableStyle]="{'min-width': '50rem'}" class="p-datatable-sm">
 
     <ng-template #header>
         <tr>
@@ -33,7 +33,7 @@
                 <p-tag [value]="getCategoryLabel(product.garmentType)" severity="info" [rounded]="true"></p-tag>
             </td>
             <td class="text-center">
-                <p-image [src]="getCustomizableProductImage(product)" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" [preview]="true" />
+                <p-image [src]="getCustomizableProductImage(product)" [alt]="product.name" imageClass="w-8rem h-8rem border-round object-cover" class="border-round" [preview]="true" />
             </td>
             <td class="text-center">
                 <span class="font-semibold text-primary">{{ product.price | currency:'ARS':'symbol':'1.0-0' }}</span>
@@ -83,13 +83,16 @@
     <form [formGroup]="customizableProductForm" class="flex flex-column gap-4">
         <!-- Basic Information -->
         <div class="grid">
-            <div class="col-12 md:col-6">
-                <label for="customizableProductId" class="block mb-2 font-semibold">ID del Producto *</label>
+            <div class="col-12 md:col-6" *ngIf="editingCustomizableProduct">
+                <label for="customizableProductId" class="block mb-2 font-semibold">
+                    ID del Producto *
+                    <span class="text-xs text-500 font-normal">(Solo lectura)</span>
+                </label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
-                        <i class="pi pi-box"></i>
+                        <i class="pi pi-id-card"></i>
                     </p-inputgroup-addon>
-                    <input id="customizableProductId" type="text" pInputText formControlName="id" class="w-full" placeholder="Ej: CUST-001" />
+                    <input id="customizableProductId" type="text" pInputText formControlName="id" class="w-full" placeholder="Ej: CUST-001" readonly [class.surface-200]="true" />
                 </p-inputgroup>
                 <app-error-helper [control]="customizableProductForm.get('id')"></app-error-helper>
             </div>
@@ -182,13 +185,50 @@
                                     </p-inputgroup>
                                 </div>
                                 <div class="col-6">
-                                    <label class="block mb-2 font-semibold">URL de Imagen</label>
-                                    <p-inputgroup>
-                                        <p-inputgroup-addon>
-                                            <i class="pi pi-image"></i>
-                                        </p-inputgroup-addon>
-                                        <input type="text" pInputText [formControlName]="'image'" class="w-full" placeholder="https://ejemplo.com/imagen.jpg" />
-                                    </p-inputgroup>
+                                    <label class="block mb-2 font-semibold">Imagen de Variante</label>
+                                    <div class="flex flex-column gap-2">
+                                        <!-- File Upload for Variant with Preview -->
+                                        <p-fileupload 
+                                            mode="advanced" 
+                                            name="variantImage" 
+                                            accept="image/*" 
+                                            [maxFileSize]="maxImageSize" 
+                                            [auto]="true"
+                                            (onSelect)="onVariantImageUpload($event, i)" 
+                                            [showCancelButton]="false" 
+                                            [showUploadButton]="false" 
+                                            [multiple]="false"
+                                            styleClass="w-full">
+                                            <ng-template #empty>
+                                                <div class="flex flex-column align-items-center gap-2 p-3">
+                                                    <i class="pi pi-image text-2xl text-300"></i>
+                                                    <span class="text-600 text-sm">Seleccionar imagen</span>
+                                                </div>
+                                            </ng-template>
+                                            <ng-template #content let-files let-removeFileCallback="removeFileCallback">
+                                                <div *ngIf="files?.length > 0" class="flex flex-column gap-2">
+                                                    <div *ngFor="let file of files; let j = index" class="flex align-items-center gap-2 p-2 surface-100 border-round">
+                                                        <div class="flex align-items-center gap-2 flex-1">
+                                                            <img *ngIf="file.objectURL" [src]="file.objectURL" [alt]="file.name" class="w-3rem h-3rem border-round object-cover" />
+                                                            <div class="flex flex-column gap-1 flex-1">
+                                                                <span class="font-semibold text-xs">{{ file.name }}</span>
+                                                                <span class="text-xs text-600">{{ formatFileSize(file.size) }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <p-button
+                                                            icon="pi pi-trash"
+                                                            severity="danger"
+                                                            [outlined]="true"
+                                                            [rounded]="true"
+                                                            size="small"
+                                                            (onClick)="removeFileCallback(j)"
+                                                            pTooltip="Eliminar imagen">
+                                                        </p-button>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </p-fileupload>
+                                    </div>
                                 </div>
                             </div>
 

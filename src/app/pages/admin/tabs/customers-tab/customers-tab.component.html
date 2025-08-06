@@ -155,6 +155,24 @@
     [header]="editingCustomer ? 'Editar Cliente' : 'Nuevo Cliente'" (onHide)="showCustomerDialog = false">
 
     <form [formGroup]="customerForm" class="flex flex-column gap-4">
+        <!-- ID Field (only when editing) -->
+        <div class="grid" *ngIf="editingCustomer">
+            <div class="col-12 md:col-6">
+                <label for="customerId" class="block mb-2 font-semibold">
+                    ID del Cliente * 
+                    <span class="text-xs text-500 font-normal">(Solo lectura)</span>
+                </label>
+                <p-inputgroup>
+                    <p-inputgroup-addon>
+                        <i class="pi pi-id-card"></i>
+                    </p-inputgroup-addon>
+                    <input id="customerId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cliente" 
+                           readonly [class.surface-200]="true" />
+                </p-inputgroup>
+                <app-error-helper [control]="customerForm.get('id')"></app-error-helper>
+            </div>
+        </div>
+
         <!-- Personal Information -->
         <div class="grid">
             <div class="col-12 md:col-6">
@@ -299,38 +317,44 @@
 <p-dialog [(visible)]="showCustomerDetailsDialog" [modal]="true" [style]="{width: '50rem'}" [draggable]="false" [resizable]="false" header="Detalles del Cliente" [closable]="true">
 
     <div class="surface-ground p-4" *ngIf="selectedCustomer">
-        <!-- Customer Information -->
-        <div class="surface-card p-4 border-round mb-4">
-            <h3 class="text-lg font-semibold mb-3 text-primary">
-                <i class="pi pi-user mr-2"></i>Información Personal
-            </h3>
-            <div class="grid">
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Nombre Completo</span>
-                        <span class="font-bold text-900">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Email</span>
-                        <span class="text-900">{{ selectedCustomer.email }}</span>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">Teléfono</span>
-                        <span class="text-900">{{ selectedCustomer.phone }}</span>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="flex flex-column mb-3">
-                        <span class="text-sm text-600 mb-1">DNI</span>
-                        <span class="text-900">{{ selectedCustomer.dni }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+                 <!-- Customer Information -->
+         <div class="surface-card p-4 border-round mb-4">
+             <h3 class="text-lg font-semibold mb-3 text-primary">
+                 <i class="pi pi-user mr-2"></i>Información Personal
+             </h3>
+             <div class="grid">
+                 <div class="col-12 md:col-6">
+                     <div class="flex flex-column mb-3">
+                         <span class="text-sm text-600 mb-1">ID del Cliente</span>
+                         <span class="font-bold text-primary">{{ selectedCustomer.id }}</span>
+                     </div>
+                 </div>
+                 <div class="col-12 md:col-6">
+                     <div class="flex flex-column mb-3">
+                         <span class="text-sm text-600 mb-1">Nombre Completo</span>
+                         <span class="font-bold text-900">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
+                     </div>
+                 </div>
+                 <div class="col-12 md:col-6">
+                     <div class="flex flex-column mb-3">
+                         <span class="text-sm text-600 mb-1">Email</span>
+                         <span class="text-900">{{ selectedCustomer.email }}</span>
+                     </div>
+                 </div>
+                 <div class="col-12 md:col-6">
+                     <div class="flex flex-column mb-3">
+                         <span class="text-sm text-600 mb-1">Teléfono</span>
+                         <span class="text-900">{{ selectedCustomer.phone }}</span>
+                     </div>
+                 </div>
+                 <div class="col-12 md:col-6">
+                     <div class="flex flex-column mb-3">
+                         <span class="text-sm text-600 mb-1">DNI</span>
+                         <span class="text-900">{{ selectedCustomer.dni }}</span>
+                     </div>
+                 </div>
+             </div>
+         </div>
 
         <!-- Address Information -->
         <div class="surface-card p-4 border-round mb-4">
@@ -410,7 +434,7 @@
                 <i class="pi pi-list mr-2"></i>Historial de Pedidos
             </h3>
             <p-table [value]="getCustomerOrders(selectedCustomer.id)" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pedidos" [tableStyle]="{'min-width': '40rem'}" styleClass="p-datatable-sm">
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pedidos" [tableStyle]="{'min-width': '40rem'}" class="p-datatable-sm">
 
                 <ng-template pTemplate="header">
                     <tr>

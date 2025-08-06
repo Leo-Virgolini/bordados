@@ -31,7 +31,7 @@
             <div class="grid">
                 <!-- Items List -->
                 <div class="col-12 lg:col-8">
-                    <p-card styleClass="shadow-2">
+                    <p-card class="shadow-2">
                         <ng-container *ngIf="items.length > 0; else vacio">
                             <form [formGroup]="form">
                                 <div class="flex flex-column gap-4">
@@ -42,7 +42,7 @@
                                             <!-- Product Image -->
                                             <div class="flex flex-column align-items-center flex-shrink-0 gap-3">
                                                 <p-image [src]="getProductImage(item.product)" [alt]="item.product.name"
-                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" />
+                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" class="border-round" />
                                                 <p-button icon="pi pi-trash" (onClick)="eliminar(item.id)" severity="danger" size="large" />
                                             </div>
                                             <!-- Product Details -->
@@ -81,7 +81,8 @@
                                                                     <i class="pi pi-image text-primary"></i>
                                                                     <span class="text-600">Imagen:</span>
                                                                     <p-image [src]="getCustomImage(item)" [alt]="'Imagen subida'"
-                                                                        imageClass="w-3rem h-3rem object-cover border-round border-1 border-primary-300" [preview]="true" />
+                                                                        imageClass="w-4rem h-4rem object-cover border-round border-1 border-secondary-300" class="border-round"
+                                                                        [preview]="true" />
                                                                 </div>
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-circle-fill text-primary"></i>
@@ -171,7 +172,7 @@
                                 <i class="pi pi-shopping-cart text-8xl text-300 mb-4"></i>
                                 <h3 class="text-2xl font-semibold text-600 mb-2">Tu carrito está vacío</h3>
                                 <p class="text-500 mb-4">Agrega algunos productos para comenzar</p>
-                                <p-button label="Ir a Productos" icon="pi pi-arrow-right" styleClass="p-button-outlined" routerLink="/productos" />
+                                <p-button label="Ir a Productos" icon="pi pi-arrow-right" variant="outlined" routerLink="/productos" />
                             </div>
                         </ng-template>
                     </p-card>
@@ -180,7 +181,7 @@
                 <!-- Order Summary -->
                 <div class="col-12 lg:col-4">
                     <div class="sticky" style="top: 7rem;">
-                        <p-card styleClass="shadow-2 p-3">
+                        <p-card class="shadow-2 p-3">
                             <ng-template #header>
                                 <h1 class="text-2xl font-bold text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.5rem"></i>
                                     Resumen del pedido</h1>
@@ -219,7 +220,7 @@
 
                             <div class="flex flex-column gap-2 mt-4">
                                 <p-button label="Ir a Pagar" icon="pi pi-credit-card" styleClass="w-full" [disabled]="items.length === 0" routerLink="/checkout" />
-                                <p-button label="Continuar Comprando" icon="pi pi-arrow-left" styleClass="p-button-outlined p-button-secondary w-full" routerLink="/productos" />
+                                <p-button label="Continuar Comprando" icon="pi pi-arrow-left" variant="outlined" severity="secondary" styleClass="w-full" routerLink="/productos" />
                             </div>
                         </p-card>
                     </div>

@@ -64,6 +64,12 @@ export class SettingsService {
         );
     }
 
+    getMaxImageSize(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.maxImageSize)
+        );
+    }
+
     updateWhatsAppPhone(phone: string): Observable<string> {
         return this.updateSettings({ whatsAppPhone: phone }).pipe(
             map(settings => settings.whatsAppPhone)

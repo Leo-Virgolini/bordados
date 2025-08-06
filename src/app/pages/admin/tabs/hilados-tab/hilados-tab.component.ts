@@ -79,6 +79,7 @@ export class HiladosTabComponent implements OnInit {
 
     private initForm(): void {
         this.hiladoForm = this.fb.group({
+            id: [''], // Added ID field
             name: ['', [Validators.required, Validators.minLength(2)]],
             code: ['#000000', [Validators.required]],
             stock: [0, [Validators.required, Validators.min(0)]],
@@ -90,12 +91,15 @@ export class HiladosTabComponent implements OnInit {
         this.editingHilado = hilado || null;
         if (hilado) {
             this.hiladoForm.patchValue(hilado);
+            this.hiladoForm.get('id')?.disable(); // Disable ID field when editing
         } else {
             this.hiladoForm.reset({
+                id: '', // Reset ID to empty for new hilados
                 active: true,
                 code: '#000000',
                 stock: 500
             });
+            this.hiladoForm.get('id')?.disable(); // Disable ID field for new hilados
         }
         this.showHiladoDialog = true;
     }
@@ -103,7 +107,7 @@ export class HiladosTabComponent implements OnInit {
     saveHilado(): void {
         if (this.hiladoForm.valid) {
             this.hiladoLoading = true;
-            const formValue = this.hiladoForm.value;
+            const formValue = this.hiladoForm.getRawValue(); // Use getRawValue to get disabled field values
 
             if (this.editingHilado) {
                 // Update existing
@@ -117,7 +121,7 @@ export class HiladosTabComponent implements OnInit {
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Actualizado',
-                            detail: 'Color de hilado actualizado correctamente'
+                            detail: `Color de hilado ID: ${hilado.id} actualizado correctamente`
                         });
                         this.showHiladoDialog = false;
                         this.editingHilado = null;
@@ -140,7 +144,7 @@ export class HiladosTabComponent implements OnInit {
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Creado',
-                            detail: 'Color de hilado creado correctamente'
+                            detail: `Color de hilado ID: ${newHilado.id} creado correctamente`
                         });
                         this.showHiladoDialog = false;
                         this.editingHilado = null;

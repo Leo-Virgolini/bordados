@@ -120,7 +120,7 @@
       "variants": [
         {
           "color": "Blanco",
-          "image": "/prendas/remera_oversize_blanca.webp",
+          "image": "",
           "sizes": [
             {
               "size": "S",
@@ -138,7 +138,7 @@
         },
         {
           "color": "Negro",
-          "image": "/prendas/remera_oversize_negra.webp",
+          "image": "/uploads/ChatGPT Image 12 jun 2025, 04_56_59 p.m..png",
           "sizes": [
             {
               "size": "M",
@@ -180,8 +180,7 @@
       ],
       "rating": 4.8,
       "isNew": true,
-      "isFeatured": true,
-      "image": "/prendas/remera_oversize_blanca.webp"
+      "isFeatured": true
     },
     {
       "id": "2",
@@ -768,7 +767,7 @@
       },
       "items": [
         {
-          "id": "1",
+          "id": 0,
           "productId": "7",
           "productSnapshot": {
             "name": "Remera Personalizada",
@@ -784,14 +783,7 @@
             }
           },
           "quantity": 2,
-          "subtotal": 24000,
-          "customization": {
-            "threadColor1": "1",
-            "threadColor2": "4",
-            "customText": "María 2024",
-            "customTextColor": "1",
-            "customImage": "/productos/imagen1.png"
-          }
+          "subtotal": 24000
         }
       ],
       "couponCode": "",
@@ -1203,7 +1195,7 @@
       "maxUses": 40,
       "currentUses": 1,
       "validFrom": "2024-01-01T00:00:00.000Z",
-      "validTo": "2024-05-31T23:59:59.000Z",
+      "validTo": "2027-05-06T03:00:00.000Z",
       "active": true,
       "description": "Descuento del 15% en pedidos superiores a $20,000"
     },

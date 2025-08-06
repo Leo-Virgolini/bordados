@@ -15,9 +15,11 @@ import { Image } from 'primeng/image';
 import { TableModule } from 'primeng/table';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
+import { FileUpload } from 'primeng/fileupload';
 import { ErrorHelperComponent } from '../../../../../shared/error-helper/error-helper.component';
 import { ProductEmbroided } from '../../../../../models/product-embroided';
 import { ProductsService } from '../../../../../services/products.service';
+import { SettingsService } from '../../../../../services/settings.service';
 import { Checkbox } from 'primeng/checkbox';
 import { Textarea } from 'primeng/textarea';
 
@@ -37,6 +39,7 @@ import { Textarea } from 'primeng/textarea';
         Dialog,
         Tag,
         Image,
+        FileUpload,
         ErrorHelperComponent,
         InputGroup,
         InputGroupAddon
@@ -54,6 +57,8 @@ export class EmbroidedProductsTabComponent implements OnInit {
     editingProduct: ProductEmbroided | null = null;
     productsLoading: boolean = false;
     savingProduct: boolean = false;
+    selectedVariantImageNames: { [key: number]: string } = {};
+    maxImageSize: number = 1000000; // Default 1MB
 
     // Product options
     productCategories = [
@@ -74,8 +79,6 @@ export class EmbroidedProductsTabComponent implements OnInit {
         { label: 'Premium', value: 'premium' },
         { label: 'Bordado', value: 'bordado' }
     ];
-
-
 
     availableSizes = [
         { label: 'XS', value: 'XS' },
@@ -103,12 +106,14 @@ export class EmbroidedProductsTabComponent implements OnInit {
         private fb: FormBuilder,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private productsService: ProductsService
+        private productsService: ProductsService,
+        private settingsService: SettingsService
     ) { }
 
     ngOnInit() {
         this.loadProducts();
         this.initProductForm();
+        this.loadMaxImageSize();
     }
 
     private initProductForm(): void {
@@ -117,7 +122,6 @@ export class EmbroidedProductsTabComponent implements OnInit {
             name: ['', Validators.required],
             description: ['', Validators.required],
             price: [0, [Validators.required, Validators.min(0)]],
-            image: ['', Validators.required],
             garmentType: ['', Validators.required],
             tags: [[]],
             rating: [0, [Validators.min(0), Validators.max(5)]],
@@ -147,16 +151,42 @@ export class EmbroidedProductsTabComponent implements OnInit {
         });
     }
 
+    loadMaxImageSize(): void {
+        this.settingsService.getMaxImageSize().subscribe({
+            next: (maxSize) => {
+                this.maxImageSize = maxSize;
+            },
+            error: (error) => {
+                // Keep the default value
+            }
+        });
+    }
+
+    formatFileSize(bytes: number): string {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    getFileNameFromPath(filePath: string): string {
+        if (!filePath) return '';
+        const parts = filePath.split('/');
+        return parts[parts.length - 1] || '';
+    }
+
+    getVariantImagePath(variantIndex: number): string {
+        const variantControl = this.variantsArray.at(variantIndex);
+        return variantControl?.get('image')?.value || '';
+    }
+
     openProductDialog(product?: ProductEmbroided) {
         this.editingProduct = product || null;
+        this.selectedVariantImageNames = {}; // Reset variant file names
         if (product) {
             // For editing, patch the product data but handle variants separately
             const productData: any = { ...product };
-
-            // Set the main image to the first variant's image if available
-            if (product.variants && product.variants.length > 0 && product.variants[0].image) {
-                productData.image = product.variants[0].image;
-            }
 
             this.productForm.patchValue(productData);
 
@@ -168,7 +198,7 @@ export class EmbroidedProductsTabComponent implements OnInit {
                 }
 
                 // Add each variant
-                product.variants.forEach(variant => {
+                product.variants.forEach((variant, index) => {
                     const variantGroup = this.fb.group({
                         color: [variant.color, Validators.required],
                         image: [variant.image || ''],
@@ -260,7 +290,7 @@ export class EmbroidedProductsTabComponent implements OnInit {
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Producto creado',
-                        detail: `El producto "${createdProduct.name}" ha sido creado correctamente`
+                        detail: `El producto ID: ${createdProduct.id} - "${createdProduct.name}" ha sido creado correctamente`
                     });
                     this.showProductDialog = false;
                     this.savingProduct = false;
@@ -390,4 +420,38 @@ export class EmbroidedProductsTabComponent implements OnInit {
     removeSizeFromVariant(variantIndex: number, sizeIndex: number): void {
         this.getVariantSizes(variantIndex).removeAt(sizeIndex);
     }
-} 
+
+    onVariantImageUpload(event: any, variantIndex: number): void {
+        const file = event.files[0];
+        if (file) {
+            // Check file size
+            if (file.size > this.maxImageSize) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error de tamaño',
+                    detail: `El archivo excede el tamaño máximo permitido de ${this.maxImageSize / 1000000}MB`
+                });
+                return;
+            }
+
+            // Store the file name for display
+            this.selectedVariantImageNames[variantIndex] = file.name;
+
+            // Save just the file path instead of Base64 data
+            const filePath = `/uploads/${file.name}`;
+            this.variantsArray.at(variantIndex).get('image')?.setValue(filePath);
+        }
+    }
+
+
+
+    clearVariantImage(variantIndex: number): void {
+        this.variantsArray.at(variantIndex).get('image')?.setValue('');
+        delete this.selectedVariantImageNames[variantIndex];
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Imagen eliminada',
+            detail: 'La imagen de la variante ha sido eliminada'
+        });
+    }
+}

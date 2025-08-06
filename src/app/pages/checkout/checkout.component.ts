@@ -477,6 +477,23 @@ export class CheckoutComponent implements OnInit {
 
   processPayment(): void {
     if (this.checkoutForm.valid && this.checkoutForm.get('acceptTerms')?.value) {
+      // Validate cart security before processing payment
+      const cartValidation = this.carritoService.validateCartForCheckout();
+
+      if (!cartValidation.valid) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error de Seguridad',
+          detail: 'Se detectó manipulación en el carrito. Por favor, recargá la página y volvé a agregar los productos.',
+          life: 8000
+        });
+
+        // Clear the corrupted cart
+        this.carritoService.vaciarCarrito();
+        this.router.navigate(['/carrito']);
+        return;
+      }
+
       this.isProcessing = true;
 
       // Track coupon usage if a coupon was applied

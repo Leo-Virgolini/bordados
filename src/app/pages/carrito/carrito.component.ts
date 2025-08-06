@@ -80,7 +80,19 @@ export class CarritoComponent implements OnInit {
 
     // Check if quantity is valid
     if (cantidad && cantidad > 0 && cantidad <= maxStock) {
-      this.carritoService.actualizarCantidad(item.id, cantidad);
+      const success = this.carritoService.actualizarCantidad(item.id, cantidad);
+      if (!success) {
+        // If update failed due to stock validation, reset the input
+        const itemIndex = this.items.findIndex(i => i.id === item.id);
+        if (itemIndex !== -1) {
+          setTimeout(() => {
+            this.getCantidadControl(itemIndex).setValue(item.quantity);
+            if (inputRef && inputRef.input.nativeElement) {
+              inputRef.input.nativeElement.value = item.quantity;
+            }
+          }, 0);
+        }
+      }
     } else if (cantidad > maxStock) {
       // If quantity exceeds max stock, reset the input to the previous item quantity
       const itemIndex = this.items.findIndex(i => i.id === item.id);

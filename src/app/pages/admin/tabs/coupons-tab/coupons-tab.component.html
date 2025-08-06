@@ -10,7 +10,7 @@
     </ng-template>
 
     <p-table [value]="discountCoupons" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} cupones"
-        [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm" [loading]="couponLoading">
+        [rowsPerPageOptions]="[5, 10, 25]" class="p-datatable-sm" [loading]="couponLoading">
 
         <ng-template #header>
             <tr>
@@ -31,10 +31,10 @@
         <ng-template #body let-coupon>
             <tr>
                 <td>
-                    <span class="font-semibold text-600">{{ coupon.id }}</span>
+                    <span class="font-semibold text-primary">{{ coupon.id }}</span>
                 </td>
                 <td>
-                    <span class="font-bold text-primary">{{ coupon.code }}</span>
+                    <span class="font-bold text-red-500">{{ coupon.code }}</span>
                 </td>
                 <td>
                     <span *ngIf="coupon.description" class="text-sm">{{ coupon.description }}</span>
@@ -94,10 +94,28 @@
 </p-card>
 
 <!-- Coupon Dialog -->
-<p-dialog [(visible)]="showCouponDialog" modal="true" styleClass="w-full md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
+<p-dialog [(visible)]="showCouponDialog" modal="true" styleClass="w-full border-round-xl md:w-8" [draggable]="false" [resizable]="false" [closable]="true"
     [header]="editingCoupon ? 'Editar Cupón' : 'Nuevo Cupón'" (onHide)="showCouponDialog = false">
 
     <form [formGroup]="couponForm" class="flex flex-column gap-4" *ngIf="couponForm">
+        <!-- ID Field (only when editing) -->
+        <div class="grid" *ngIf="editingCoupon">
+            <div class="col-12 md:col-6">
+                <label for="couponId" class="block mb-2 font-semibold">
+                    ID del Cupón * 
+                    <span class="text-xs text-500 font-normal">(Solo lectura)</span>
+                </label>
+                <p-inputgroup class="max-w-max">
+                    <p-inputgroup-addon>
+                        <i class="pi pi-id-card"></i>
+                    </p-inputgroup-addon>
+                    <input id="couponId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cupón" 
+                           readonly [class.surface-200]="true" />
+                </p-inputgroup>
+                <app-error-helper [control]="couponForm.get('id')"></app-error-helper>
+            </div>
+        </div>
+
         <div class="grid">
             <div class="col-12 md:col-6">
                 <label for="couponCode" class="block mb-2 font-semibold">Código del Cupón *</label>
@@ -214,4 +232,4 @@
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveCoupon()" [disabled]="!isFormValid() || couponLoading" [loading]="couponLoading" />
         </div>
     </ng-template>
-</p-dialog> 
+</p-dialog>

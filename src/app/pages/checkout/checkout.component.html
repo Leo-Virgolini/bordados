@@ -23,7 +23,7 @@
     <ng-template pTemplate="footer">
         <div class="flex justify-content-end gap-2">
             <p-button label="Cerrar" icon="pi pi-times" [outlined]="true" (onClick)="closePrivacyDialog()" />
-            <p-button label="Aceptar" icon="pi pi-check" (onClick)="closePrivacyDialog()" styleClass="p-button-primary" />
+            <p-button label="Aceptar" icon="pi pi-check" (onClick)="closePrivacyDialog()" severity="primary" />
         </div>
     </ng-template>
 </p-dialog>
@@ -44,7 +44,7 @@
     <form [formGroup]="checkoutForm" class="grid">
 
         <section class="col-12 md:col-8">
-            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0">
+            <p-panel class="border-round-xl shadow-3 bg-surface-0">
                 <ng-template #header>
                     <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-map-marker mr-2" style="font-size: 1.2rem"></i>
                         Información de Envío</h1>
@@ -186,7 +186,7 @@
             </p-panel>
 
             <!-- Payment Method -->
-            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 mt-4">
+            <p-panel class="border-round-xl shadow-3 bg-surface-0 mt-4">
                 <ng-template #header>
                     <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-wallet mr-2" style="font-size: 1.2rem"></i>
                         Método de Pago</h1>
@@ -291,7 +291,7 @@
         <!-- Order Summary -->
         <aside class="col-12 md:col-4">
             <div class="sticky" style="top: 7rem;">
-                <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-2">
+                <p-panel class="border-round-xl shadow-3 bg-surface-0 p-2">
                     <ng-template #header>
                         <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.2rem"></i> Resumen del
                             pedido</h1>
@@ -305,9 +305,12 @@
                                 <div class="flex align-items-center gap-2 mb-1">
                                     <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
                                         [severity]="item.product.type === 'personalizable' ? 'warn' : 'success'" [rounded]="true" />
+                                    <p-tag *ngIf="item.hasDiscount" [value]="'-' + item.discountPercentage + '%'" severity="danger" [rounded]="true" />
                                 </div>
                                 <div class="text-sm text-color-secondary">Cantidad: {{ item.quantity }}</div>
-                                <div class="text-sm text-color-secondary">{{ item.product.price | currency:'ARS':'symbol':'1.0-0' }} c/u</div>
+                                <div class="text-sm text-color-secondary">
+                                    {{ item.unitPriceFormatted }} c/u
+                                </div>
                             </div>
                             <div class="font-bold text-primary">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
                         </div>

@@ -26,3 +26,10 @@ h3 {
     // font-family: 'Nunito', sans-serif;
     // color: black;
 }
+
+/* PrimeNG Image Preview hover Border Radius */
+.p-image {
+    .p-image-preview-mask {
+        border-radius: inherit;
+    }
+}

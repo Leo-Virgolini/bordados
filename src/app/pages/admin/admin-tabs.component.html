@@ -26,10 +26,10 @@
     <p-tabs [(value)]="activeTabIndex">
         <p-tablist>
             <p-tab value="0">
-                <i class="pi pi-pencil mr-2"></i>Personalización
+                <i class="pi pi-shopping-bag mr-2"></i>Productos
             </p-tab>
             <p-tab value="1">
-                <i class="pi pi-shopping-bag mr-2"></i>Productos
+                <i class="pi pi-palette mr-2"></i>Hilados
             </p-tab>
             <p-tab value="2">
                 <i class="pi pi-users mr-2"></i>Clientes
@@ -38,26 +38,25 @@
                 <i class="pi pi-chart-line mr-2"></i>Pedidos
             </p-tab>
             <p-tab value="4">
-                <i class="pi pi-chart-bar mr-2"></i>Estadísticas
+                <i class="pi pi-ticket mr-2"></i>Cupones
             </p-tab>
             <p-tab value="5">
-                <i class="pi pi-ticket mr-2"></i>Cupones
+                <i class="pi pi-chart-bar mr-2"></i>Estadísticas
             </p-tab>
             <p-tab value="6">
                 <i class="pi pi-cog mr-2"></i>Configuración
             </p-tab>
         </p-tablist>
         <p-tabpanels>
-            <!-- Customization Tab Panel -->
-            <p-tabpanel value="0">
-                <app-hilados-tab></app-hilados-tab>
-            </p-tabpanel>
-
             <!-- Products Tab Panel -->
-            <p-tabpanel value="1">
+            <p-tabpanel value="0">
                 <app-products-tab></app-products-tab>
             </p-tabpanel>
 
+            <!-- Customization Tab Panel -->
+            <p-tabpanel value="1">
+                <app-hilados-tab></app-hilados-tab>
+            </p-tabpanel>
             <!-- Customers Tab Panel -->
             <p-tabpanel value="2">
                 <app-customers-tab></app-customers-tab>
@@ -68,14 +67,14 @@
                 <app-orders-tab></app-orders-tab>
             </p-tabpanel>
 
-            <!-- Analytics Tab Panel -->
+            <!-- Coupons Tab Panel -->
             <p-tabpanel value="4">
-                <app-analytics-tab></app-analytics-tab>
+                <app-coupons-tab></app-coupons-tab>
             </p-tabpanel>
 
-            <!-- Coupons Tab Panel -->
+            <!-- Analytics Tab Panel -->
             <p-tabpanel value="5">
-                <app-coupons-tab></app-coupons-tab>
+                <app-analytics-tab></app-analytics-tab>
             </p-tabpanel>
 
             <!-- Settings Tab Panel -->

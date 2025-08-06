@@ -10,7 +10,7 @@
     <div class="grid">
         <!-- Form Section -->
         <section class="col-12 md:col-8">
-            <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
+            <p-panel class="border-round-xl shadow-3 bg-surface-0 p-3">
                 <ng-template #header>
                     <h1 class="text-3xl font-bold mt-0 flex align-items-center justify-content-center text-center"><i class="pi pi-pencil mr-2" style="font-size: 1.5rem"></i> Personalizá
                         tu prenda</h1>
@@ -24,7 +24,7 @@
                             aria-labelledby="basic" required (onChange)="onTipoPrendaChange()" [disabled]="isLoadingProducts">
                             <ng-template #item let-type>
                                 <ng-container>
-                                    <p-image [src]="type.product.variants[0]?.image" imageClass="w-full border-round-xl border-500 border-1" [pTooltip]="type.label"
+                                    <p-image [src]="type.product.variants[0]?.image" imageClass="w-full border-round-xl border-500 border-1" class="border-round" [pTooltip]="type.label"
                                         tooltipPosition="top" />
                                     <p-badge *ngIf="type.product.price" [value]="(type.product.price | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="xlarge"
                                         class="absolute top-0 right-0 m-2" />
@@ -164,7 +164,7 @@
 
                             <ng-template #content let-removeFileCallback="removeFileCallback">
                                 <div *ngIf="imageFile" class="flex align-items-center gap-3">
-                                    <p-image [alt]="imageFile.name" [src]="imageURL" width="120" preview />
+                                    <p-image [alt]="imageFile.name" [src]="imageURL" width="120" preview="true" />
                                     <span class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">
                                         {{ imageFile.name }} - {{ formatSize(imageFile.size) }}
                                     </span>
@@ -191,7 +191,7 @@
                     <div *ngIf="formulario.get('talle')?.value" class="flex flex-column gap-1">
                         <div class="flex align-items-center gap-2 mb-1">
                             <label for="cantidad" class="block text-lg font-semibold mb-0">Cantidad: *</label>
-                            <p-badge [value]="'Stock disponible: ' + getCurrentStock()" severity="warn" badgeSize="large" styleClass="ml-1" [pTooltip]="'Stock disponible'"
+                            <p-badge [value]="'Stock disponible: ' + getCurrentStock()" severity="warn" badgeSize="large" class="ml-1" [pTooltip]="'Stock disponible'"
                                 tooltipPosition="top"></p-badge>
                         </div>
                         <p-inputgroup class="max-w-max">
@@ -211,7 +211,7 @@
         <!-- Panel Resumen -->
         <aside class="col-12 md:col-4">
             <div class="sticky" style="top: 7rem;">
-                <p-panel styleClass="border-round-xl shadow-3 bg-surface-0 p-3">
+                <p-panel class="border-round-xl shadow-3 bg-surface-0 p-3">
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-center gap-2">
                             <i class="pi pi-receipt text-primary" style="font-size: 1.5rem"></i>
@@ -221,17 +221,24 @@
 
                     <div class="flex flex-column gap-4">
                         <!-- Product Selection -->
-                        <div *ngIf="formulario.get('tipo')?.value" class="surface-50 border-round-lg p-3">
+                        <div class="surface-50 border-round-lg p-3">
                             <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2 mt-0">
                                 <i class="pi pi-ticket text-primary text-lg"></i>
                                 <span class="font-semibold text-900">Producto Seleccionado</span>
                             </h3>
-                            <div class="flex align-items-center justify-content-between mb-2">
+                            <div *ngIf="formulario.get('tipo')?.value" class="flex align-items-center justify-content-between mb-2">
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-chevron-right text-primary"></i>
                                     <span>{{ getLabel('tipo', availableTypes) }}</span>
                                 </div>
                                 <p-badge [value]="(getPrecio('tipo', availableTypes) | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="large" />
+                            </div>
+                            <div *ngIf="!formulario.get('tipo')?.value" class="flex align-items-center justify-content-between mb-2">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                    <span class="text-red-600">Selecciona un producto</span>
+                                </div>
+                                <p-badge value="Requerido" severity="danger" badgeSize="large" />
                             </div>
                         </div>
 
@@ -255,6 +262,13 @@
                                         <span class="font-semibold text-900">{{ getLabel('colorPrenda', availableColors) }}</span>
                                     </div>
                                 </div>
+                                <div *ngIf="formulario.get('tipo')?.value && !formulario.get('colorPrenda')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Color de prenda</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
+                                </div>
 
                                 <!-- Talle -->
                                 <div *ngIf="formulario.get('talle')?.value" class="flex align-items-center justify-content-between">
@@ -264,6 +278,13 @@
                                     </div>
                                     <span class="font-semibold text-900">{{ getLabel('talle', availableSizes) }}</span>
                                 </div>
+                                <div *ngIf="formulario.get('colorPrenda')?.value && !formulario.get('talle')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Talle</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
+                                </div>
 
                                 <!-- Cantidad -->
                                 <div *ngIf="formulario.get('talle')?.value && formulario.get('cantidad')?.value" class="flex align-items-center justify-content-between">
@@ -272,6 +293,13 @@
                                         <span class="text-600">Cantidad</span>
                                     </div>
                                     <span class="font-semibold text-900">{{ formulario.get('cantidad')?.value }}</span>
+                                </div>
+                                <div *ngIf="formulario.get('talle')?.value && !formulario.get('cantidad')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Cantidad</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
                                 </div>
                             </div>
                         </div>
@@ -296,6 +324,13 @@
                                         <span class="font-semibold text-900">{{ getLabel('colorHilado1', coloresHilado) }}</span>
                                     </div>
                                 </div>
+                                <div *ngIf="!formulario.get('colorHilado1')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Color principal</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
+                                </div>
 
                                 <!-- Secondary thread color -->
                                 <div *ngIf="formulario.get('usarSegundoColor')?.value && formulario.get('colorHilado2')?.value" class="flex align-items-center justify-content-between">
@@ -310,6 +345,13 @@
                                         <p-badge [value]="(precioSegundoColor | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="large" />
                                     </div>
                                 </div>
+                                <div *ngIf="formulario.get('usarSegundoColor')?.value && !formulario.get('colorHilado2')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Color secundario</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
+                                </div>
                             </div>
                         </div>
 
@@ -322,12 +364,19 @@
 
                             <div class="flex flex-column gap-3">
                                 <!-- Custom text content -->
-                                <div class="flex align-items-center justify-content-between">
+                                <div *ngIf="formulario.get('textoPersonalizado')?.value" class="flex align-items-center justify-content-between">
                                     <div class="flex align-items-center gap-2">
                                         <i class="pi pi-language text-primary"></i>
                                         <span class="text-600">Texto</span>
                                     </div>
                                     <span class="font-semibold text-900">"{{ formulario.get('textoPersonalizado')?.value }}"</span>
+                                </div>
+                                <div *ngIf="!formulario.get('textoPersonalizado')?.value" class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Texto</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
                                 </div>
 
                                 <!-- Custom text color -->
@@ -343,20 +392,35 @@
                                         <p-badge [value]="(precioTextoPersonalizado | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="large" />
                                     </div>
                                 </div>
+                                <div *ngIf="formulario.get('textoPersonalizado')?.value && !formulario.get('colorTextoPersonalizado')?.value"
+                                    class="flex align-items-center justify-content-between">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                        <span class="text-red-600">Color del texto</span>
+                                    </div>
+                                    <p-badge value="Requerido" severity="danger" badgeSize="large" />
+                                </div>
                             </div>
                         </div>
 
                         <!-- Image Preview -->
-                        <div *ngIf="imageURL" class="surface-50 border-round-lg p-3">
+                        <div class="surface-50 border-round-lg p-3">
                             <h3 class="text-lg font-semibold text-900 mb-3 flex align-items-center gap-2">
                                 <i class="pi pi-image text-cyan-500"></i>
-                                Imagen Subida
+                                Imagen
                             </h3>
-                            <div class="flex justify-content-center">
-                                <p-image [src]="imageURL" [alt]="imageFile?.name" width="300" imageClass="border-round border-1 border-200" [preview]="true" />
+                            <div *ngIf="imageURL" class="flex justify-content-center">
+                                <p-image [src]="imageURL" [alt]="imageFile?.name" width="300" imageClass="border-round border-1 border-200" class="border-round" [preview]="true" />
                             </div>
-                            <div class="text-center mt-2">
+                            <div *ngIf="imageURL" class="text-center mt-2">
                                 <small class="text-500">{{ imageFile?.name }}</small>
+                            </div>
+                            <div *ngIf="!imageURL" class="flex align-items-center justify-content-between">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-exclamation-triangle text-red-500"></i>
+                                    <span class="text-red-600">Imagen</span>
+                                </div>
+                                <p-badge value="Requerido" severity="danger" badgeSize="large" />
                             </div>
                         </div>
 
@@ -440,7 +504,7 @@
             </div>
 
             <!-- Size Table -->
-            <p-table [value]="sizeGuide.measurements" styleClass="p-datatable-sm">
+            <p-table [value]="sizeGuide.measurements" class="p-datatable-sm">
                 <ng-template pTemplate="header">
                     <tr>
                         <th class="text-center">Talle</th>
