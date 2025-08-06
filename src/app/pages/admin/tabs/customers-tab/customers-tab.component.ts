@@ -303,6 +303,9 @@ export class CustomersTabComponent implements OnInit {
     }
 
     exportCustomers(): void {
+        // Add UTF-8 BOM for proper Excel encoding
+        const BOM = '\uFEFF';
+
         // Create CSV content for customers
         const csvContent = this.customers.map(customer =>
             `${customer.id},${customer.name} ${customer.lastName},${customer.email},${customer.phone},${customer.dni},${customer.province},${customer.city},${customer.postalCode},${customer.address},${customer.floorApartment || ''},${this.getCustomerOrderCount(customer.id)},${this.getCustomerTotalSpent(customer.id)}`
@@ -310,10 +313,10 @@ export class CustomersTabComponent implements OnInit {
 
         // Add header
         const header = 'ID,Nombre,Email,Teléfono,DNI,Provincia,Localidad,Código Postal,Dirección,Piso/Depto,Pedidos,Total Gastado\n';
-        const fullContent = header + csvContent;
+        const fullContent = BOM + header + csvContent;
 
         // Create and download CSV file
-        const blob = new Blob([fullContent], { type: 'text/csv' });
+        const blob = new Blob([fullContent], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;

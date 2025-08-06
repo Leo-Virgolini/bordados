@@ -120,7 +120,7 @@
       "variants": [
         {
           "color": "Blanco",
-          "image": "",
+          "image": "/uploads/embroidery_lineart_bw.png",
           "sizes": [
             {
               "size": "S",
@@ -646,11 +646,11 @@
             },
             {
               "size": "L",
-              "stock": 10
+              "stock": 14
             },
             {
               "size": "XL",
-              "stock": 7
+              "stock": 9
             }
           ]
         },

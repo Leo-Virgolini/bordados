@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 // PrimeNG Components
@@ -40,6 +40,7 @@ import { CouponsService } from '../../../../services/coupons.service';
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         TableModule,
         TabsModule,
         ButtonModule,
@@ -129,6 +130,7 @@ export class OrdersTabComponent implements OnInit {
         this.loadCoupons();
         this.loadCustomers();
         this.loadOrders();
+        this.initForms();
     }
 
     private initForms(): void {
@@ -862,7 +864,7 @@ export class OrdersTabComponent implements OnInit {
     exportOrders(): void {
         this.ordersService.exportOrders().subscribe({
             next: (csvContent) => {
-                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;

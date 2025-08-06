@@ -83,7 +83,7 @@
                     <label for="tiktokUrl" class="block mb-2 font-semibold">URL de TikTok</label>
                     <p-inputgroup class="max-w-max">
                         <p-inputgroup-addon>
-                            <i class="pi-tiktok text-black"></i>
+                            <i class="pi pi-tiktok text-black"></i>
                         </p-inputgroup-addon>
                         <input pInputText id="tiktokUrl" formControlName="tiktokUrl" placeholder="https://tiktok.com/@tu-usuario" class="w-full" />
                     </p-inputgroup>
@@ -93,7 +93,8 @@
             </div>
 
             <div class="flex justify-content-end gap-2 mt-3">
-                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveSocialMediaSettings()" [disabled]="!socialMediaForm.valid || socialMediaLoading" [loading]="socialMediaLoading" />
+                <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="saveSocialMediaSettings()" [disabled]="!socialMediaForm.valid || socialMediaLoading"
+                    [loading]="socialMediaLoading" />
             </div>
         </form>
     </p-card>

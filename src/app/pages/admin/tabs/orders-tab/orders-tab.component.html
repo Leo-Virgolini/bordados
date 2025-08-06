@@ -68,18 +68,42 @@
         </div>
     </ng-template>
 
-    <p-table [value]="orders" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" class="p-datatable-sm">
+    <p-table [value]="orders" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" class="p-datatable-sm" [sortMode]="'single'">
         <ng-template pTemplate="header">
             <tr>
-                <th class="text-left">Pedido</th>
-                <th class="text-left">Cliente</th>
-                <th class="text-left">Fecha</th>
+                <th pSortableColumn="id" class="text-left">
+                    Pedido
+                    <p-sortIcon field="id"></p-sortIcon>
+                    <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="customerSnapshot.name" class="text-left">
+                    Cliente
+                    <p-sortIcon field="customerSnapshot.name"></p-sortIcon>
+                    <p-columnFilter type="text" field="customerSnapshot.name" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="date" class="text-left">
+                    Fecha
+                    <p-sortIcon field="date"></p-sortIcon>
+                    <p-columnFilter type="date" field="date" display="menu"></p-columnFilter>
+                </th>
                 <th class="text-left">Productos</th>
                 <th class="text-left">Tipo</th>
-                <th class="text-left">Subtotal</th>
+                <th pSortableColumn="subtotal" class="text-left">
+                    Subtotal
+                    <p-sortIcon field="subtotal"></p-sortIcon>
+                    <p-columnFilter type="numeric" field="subtotal" display="menu"></p-columnFilter>
+                </th>
                 <th class="text-left">Envío</th>
-                <th class="text-left">Total</th>
-                <th class="text-left">Estado</th>
+                <th pSortableColumn="total" class="text-left">
+                    Total
+                    <p-sortIcon field="total"></p-sortIcon>
+                    <p-columnFilter type="numeric" field="total" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="status" class="text-left">
+                    Estado
+                    <p-sortIcon field="status"></p-sortIcon>
+                    <p-columnFilter type="text" field="status" display="menu"></p-columnFilter>
+                </th>
                 <th class="text-left">Acciones</th>
             </tr>
         </ng-template>

@@ -100,10 +100,17 @@ export class OrdersService {
     exportOrders(): Observable<string> {
         return this.getOrders().pipe(
             map(orders => {
+                // Add UTF-8 BOM for proper Excel encoding
+                const BOM = '\uFEFF';
+                
+                // Add header
+                const header = 'ID,Fecha,Cliente,Total\n';
+                
                 const csvContent = orders.map(order =>
                     `${order.id},${order.date.toISOString()},${order.customerSnapshot.name},${order.total}`
                 ).join('\n');
-                return csvContent;
+                
+                return BOM + header + csvContent;
             })
         );
     }
