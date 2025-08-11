@@ -24,8 +24,8 @@
                             aria-labelledby="basic" required (onChange)="onTipoPrendaChange()" [disabled]="isLoadingProducts">
                             <ng-template #item let-type>
                                 <ng-container>
-                                    <p-image [src]="type.product.variants[0]?.image" imageClass="w-full border-round-xl border-500 border-1" class="border-round" [pTooltip]="type.label"
-                                        tooltipPosition="top" />
+                                    <p-image [src]="getProductImage(type.product)" imageClass="w-full border-round-xl border-500 border-1" class="border-round" [pTooltip]="type.label"
+                                        tooltipPosition="top" (onImageError)="onImageError($event, type.product)" />
                                     <p-badge *ngIf="type.product.price" [value]="(type.product.price | currency:'ARS':'symbol':'1.0-0') || ''" severity="success" badgeSize="xlarge"
                                         class="absolute top-0 right-0 m-2" />
                                 </ng-container>
@@ -505,7 +505,7 @@
 
             <!-- Size Table -->
             <p-table [value]="sizeGuide.measurements" class="p-datatable-sm">
-                <ng-template pTemplate="header">
+                <ng-template #header>
                     <tr>
                         <th class="text-center">Talle</th>
                         <th class="text-center">Ancho del Pecho</th>
@@ -513,7 +513,7 @@
                         <th class="text-center">Ajuste</th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-measurement>
+                <ng-template #body let-measurement>
                     <tr>
                         <td class="font-bold text-center">{{ measurement.size }}</td>
                         <td class="text-center">{{ measurement.chest }}</td>

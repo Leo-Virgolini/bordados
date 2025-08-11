@@ -24,6 +24,11 @@ import { Card } from 'primeng/card';
 import { Select } from 'primeng/select';
 import { Dialog } from 'primeng/dialog';
 import { Coupon } from '../../models/coupon';
+import { Image } from 'primeng/image';
+import { ProductBase } from '../../models/product-base';
+import { OrdersService } from '../../services/orders.service';
+import { Order, OrderItem } from '../../models/order';
+import { Textarea } from 'primeng/textarea';
 
 @Component({
   selector: 'app-checkout',
@@ -39,6 +44,7 @@ import { Coupon } from '../../models/coupon';
     InputGroup,
     InputGroupAddon,
     Button,
+    Textarea,
     RadioButton,
     Card,
     Checkbox,
@@ -46,7 +52,8 @@ import { Coupon } from '../../models/coupon';
     Toast,
     Tag,
     Select,
-    Dialog
+    Dialog,
+    Image
   ],
   providers: [],
   templateUrl: './checkout.component.html',
@@ -58,11 +65,11 @@ export class CheckoutComponent implements OnInit {
   isProcessing: boolean = false;
   showTermsDialog: boolean = false;
   showPrivacyDialog: boolean = false;
-  orderItems: CartItem[] = [];
+  cartItems: CartItem[] = [];
   subtotal: number = 0;
-  discountPercentage: number = 0.10;
+  cashDiscountPercentage: number = 0; // Will be loaded from settings service
   discount: number = 0;
-  ivaPercentage: number = 0.21;
+  readonly ivaPercentage: number = 0.21;
   iva: number = 0;
   total: number = 0;
   freeShippingThreshold: number = 50000; // Default value, will be loaded from service
@@ -72,9 +79,15 @@ export class CheckoutComponent implements OnInit {
   couponLoading: boolean = false;
   couponDiscount: number = 0;
   showCouponInput: boolean = false;
-  transferData: string = 'CBU: 00000000000000000000000000000000\n' +
+  readonly transferData: string = 'CBU: 00000000000000000000000000000000\n' +
     'Alias: alias.alias.alias\n' +
     'Banco: Banco Galicia';
+
+  readonly mercadopagoData: string = 'Para pagar con MercadoPago:\n\n' +
+    '1. Serás redirigido a MercadoPago\n' +
+    '2. Podrás pagar con tarjeta, efectivo o transferencia\n' +
+    '3. Recibirás confirmación por email\n' +
+    '4. Tu pedido se procesará automáticamente';
 
   provinces = [
     { label: 'Buenos Aires', value: 'Buenos Aires' },
@@ -103,117 +116,9 @@ export class CheckoutComponent implements OnInit {
     { label: 'Tucumán', value: 'Tucumán' }
   ];
 
-  mercadopagoData = 'Para pagar con MercadoPago:\n\n' +
-    '1. Serás redirigido a MercadoPago\n' +
-    '2. Podrás pagar con tarjeta, efectivo o transferencia\n' +
-    '3. Recibirás confirmación por email\n' +
-    '4. Tu pedido se procesará automáticamente';
-
-  termsAndConditions = `
-    <h2 class="text-xl font-bold mb-4">Términos y Condiciones</h2>
-    
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">1. Aceptación de los Términos</h3>
-      <p class="text-sm line-height-2">Al realizar una compra en nuestro sitio web, aceptás estos términos y condiciones en su totalidad. Si no estás de acuerdo con alguna parte de estos términos, no debés realizar una compra.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">2. Productos y Servicios</h3>
-      <p class="text-sm line-height-2">Todos nuestros productos son bordados a mano con materiales de alta calidad. Los tiempos de entrega pueden variar según la complejidad del diseño y la disponibilidad de materiales.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">3. Precios y Pagos</h3>
-      <p class="text-sm line-height-2">Todos los precios están expresados en pesos argentinos e incluyen IVA. Los pagos se procesan de forma segura a través de nuestros proveedores autorizados. Ofrecemos descuentos especiales para pagos por transferencia bancaria.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">4. Envíos y Entregas</h3>
-      <p class="text-sm line-height-2">Realizamos envíos a todo el país a través de servicios de correo certificado. Los tiempos de entrega estimados son de 3-7 días hábiles para el interior del país y 1-3 días hábiles para CABA y GBA.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">5. Cambios y Devoluciones</h3>
-      <p class="text-sm line-height-2">Aceptamos cambios y devoluciones dentro de los 30 días posteriores a la recepción del producto, siempre que el artículo esté en su estado original y sin usar. Los gastos de envío de devolución corren por cuenta del cliente.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">6. Garantía</h3>
-      <p class="text-sm line-height-2">Todos nuestros productos tienen garantía de 6 meses por defectos de fabricación. La garantía no cubre el desgaste normal del uso ni daños causados por el cliente.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">7. Privacidad</h3>
-      <p class="text-sm line-height-2">Tu información personal será tratada de acuerdo con nuestra política de privacidad. No compartimos tus datos con terceros sin tu consentimiento explícito.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">8. Contacto</h3>
-      <p class="text-sm line-height-2">Para cualquier consulta sobre estos términos, podés contactarnos a través de nuestro formulario de contacto o por email a info@bordados.com.ar</p>
-    </div>
-
-    <div class="text-xs text-color-secondary mt-4">
-      <p>Última actualización: ${new Date().toLocaleDateString('es-AR')}</p>
-    </div>
-  `;
-
-  privacyPolicy = `
-    <h2 class="text-xl font-bold mb-4">Política de Privacidad</h2>
-    
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">1. Información que Recopilamos</h3>
-      <p class="text-sm line-height-2">Recopilamos información que nos proporcionás directamente, como tu nombre, dirección de email, dirección postal, número de teléfono e información de pago cuando realizás una compra o te registrás en nuestro sitio web.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">2. Uso de la Información</h3>
-      <p class="text-sm line-height-2">Utilizamos tu información personal para procesar pedidos, enviar confirmaciones, responder consultas, mejorar nuestros servicios y comunicarnos contigo sobre productos y ofertas que puedan interesarte.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">3. Compartir Información</h3>
-      <p class="text-sm line-height-2">No vendemos, alquilamos ni compartimos tu información personal con terceros, excepto cuando es necesario para procesar tu pedido (proveedores de pago, servicios de envío) o cuando la ley lo requiera.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">4. Seguridad de Datos</h3>
-      <p class="text-sm line-height-2">Implementamos medidas de seguridad técnicas y organizativas para proteger tu información personal contra acceso no autorizado, alteración, divulgación o destrucción. Utilizamos encriptación SSL para proteger los datos durante la transmisión.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">5. Cookies y Tecnologías Similares</h3>
-      <p class="text-sm line-height-2">Utilizamos cookies y tecnologías similares para mejorar tu experiencia en nuestro sitio web, recordar tus preferencias y analizar el tráfico del sitio. Podés controlar el uso de cookies a través de la configuración de tu navegador.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">6. Tus Derechos</h3>
-      <p class="text-sm line-height-2">Tenés derecho a acceder, corregir, actualizar o eliminar tu información personal. También podés optar por no recibir comunicaciones promocionales. Para ejercer estos derechos, contactanos a través de nuestro formulario de contacto.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">7. Retención de Datos</h3>
-      <p class="text-sm line-height-2">Conservamos tu información personal durante el tiempo necesario para cumplir con los propósitos descritos en esta política, a menos que la ley requiera un período de retención más largo.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">8. Menores de Edad</h3>
-      <p class="text-sm line-height-2">Nuestro sitio web no está dirigido a menores de 18 años. No recopilamos intencionalmente información personal de menores de edad. Si sos menor de edad, no debés proporcionarnos información personal sin el consentimiento de tus padres o tutores.</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">9. Cambios en la Política</h3>
-      <p class="text-sm line-height-2">Podemos actualizar esta política de privacidad ocasionalmente. Te notificaremos sobre cualquier cambio significativo publicando la nueva política en nuestro sitio web y actualizando la fecha de "Última actualización".</p>
-    </div>
-
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold mb-2">10. Contacto</h3>
-      <p class="text-sm line-height-2">Si tenés preguntas sobre esta política de privacidad o sobre cómo manejamos tu información personal, contactanos a través de nuestro formulario de contacto o por email a privacidad@bordados.com.ar</p>
-    </div>
-
-    <div class="text-xs text-color-secondary mt-4">
-      <p>Última actualización: ${new Date().toLocaleDateString('es-AR')}</p>
-    </div>
-  `;
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('es-AR');
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -221,7 +126,8 @@ export class CheckoutComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private settingsService: SettingsService,
-    private couponsService: CouponsService
+    private couponsService: CouponsService,
+    private ordersService: OrdersService
   ) {
   }
 
@@ -229,11 +135,24 @@ export class CheckoutComponent implements OnInit {
     this.loadOrderItems();
 
     // Check if cart is empty and redirect if necessary
-    if (this.orderItems.length === 0) {
+    if (this.cartItems.length === 0) {
       this.router.navigate(['/carrito']);
       return;
     }
 
+    // Lightweight frontend validation
+    if (!this.validateCartLocally()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Carrito inválido',
+        detail: 'Hay productos en el carrito que no pueden ser procesados.',
+        life: 5000
+      });
+      this.router.navigate(['/carrito']);
+      return;
+    }
+
+    // Initialize form and settings without heavy API validation
     this.initForm();
     this.loadSettings();
     this.calculateTotals();
@@ -242,6 +161,121 @@ export class CheckoutComponent implements OnInit {
     this.checkoutForm.get('selectedPaymentMethod')?.valueChanges.subscribe(value => {
       this.onChange();
     });
+  }
+
+  /**
+   * Lightweight frontend validation - basic checks that don't require API calls
+   */
+  private validateCartLocally(): boolean {
+    if (this.cartItems.length === 0) return false;
+
+    // Check if all items have required properties
+    return this.cartItems.every(item =>
+      item.product?.id &&
+      item.quantity > 0 &&
+      item.product.price > 0 &&
+      item.product.name &&
+      item.total > 0
+    );
+  }
+
+  /**
+   * Get payment details based on selected payment method
+   */
+  private getPaymentDetails(): any {
+    const paymentMethod = this.checkoutForm.get('selectedPaymentMethod')?.value;
+
+    if (paymentMethod === 'creditCard') {
+      return {
+        cardNumber: this.checkoutForm.get('cardNumber')?.value,
+        expiryDate: this.checkoutForm.get('expiryDate')?.value,
+        cvv: this.checkoutForm.get('cvv')?.value,
+        cardholderName: this.checkoutForm.get('cardholderName')?.value
+      };
+    } else if (paymentMethod === 'mercadopago') {
+      return { provider: 'mercadopago' };
+    } else if (paymentMethod === 'transfer') {
+      return { provider: 'transfer' };
+    }
+
+    return {};
+  }
+
+  /**
+   * Handle successful order creation
+   */
+  private handleSuccessfulOrder(order: any): void {
+    this.isProcessing = false;
+    this.messageService.add({
+      severity: 'success',
+      summary: '¡Pago Exitoso!',
+      detail: 'Tu pedido ha sido procesado correctamente. Recibirás un email de confirmación.',
+      life: 5000
+    });
+
+    // Clear cart and redirect to home
+    this.carritoService.vaciarCarrito();
+    setTimeout(() => {
+      this.router.navigate(['/']);
+    }, 2000);
+  }
+
+  /**
+   * Handle order creation errors
+   */
+  private handleOrderError(error: any): void {
+    this.isProcessing = false;
+
+    if (error.status === 400) {
+      // Validation errors from backend
+      if (error.error?.message) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error de validación',
+          detail: error.error.message,
+          life: 5000
+        });
+      } else {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error de validación',
+          detail: 'Los datos del pedido no son válidos. Por favor, revisá la información.',
+          life: 5000
+        });
+      }
+    } else if (error.status === 409) {
+      // Conflict - products no longer available
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Productos no disponibles',
+        detail: 'Algunos productos ya no están disponibles. El carrito ha sido actualizado.',
+        life: 5000
+      });
+
+      // Refresh cart items (backend should have updated them)
+      this.loadOrderItems();
+      this.calculateTotals();
+    } else {
+      // Generic error
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Ocurrió un error al procesar el pedido. Por favor, intentá nuevamente.',
+        life: 5000
+      });
+    }
+  }
+
+  /**
+   * Map frontend payment method to backend payment method
+   */
+  private mapPaymentMethod(frontendMethod: string): 'efectivo' | 'tarjeta' | 'transferencia' | 'mercadopago' {
+    const mapping: { [key: string]: 'efectivo' | 'tarjeta' | 'transferencia' | 'mercadopago' } = {
+      'creditCard': 'tarjeta',
+      'transfer': 'transferencia',
+      'mercadopago': 'mercadopago'
+    };
+    return mapping[frontendMethod] || 'efectivo';
   }
 
   private initForm(): void {
@@ -262,28 +296,33 @@ export class CheckoutComponent implements OnInit {
       cvv: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(4), Validators.pattern(/^\d*$/)]],
       cardholderName: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
       couponCode: [''],
+      notes: [''],
       acceptTerms: [false, [Validators.requiredTrue]]
     });
   }
 
   private loadOrderItems(): void {
-    this.orderItems = this.carritoService.getCarrito();
+    this.cartItems = this.carritoService.getCarrito();
   }
 
   private loadSettings(): void {
     this.settingsService.getFreeShippingThreshold().subscribe(threshold => {
       this.freeShippingThreshold = threshold;
     });
+
+    this.settingsService.getDiscountPercentage().subscribe(percentage => {
+      this.cashDiscountPercentage = percentage / 100; // Convert percentage to decimal
+    });
   }
 
   private calculateTotals(): void {
-    this.subtotal = this.orderItems.reduce((sum, item) => sum + item.total, 0);
+    this.subtotal = this.carritoService.getTotalPrice();
     this.iva = this.subtotal * this.ivaPercentage; // 21% IVA
 
     // Calculate discount based on payment method
     const selectedPaymentMethod: string = this.checkoutForm.get('selectedPaymentMethod')?.value;
     if (selectedPaymentMethod === 'transfer') {
-      this.discount = (this.subtotal) * this.discountPercentage; // discount on subtotal + IVA
+      this.discount = (this.subtotal) * this.cashDiscountPercentage; // discount on subtotal + IVA
     } else if (selectedPaymentMethod === 'mercadopago') {
       this.discount = 0; // no discount for MercadoPago
     } else {
@@ -421,25 +460,10 @@ export class CheckoutComponent implements OnInit {
 
     if (selectedPaymentMethod === 'creditCard') {
       cardNumber?.setValidators([Validators.required, Validators.minLength(16), Validators.pattern(/^[\d\s]*$/)]);
-      // cardNumber?.markAsDirty();
       expiryDate?.setValidators([Validators.required, Validators.minLength(5), Validators.pattern(/^\d{2}\/\d{2}$/)]);
-      // expiryDate?.markAsDirty();
       cvv?.setValidators([Validators.required, Validators.minLength(3), Validators.maxLength(4), Validators.pattern(/^\d*$/)]);
-      // cvv?.markAsDirty();
       cardholderName?.setValidators([Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]);
-      // cardholderName?.markAsDirty();
-    } else if (selectedPaymentMethod === 'mercadopago') {
-      // MercadoPago doesn't need card details in our form
-      cardNumber?.clearValidators();
-      cardNumber?.reset();
-      expiryDate?.clearValidators();
-      expiryDate?.reset();
-      cvv?.clearValidators();
-      cvv?.reset();
-      cardholderName?.clearValidators();
-      cardholderName?.reset();
     } else {
-      // Transfer method
       cardNumber?.clearValidators();
       cardNumber?.reset();
       expiryDate?.clearValidators();
@@ -477,19 +501,14 @@ export class CheckoutComponent implements OnInit {
 
   processPayment(): void {
     if (this.checkoutForm.valid && this.checkoutForm.get('acceptTerms')?.value) {
-      // Validate cart security before processing payment
-      const cartValidation = this.carritoService.validateCartForCheckout();
-
-      if (!cartValidation.valid) {
+      // Check if cart is empty
+      if (this.carritoService.isCartEmpty()) {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error de Seguridad',
-          detail: 'Se detectó manipulación en el carrito. Por favor, recargá la página y volvé a agregar los productos.',
-          life: 8000
+          summary: 'Error',
+          detail: 'El carrito está vacío. Por favor, agregá productos antes de continuar.',
+          life: 5000
         });
-
-        // Clear the corrupted cart
-        this.carritoService.vaciarCarrito();
         this.router.navigate(['/carrito']);
         return;
       }
@@ -508,22 +527,46 @@ export class CheckoutComponent implements OnInit {
         });
       }
 
-      // Simulate payment processing
-      setTimeout(() => {
-        this.isProcessing = false;
-        this.messageService.add({
-          severity: 'success',
-          summary: '¡Pago Exitoso!',
-          detail: 'Tu pedido ha sido procesado correctamente. Recibirás un email de confirmación.',
-          life: 5000
-        });
+      // Create order data for backend validation
+      const order: Omit<Order, 'id'> = new Order({
+        date: new Date(),
+        customerId: 0,
+        status: 'pendiente',
+        shippingAddress: this.checkoutForm.get('address')?.value,
+        shippingCity: this.checkoutForm.get('localidad')?.value,
+        shippingProvince: this.checkoutForm.get('provincia')?.value,
+        shippingPostalCode: this.checkoutForm.get('postalCode')?.value,
+        shippingFloorApartment: this.checkoutForm.get('pisoDepto')?.value,
+        notes: this.checkoutForm.get('notes')?.value,
+        items: this.cartItems.map(item => item.toOrderItem()), // Convert CartItems to OrderItems
+        customerSnapshot: {
+          name: this.checkoutForm.get('firstName')?.value,
+          lastName: this.checkoutForm.get('lastName')?.value,
+          email: this.checkoutForm.get('email')?.value,
+          phone: this.checkoutForm.get('phone')?.value,
+          dni: this.checkoutForm.get('dni')?.value,
+          province: this.checkoutForm.get('provincia')?.value,
+          city: this.checkoutForm.get('localidad')?.value,
+          postalCode: this.checkoutForm.get('postalCode')?.value,
+          address: this.checkoutForm.get('address')?.value,
+          floorApartment: this.checkoutForm.get('pisoDepto')?.value
+        },
+        paymentMethod: this.mapPaymentMethod(this.checkoutForm.get('selectedPaymentMethod')?.value),
+        couponCode: this.selectedCoupon?.code,
+        subtotal: this.subtotal,
+        couponDiscount: this.couponDiscount,
+        shippingPrice: this.isShippingFree() ? 0 : 0, // Will be calculated by backend
+        total: this.total
+      });
 
-        // Clear cart and redirect to home
-        this.carritoService.vaciarCarrito();
-        setTimeout(() => {
-          this.router.navigate(['/']);
-        }, 2000);
-      }, 3000);
+      this.ordersService.createOrder(order).subscribe({
+        next: (order) => {
+          this.handleSuccessfulOrder(order);
+        },
+        error: (error) => {
+          this.handleOrderError(error);
+        }
+      });
     } else {
       this.messageService.add({
         severity: 'error',
@@ -535,7 +578,16 @@ export class CheckoutComponent implements OnInit {
   }
 
   getProductImage(product: any): string | undefined {
-    return product.variants?.[0]?.image;
+    return product.variants?.[0]?.image || 'sin_imagen.png';
+  }
+
+  onImageError(event: any, product: ProductBase): void {
+    // Update the image source to show default image
+    const imgElement = event.target as HTMLImageElement;
+    if (imgElement) {
+      imgElement.src = 'sin_imagen.png';
+      imgElement.alt = `${product.name}`;
+    }
   }
 
 }

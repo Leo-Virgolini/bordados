@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { CarritoService } from '../services/carrito.service';
+import { CartItem } from '../models/cart-item';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,7 @@ export class CartGuard implements CanActivate {
     ) { }
 
     canActivate(): boolean {
-        const cartItems = this.carritoService.getCarrito();
+        const cartItems: CartItem[] = this.carritoService.getCarrito();
 
         if (cartItems.length === 0) {
             // Redirect to cart page if cart is empty

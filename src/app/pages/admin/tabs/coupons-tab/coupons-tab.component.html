@@ -14,16 +14,43 @@
 
         <ng-template #header>
             <tr>
-                <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
-                <th pSortableColumn="code">Código <p-sortIcon field="code"></p-sortIcon></th>
+                <th pSortableColumn="id">
+                    ID <p-sortIcon field="id"></p-sortIcon>
+                    <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="code">
+                    Código <p-sortIcon field="code"></p-sortIcon>
+                    <p-columnFilter type="text" field="code" display="menu"></p-columnFilter>
+                </th>
                 <th>Descripción</th>
-                <th pSortableColumn="discountType">Tipo <p-sortIcon field="discountType"></p-sortIcon></th>
-                <th pSortableColumn="discountValue">Descuento <p-sortIcon field="discountValue"></p-sortIcon></th>
-                <th pSortableColumn="minOrderAmount">Monto Mínimo <p-sortIcon field="minOrderAmount"></p-sortIcon></th>
-                <th pSortableColumn="currentUses">Uso <p-sortIcon field="currentUses"></p-sortIcon></th>
-                <th pSortableColumn="validFrom">Válido Desde <p-sortIcon field="validFrom"></p-sortIcon></th>
-                <th pSortableColumn="validTo">Válido Hasta <p-sortIcon field="validTo"></p-sortIcon></th>
-                <th pSortableColumn="active">Estado <p-sortIcon field="active"></p-sortIcon></th>
+                <th pSortableColumn="discountType">
+                    Tipo <p-sortIcon field="discountType"></p-sortIcon>
+                    <p-columnFilter type="text" field="discountType" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="discountValue">
+                    Descuento <p-sortIcon field="discountValue"></p-sortIcon>
+                    <p-columnFilter type="numeric" field="discountValue" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="minOrderAmount">
+                    Monto Mínimo <p-sortIcon field="minOrderAmount"></p-sortIcon>
+                    <p-columnFilter type="numeric" field="minOrderAmount" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="currentUses">
+                    Uso <p-sortIcon field="currentUses"></p-sortIcon>
+                    <p-columnFilter type="numeric" field="currentUses" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="validFrom">
+                    Válido Desde <p-sortIcon field="validFrom"></p-sortIcon>
+                    <p-columnFilter type="date" field="validFrom" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="validTo">
+                    Válido Hasta <p-sortIcon field="validTo"></p-sortIcon>
+                    <p-columnFilter type="date" field="validTo" display="menu"></p-columnFilter>
+                </th>
+                <th pSortableColumn="active">
+                    Estado <p-sortIcon field="active"></p-sortIcon>
+                    <p-columnFilter type="text" field="active" display="menu"></p-columnFilter>
+                </th>
                 <th>Acciones</th>
             </tr>
         </ng-template>
@@ -102,15 +129,14 @@
         <div class="grid" *ngIf="editingCoupon">
             <div class="col-12 md:col-6">
                 <label for="couponId" class="block mb-2 font-semibold">
-                    ID del Cupón * 
+                    ID del Cupón *
                     <span class="text-xs text-500 font-normal">(Solo lectura)</span>
                 </label>
                 <p-inputgroup class="max-w-max">
                     <p-inputgroup-addon>
                         <i class="pi pi-id-card"></i>
                     </p-inputgroup-addon>
-                    <input id="couponId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cupón" 
-                           readonly [class.surface-200]="true" />
+                    <input id="couponId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cupón" readonly [class.surface-200]="true" />
                 </p-inputgroup>
                 <app-error-helper [control]="couponForm.get('id')"></app-error-helper>
             </div>

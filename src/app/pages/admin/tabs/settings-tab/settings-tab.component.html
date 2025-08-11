@@ -202,6 +202,22 @@
                 <small class="text-color-secondary">Límite actual: {{ maxTextLength }} caracteres (5 - 50)</small>
             </div>
 
+            <div>
+                <label for="discountPercentage" class="block mb-2 font-semibold">Porcentaje de descuento por transferencia *</label>
+                <p-inputgroup class="max-w-max">
+                    <p-inputgroup-addon>
+                        <i class="pi pi-percentage"></i>
+                    </p-inputgroup-addon>
+                    <p-inputnumber id="discountPercentage" formControlName="discountPercentage" class="w-full" placeholder="10" [min]="0" [max]="100" [showButtons]="true" buttonLayout="horizontal"
+                        spinnerMode="horizontal" [step]="5" />
+                    <p-inputgroup-addon class="pl-3 pr-3 bg-gray-100 font-semibold text-gray-600">
+                        %
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+                <app-error-helper [control]="priceForm.get('discountPercentage')"></app-error-helper>
+                <small class="text-color-secondary">Descuento actual: {{ discountPercentage }}% (0% - 100%)</small>
+            </div>
+
             <div class="flex justify-content-end gap-2 mt-3">
                 <p-button label="Guardar Configuración" icon="pi pi-check" (onClick)="savePrices()" [disabled]="!priceForm.valid || priceLoading" [loading]="priceLoading" />
             </div>

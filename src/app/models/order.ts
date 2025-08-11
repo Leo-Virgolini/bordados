@@ -63,6 +63,13 @@ export class OrderItem {
         this.quantity = init?.quantity || 0;
         this.subtotal = init?.subtotal || 0;
         this.customization = init?.customization;
+        
+        // Log image URLs for debugging
+        console.log(`Creating OrderItem for product: ${this.productSnapshot.name}`);
+        console.log(`Variant image: ${this.productSnapshot.variant.image}`);
+        if (this.customization) {
+            console.log(`Custom image: ${this.customization.customImage}`);
+        }
     }
 
     calculateSubtotal(): number {
@@ -114,10 +121,19 @@ export class OrderItem {
     }
 
     getProductImage(): string {
-        if (this.customization?.customImage) {
+        // Prioritize custom image from customization data
+        if (this.customization?.customImage && this.customization.customImage.trim() !== '') {
             return this.customization.customImage;
         }
-        return this.productSnapshot?.variant?.image || '';
+        
+        // Fallback to product snapshot variant image
+        const variantImage = this.productSnapshot?.variant?.image;
+        if (variantImage && variantImage.trim() !== '') {
+            return variantImage;
+        }
+        
+        // Final fallback to default image
+        return 'sin_imagen.png';
     }
 
     getProductType(): string {
@@ -134,7 +150,19 @@ export class OrderItem {
     }
 
     getCustomImage(): string {
-        return this.customization?.customImage || '';
+        const customImage = this.customization?.customImage;
+        if (customImage && customImage.trim() !== '') {
+            return customImage;
+        }
+        
+        // Fallback to product snapshot variant image if no custom image
+        const variantImage = this.productSnapshot?.variant?.image;
+        if (variantImage && variantImage.trim() !== '') {
+            return variantImage;
+        }
+        
+        // Final fallback to default image
+        return 'sin_imagen.png';
     }
 
     // Get custom text information
@@ -148,6 +176,21 @@ export class OrderItem {
 
     hasCustomText(): boolean {
         return this.getCustomText().length > 0;
+    }
+
+    /**
+     * Get comprehensive image information for debugging
+     */
+    getImageSummary(): { variantImage: string; customImage?: string; finalImage: string } {
+        const variantImage = this.productSnapshot?.variant?.image || '';
+        const customImage = this.customization?.customImage || '';
+        const finalImage = this.getProductImage();
+        
+        return {
+            variantImage,
+            customImage,
+            finalImage
+        };
     }
 }
 
@@ -368,7 +411,19 @@ export class Order {
     }
 
     getCustomerLocation(): string {
-        return `${this.customerSnapshot.city}, ${this.customerSnapshot.province} (${this.customerSnapshot.postalCode})`;
+        const city = this.customerSnapshot?.city || '';
+        const province = this.customerSnapshot?.province || '';
+        return city && province ? `${city}, ${province}` : city || province || '';
+    }
+
+    /**
+     * Get comprehensive image information for all order items
+     */
+    getOrderImagesSummary(): Array<{ productName: string; imageInfo: any }> {
+        return this.items.map(item => ({
+            productName: item.getProductName(),
+            imageInfo: item.getImageSummary()
+        }));
     }
 
     // Factory method to create order with customer

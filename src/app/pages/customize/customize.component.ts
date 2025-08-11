@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { Badge } from 'primeng/badge';
 import { Button } from 'primeng/button';
 import { PrimeNG } from 'primeng/config';
 import { Divider } from 'primeng/divider';
@@ -19,11 +18,10 @@ import { ErrorHelperComponent } from '../../shared/error-helper/error-helper.com
 import { CarritoService } from '../../services/carrito.service';
 import { CartItem } from '../../models/cart-item';
 import { ThreadColor } from '../../models/thread-color';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { Tag } from 'primeng/tag';
 import { ProductCustomizable } from '../../models/product-customizable';
-import { RouterLink } from '@angular/router';
 import { HiladosService } from '../../services/hilados.service';
 import { ProductsService } from '../../services/products.service';
 import { ProductSizeStock, ProductVariant } from '../../models/product-base';
@@ -32,11 +30,12 @@ import { InputText } from 'primeng/inputtext';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { AppSettings, SettingsService } from '../../services/settings.service';
+import { Badge } from 'primeng/badge';
 
 @Component({
   selector: 'app-customize',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SpinnerComponent, ErrorHelperComponent, RouterLink,
-    Button, FileUpload, Image, Badge, Toast, SelectButton, ToggleButton, Tooltip, Divider, Panel,
+    Button, FileUpload, Image, Toast, SelectButton, ToggleButton, Tooltip, Divider, Panel, Badge,
     Tag, Dialog, TableModule, InputNumber, InputText, InputGroup, InputGroupAddon
   ],
   providers: [],
@@ -48,8 +47,6 @@ export class CustomizeComponent implements OnInit {
   formulario!: FormGroup;
   imageURL: string | undefined;
   imageFile: File | undefined;
-  // invalidFileSizeMessageSummary: string = es.invalidFileSizeMessageSummary
-  // invalidFileSizeMessageDetail: string = es.invalidFileSizeMessageDetail;
   isLoading: boolean = false;
   showSizeGuide: boolean = false;
   isLoadingProducts: boolean = true;
@@ -68,7 +65,6 @@ export class CustomizeComponent implements OnInit {
   selectedVariant?: any;
 
   coloresHilado: ThreadColor[] = [];
-  cantidades: { label: string, value: number }[] = [];
 
   // Size guide data similar to MercadoLibre
   sizeGuide = {
@@ -107,7 +103,6 @@ export class CustomizeComponent implements OnInit {
         product
       }));
       this.isLoadingProducts = false;
-      // this.updateAvailableQuantities();
     });
   }
 
@@ -161,12 +156,13 @@ export class CustomizeComponent implements OnInit {
         this.isLoading = false;
         this.router.navigate(['/carrito']);
       }, 3000);
+    } else {
+      this.messageService.add({ severity: 'error', summary: 'Error al agregar', detail: 'No se pudo agregar el producto al carrito', life: 3000 });
     }
   }
 
   submitFormulario(): boolean {
-    if (this.formulario.valid) {
-      this.agregarAlCarrito();
+    if (this.formulario.valid && this.agregarAlCarrito()) {
       return true;
     } else {
       this.formulario.markAllAsTouched();
@@ -189,7 +185,6 @@ export class CustomizeComponent implements OnInit {
   }
 
   onImageSelect(event: any) {
-    console.log("onImageSelect");
     this.imageFile = undefined;
     this.imageURL = undefined;
 
@@ -204,10 +199,6 @@ export class CustomizeComponent implements OnInit {
         this.formulario.get('imagen')?.setErrors({ 'fileSize': true });
       } else {
         this.imageFile = file;
-        console.log(this.imageFile);
-
-        const imageSize = this.imageFile.size;
-        console.log(imageSize);
 
         // Use FileReader for better security and memory management
         const reader = new FileReader();
@@ -226,12 +217,7 @@ export class CustomizeComponent implements OnInit {
   }
 
   onUpload(event: FileUploadHandlerEvent) {
-    console.log("onUpload");
-    // Si querés enviar la imagen al backend:
-    // const formData = new FormData();
-    // formData.append('imagen', file);
-    // this.http.post('URL_BACKEND', formData).subscribe(...);
-
+    // For future backend integration
     this.messageService.add({ severity: 'info', summary: 'Imagen subida', detail: '' });
   }
 
@@ -416,7 +402,8 @@ export class CustomizeComponent implements OnInit {
       'Gris': '#9E9E9E',
       'Azul': '#1565C0',
       'Verde': '#388E3C',
-      'Rojo': '#C62828'
+      'Rojo': '#C62828',
+      'Beige': '#F5F5DC'
     };
     return colorMap[colorName] || '#CCCCCC'; // Default gray if color not found
   }
@@ -445,7 +432,7 @@ export class CustomizeComponent implements OnInit {
     this.showSizeGuide = false;
   }
 
-  agregarAlCarrito() {
+  agregarAlCarrito(): boolean {
     const datos = this.formulario.value;
     const threadColor1: ThreadColor | undefined = this.coloresHilado.find(p => p.id === datos.colorHilado1);
     const threadColor2: ThreadColor | undefined = datos.usarSegundoColor ? this.coloresHilado.find(p => p.id === datos.colorHilado2) : undefined;
@@ -458,6 +445,7 @@ export class CustomizeComponent implements OnInit {
     const image = variant?.image || this.imageURL;
 
     const productoCustomizable = new ProductCustomizable({
+      id: Date.now(), // Generate unique ID for customizable product
       name: baseProduct?.name || 'Producto Personalizable',
       description: baseProduct?.description || 'Producto personalizable',
       garmentType: baseProduct?.garmentType || 'remera',
@@ -484,7 +472,36 @@ export class CustomizeComponent implements OnInit {
       quantity: datos.cantidad
     });
 
-    this.carritoService.agregarItem(nuevoItem);
+    return this.carritoService.agregarItem(nuevoItem);
+  }
+
+  /**
+   * Gets the product image with fallback to default image if not found
+   * @param product The product to get image for
+   * @returns The image URL or default image URL
+   */
+  getProductImage(product: ProductCustomizable): string {
+    // Try to get the first variant's image
+    const firstVariant: ProductVariant = product.variants?.[0];
+    if (firstVariant?.image && firstVariant.image.trim() !== '') {
+      return firstVariant.image;
+    }
+
+    // Fallback to default image when no image is available
+    return 'sin_imagen.png';
+  }
+
+  /**
+   * Handles image loading errors by logging the error and providing fallback
+   * @param event The error event
+   * @param product The product that had the image error
+   */
+  onImageError(event: any, product: ProductCustomizable): void {
+    // Update the product's image to use the default image when loading fails
+    const firstVariant: ProductVariant = product.variants?.[0];
+    if (firstVariant) {
+      firstVariant.image = 'sin_imagen.png';
+    }
   }
 
 }

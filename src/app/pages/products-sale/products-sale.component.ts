@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, model, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { Slider } from 'primeng/slider';
 import { Paginator } from 'primeng/paginator';
 import { Tag } from 'primeng/tag';
 import { Image } from 'primeng/image';
+import { GalleriaModule } from 'primeng/galleria';
 import { AnimateOnScrollModule } from 'primeng/animateonscroll';
 import { Checkbox } from 'primeng/checkbox';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -42,6 +43,7 @@ import { CartItem } from '../../models/cart-item';
         Paginator,
         Tag,
         Image,
+        GalleriaModule,
         AnimateOnScrollModule,
         Checkbox,
         ProgressSpinner,
@@ -69,6 +71,9 @@ export class ProductsSaleComponent implements OnInit {
     selectedProduct: ProductEmbroided | null = null;
     loadingProducts: Set<number> = new Set(); // Track which products are being added to cart
 
+    // Image fallback tracking
+    private defaultImageProducts: Set<number> = new Set();
+
     // Pagination
     first: number = 0;
     rows: number = 16;
@@ -93,7 +98,9 @@ export class ProductsSaleComponent implements OnInit {
         new SortOption('Premium', 'premium')
     ];
 
-    // Removed product types filter since this component only shows pre-embroidered products
+    // Color and size options for filtering
+    availableColors: SortOption[] = [];
+    availableSizes: SortOption[] = [];
 
     sortOptions: SortOption[] = [
         new SortOption('Nombre A-Z', 'name-asc'),
@@ -125,6 +132,8 @@ export class ProductsSaleComponent implements OnInit {
             searchTerm: [''],
             selectedCategories: [[]],
             selectedTags: [[]],
+            selectedColors: [[]],
+            selectedSizes: [[]],
             priceRange: [[0, 150000]],
             selectedSort: ['name-asc'],
             showOnlyNew: [false],
@@ -150,6 +159,7 @@ export class ProductsSaleComponent implements OnInit {
             next: (products) => {
                 // Filter only pre-embroidered products (type === 'bordado')
                 this.allProducts = products.filter(product => product.type === 'bordado');
+                this.updateAvailableColorsAndSizes();
                 this.applyFilters();
                 this.isLoading = false;
             },
@@ -158,6 +168,46 @@ export class ProductsSaleComponent implements OnInit {
                 this.isLoading = false;
             }
         });
+    }
+
+    private updateAvailableColorsAndSizes(): void {
+        // Get all unique colors from all products
+        const colorSet = new Set<string>();
+        const sizeSet = new Set<string>();
+
+        this.allProducts.forEach(product => {
+            product.variants?.forEach(variant => {
+                // Only include colors that have stock
+                if (variant.sizes?.some(size => size.stock > 0)) {
+                    colorSet.add(variant.color);
+                }
+
+                // Get all sizes with stock
+                variant.sizes?.forEach(size => {
+                    if (size.stock > 0) {
+                        sizeSet.add(size.size);
+                    }
+                });
+            });
+        });
+
+        // Convert to SortOption arrays
+        this.availableColors = Array.from(colorSet)
+            .sort()
+            .map(color => new SortOption(color, color));
+
+        // Order sizes from smallest to largest
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        this.availableSizes = Array.from(sizeSet)
+            .sort((a, b) => {
+                const idxA = sizeOrder.indexOf(a);
+                const idxB = sizeOrder.indexOf(b);
+                if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            })
+            .map(size => new SortOption(size, size));
     }
 
     applyFilters(): void {
@@ -205,6 +255,27 @@ export class ProductsSaleComponent implements OnInit {
 
         // Stock filter
         filtered = filtered.filter(product => this.getDisplayedVariantStock(product) >= formValue.minStock);
+
+        // Color filter
+        if (formValue.selectedColors.length > 0) {
+            filtered = filtered.filter(product =>
+                product.variants?.some(variant =>
+                    formValue.selectedColors.includes(variant.color) &&
+                    variant.sizes?.some(size => size.stock > 0)
+                )
+            );
+        }
+
+        // Size filter
+        if (formValue.selectedSizes.length > 0) {
+            filtered = filtered.filter(product =>
+                product.variants?.some(variant =>
+                    variant.sizes?.some(size =>
+                        formValue.selectedSizes.includes(size.size) && size.stock > 0
+                    )
+                )
+            );
+        }
 
         // Sort products
         this.sortProducts(filtered, formValue.selectedSort);
@@ -268,6 +339,8 @@ export class ProductsSaleComponent implements OnInit {
             searchTerm: '',
             selectedCategories: [],
             selectedTags: [],
+            selectedColors: [],
+            selectedSizes: [],
             priceRange: [0, 50000],
             selectedSort: 'name-asc',
             showOnlyNew: false,
@@ -366,7 +439,7 @@ export class ProductsSaleComponent implements OnInit {
                 }
 
                 // Check if adding this quantity would exceed available stock
-                const currentCartQuantity = this.carritoService.getCartItemQuantityForVariant(product.id, selectedColor, selectedSize);
+                const currentCartQuantity = this.carritoService.getCurrentQuantityForVariant(product.id, selectedColor, selectedSize);
                 const totalQuantity = currentCartQuantity + selectedQuantity;
 
                 if (totalQuantity > availableStock) {
@@ -441,7 +514,6 @@ export class ProductsSaleComponent implements OnInit {
                     selectedSize: '',
                     selectedQuantity: 1
                 });
-
             },
             reject: () => {
                 this.selectedProduct = null;
@@ -457,12 +529,6 @@ export class ProductsSaleComponent implements OnInit {
 
     isProductLoading(productId: number): boolean {
         return this.loadingProducts.has(productId);
-    }
-
-    getDiscountColor(discount: number): string {
-        if (discount >= 30) return 'success';
-        if (discount >= 20) return 'warn';
-        return 'success';
     }
 
     getStockStatus(stock: number): { severity: string; value: string } {
@@ -587,6 +653,11 @@ export class ProductsSaleComponent implements OnInit {
             }));
     }
 
+    onColorChange() {
+        this.productSelectionForm.get('selectedSize')?.setValue(''); // Reset size selection
+        this.productSelectionForm.get('selectedQuantity')?.setValue(1); // Reset quantity to 1
+    }
+
     getStockForColorAndSize(product: ProductEmbroided, color: string, size: string): number {
         const variant = product.variants?.find(v => v.color === color);
         if (!variant || !variant.sizes) {
@@ -603,13 +674,52 @@ export class ProductsSaleComponent implements OnInit {
     }
 
     getAllAvailableSizesText(product: ProductEmbroided): string {
-        const sizes = this.getAllAvailableSizes(product);
-        return sizes.length > 0 ? sizes.map(s => s.label).join(', ') : 'No disponible';
+        const allSizes = this.getAllAvailableSizes(product);
+        return allSizes.map(option => option.label).join(', ');
     }
 
-    onColorChange() {
-        this.productSelectionForm.get('selectedSize')?.setValue(''); // Reset size selection
-        this.productSelectionForm.get('selectedQuantity')?.setValue(1); // Reset quantity to 1
+    onImageError(event: any, product: ProductEmbroided): void {
+        // Update the image source to show default image
+        const imgElement = event.target as HTMLImageElement;
+        if (imgElement) {
+            imgElement.src = 'sin_imagen.png';
+            imgElement.alt = `${product.name}`;
+        }
     }
 
-} 
+    getProductImagesForGalleria(product: ProductEmbroided): { src: string; alt: string; title: string; color: string; sizes: string }[] {
+        if (!product) return [];
+
+        const images: { src: string; alt: string; title: string; color: string; sizes: string }[] = [];
+
+        // Add images from all variants
+        product?.variants?.forEach((variant, index) => {
+            // Get available sizes for this variant
+            const availableSizes: string = variant.sizes
+                ?.filter(size => size.stock > 0)
+                .map(size => size.size)
+                .join(', ') || 'Sin stock';
+
+            if (variant.image && variant.image.trim() !== '') {
+                images.push({
+                    src: variant.image,
+                    alt: `${product.name}`,
+                    title: `${product.name}`,
+                    color: variant.color,
+                    sizes: availableSizes
+                });
+            } else {
+                images.push({
+                    src: 'sin_imagen.png',
+                    alt: `${product.name}`,
+                    title: `${product.name}`,
+                    color: variant.color,
+                    sizes: availableSizes
+                });
+            }
+        });
+
+        return images;
+    }
+
+}

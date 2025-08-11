@@ -43,6 +43,7 @@ export class SettingsTabComponent implements OnInit {
     customTextPrice!: number; // Custom text price
     maxImageSize!: number; // Maximum image size in bytes
     maxTextLength!: number; // Maximum text length for custom text
+    discountPercentage!: number; // Discount percentage for transfer payments
 
     // Social Media URLs
     facebookUrl!: string;
@@ -82,6 +83,7 @@ export class SettingsTabComponent implements OnInit {
                 this.customTextPrice = settings.customTextPrice;
                 this.maxImageSize = settings.maxImageSize || 10485760; // Default 10MB
                 this.maxTextLength = settings.maxTextLength || 20; // Default 20 characters
+                this.discountPercentage = settings.discountPercentage || 0; // Default 0%
 
                 // Social Media URLs
                 this.facebookUrl = settings.facebookUrl || '';
@@ -133,7 +135,8 @@ export class SettingsTabComponent implements OnInit {
             secondColorPrice: [this.secondColorPrice, [Validators.required, Validators.min(0)]],
             customTextPrice: [this.customTextPrice, [Validators.required, Validators.min(0)]],
             maxImageSize: [this.maxImageSize, [Validators.required, Validators.min(1024 * 1024), Validators.max(50 * 1024 * 1024)]], // 1MB to 50MB
-            maxTextLength: [this.maxTextLength, [Validators.required, Validators.min(5), Validators.max(50)]] // 5 to 50 characters
+            maxTextLength: [this.maxTextLength, [Validators.required, Validators.min(5), Validators.max(50)]], // 5 to 50 characters
+            discountPercentage: [this.discountPercentage, [Validators.required, Validators.min(0), Validators.max(100)]] // 0% to 100%
         });
     }
 
@@ -261,6 +264,7 @@ export class SettingsTabComponent implements OnInit {
             const customTextPrice = this.priceForm.get('customTextPrice')?.value;
             const maxImageSize = this.priceForm.get('maxImageSize')?.value;
             const maxTextLength = this.priceForm.get('maxTextLength')?.value;
+            const discountPercentage = this.priceForm.get('discountPercentage')?.value;
 
             // Update all settings in sequence
             this.settingsService.updateSecondColorPrice(secondColorPrice).subscribe({
@@ -281,12 +285,25 @@ export class SettingsTabComponent implements OnInit {
                                     this.settingsService.updateMaxTextLength(maxTextLength).subscribe({
                                         next: (updatedMaxTextLength) => {
                                             this.maxTextLength = updatedMaxTextLength;
-                                            this.messageService.add({
-                                                severity: 'success',
-                                                summary: 'Configuración actualizada',
-                                                detail: `Precios y límites actualizados correctamente`
+                                            this.settingsService.updateDiscountPercentage(discountPercentage).subscribe({
+                                                next: (updatedDiscountPercentage) => {
+                                                    this.discountPercentage = updatedDiscountPercentage;
+                                                    this.messageService.add({
+                                                        severity: 'success',
+                                                        summary: 'Configuración actualizada',
+                                                        detail: `Precios, límites y descuento actualizados correctamente`
+                                                    });
+                                                    this.priceLoading = false;
+                                                },
+                                                error: (error) => {
+                                                    this.messageService.add({
+                                                        severity: 'error',
+                                                        summary: 'Error',
+                                                        detail: 'Error al actualizar el descuento: ' + error.message
+                                                    });
+                                                    this.priceLoading = false;
+                                                }
                                             });
-                                            this.priceLoading = false;
                                         },
                                         error: (error) => {
                                             this.messageService.add({

@@ -42,7 +42,8 @@
                                             <!-- Product Image -->
                                             <div class="flex flex-column align-items-center flex-shrink-0 gap-3">
                                                 <p-image [src]="getProductImage(item.product)" [alt]="item.product.name"
-                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" class="border-round" />
+                                                    imageClass="w-8rem h-8rem object-cover border-round border-1 border-200" class="border-round"
+                                                    (onImageError)="onImageError($event, item.product)" />
                                                 <p-button icon="pi pi-trash" (onClick)="eliminar(item.id)" severity="danger" size="large" />
                                             </div>
                                             <!-- Product Details -->
@@ -119,7 +120,7 @@
                                                                     <!-- Original Price (if discounted) -->
                                                                     <div *ngIf="item.hasDiscount" class="flex align-items-center gap-2">
                                                                         <span class="text-sm text-500 line-through">{{ item.originalUnitPriceFormatted }}</span>
-                                                                        <p-tag [value]="'-' + item.discountPercentage + '%'" severity="danger" [rounded]="true" size="small"></p-tag>
+                                                                        <p-tag [value]="'-' + item.discountPercentage + '%'" severity="success" [rounded]="true" size="small"></p-tag>
                                                                     </div>
                                                                 </div>
                                                             </div>

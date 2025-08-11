@@ -1,37 +1,37 @@
 // Custom slider styling for PrimeNG components
-:host ::ng-deep {
-  .p-slider {
-    .p-slider-range {
-    }
+// :host ::ng-deep {
+//   .p-slider {
+//     .p-slider-range {
+//     }
     
-    .p-slider-handle {
-      cursor: pointer;
-    }
-  }
+//     .p-slider-handle {
+//       cursor: pointer;
+//     }
+//   }
   
-  .p-multiselect {
-    .p-multiselect-trigger {
-      color: var(--primary-color);
-    }
-  }
+//   .p-multiselect {
+//     .p-multiselect-trigger {
+//       color: var(--primary-color);
+//     }
+//   }
   
-  .p-select {
-    .p-select-trigger {
-      color: var(--primary-color);
-    }
-  }
+//   .p-select {
+//     .p-select-trigger {
+//       color: var(--primary-color);
+//     }
+//   }
   
-  .p-paginator {
-    .p-paginator-pages {
-      .p-paginator-page {
-        &.p-highlight {
-          background: var(--primary-color);
-          border-color: var(--primary-color);
-        }
-      }
-    }
-  }
-}
+//   .p-paginator {
+//     .p-paginator-pages {
+//       .p-paginator-page {
+//         &.p-highlight {
+//           background: var(--primary-color);
+//           border-color: var(--primary-color);
+//         }
+//       }
+//     }
+//   }
+// }
 
 // Animation classes
 .fadeinup {

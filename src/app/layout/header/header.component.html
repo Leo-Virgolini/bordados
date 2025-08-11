@@ -12,7 +12,7 @@
         <ng-template #item let-item let-root="root">
             <a pRipple [routerLink]="item.routerLink"
                 class="flex align-items-center p-menubar-item-link hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200 border-round">
-                <i *ngIf="item.icon" [class]="item.icon" class="mr-2"></i>
+                <i *ngIf="item.icon" [class]="item.icon" class="mr-2 text-primary"></i>
                 <span class="font-medium">{{ item.label }}</span>
                 <i *ngIf="item.items" [ngClass]="['ml-auto pi', root ? 'pi-angle-down' : 'pi-angle-right']"></i>
             </a>
@@ -33,7 +33,7 @@
 
                 <!-- Admin Button -->
                 <p-button label="Admin" icon="pi pi-cog" routerLink="/admin" [outlined]="true" [rounded]="true" size="small"
-                    styleClass="hidden md:inline-flex hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" />
+                    styleClass="hidden md:inline-flex hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200 text-orange-500" />
 
                 <!-- User Profile Button -->
                 <!-- <p-button icon="pi pi-user" size="large" [text]="true" [rounded]="true" styleClass="hover:bg-primary-50 hover:text-primary transition-colors transition-duration-200" /> -->

@@ -1,5 +1,6 @@
 import { ProductEmbroided } from "./product-embroided";
 import { ProductCustomizable } from "./product-customizable";
+import { OrderItem } from "./order";
 
 export class CartItem {
 
@@ -9,7 +10,7 @@ export class CartItem {
 
     constructor(init?: Partial<CartItem>) {
         Object.assign(this, init);
-        // Generate a unique ID if not provided
+        // Generate a unique ID only if not provided
         if (!this.id) {
             this.id = `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
@@ -79,11 +80,8 @@ export class CartItem {
         return this.product?.name || 'Producto no disponible';
     }
 
-    getProductImage(): string {
-        if (this.product?.type === 'personalizable' && (this.product as ProductCustomizable).customImage) {
-            return (this.product as ProductCustomizable).customImage || '';
-        }
-        return this.product?.variants?.[0]?.image || '';
+    getProductImage(): string | undefined {
+        return this.product.variants?.[0]?.image || 'sin_imagen.png';
     }
 
     getProductType(): string {
@@ -107,9 +105,9 @@ export class CartItem {
 
     getCustomImage(): string {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).customImage || '';
+            return (this.product as ProductCustomizable).customImage || 'sin_imagen.png';
         }
-        return '';
+        return 'sin_imagen.png';
     }
 
     // Get selected variant color and size
@@ -142,6 +140,37 @@ export class CartItem {
 
     validate(): boolean {
         return !!this.product && this.quantity > 0;
+    }
+
+    /**
+     * Convert CartItem to OrderItem for order creation
+     */
+    toOrderItem(): OrderItem {
+        return new OrderItem({
+            productId: this.product.id,
+            productSnapshot: {
+                name: this.product.name,
+                description: this.product.description || '',
+                price: this.product.price,
+                discount: this.hasDiscount ? this.discountAmount : 0,
+                garmentType: this.product.garmentType || '',
+                type: this.product.type,
+                variant: {
+                    color: this.getSelectedColor(),
+                    size: this.getSelectedSize(),
+                    image: this.getProductImage()
+                }
+            },
+            quantity: this.quantity,
+            subtotal: this.total,
+            customization: this.product.type === 'personalizable' ? {
+                threadColor1: this.getThreadColor1(),
+                threadColor2: this.getThreadColor2(),
+                customText: this.getCustomText(),
+                customTextColor: this.getCustomTextColor(),
+                customImage: this.getCustomImage()
+            } : undefined
+        });
     }
 
 }

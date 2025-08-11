@@ -10,46 +10,29 @@
         <tr>
             <th pSortableColumn="id" class="text-center">
                 ID <p-sortIcon field="id"></p-sortIcon>
+                <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
             </th>
             <th pSortableColumn="name" class="text-center">
                 Nombre <p-sortIcon field="name"></p-sortIcon>
+                <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
             </th>
             <th class="text-center">Imagen</th>
             <th pSortableColumn="price" class="text-center">
                 Precio <p-sortIcon field="price"></p-sortIcon>
+                <p-columnFilter type="numeric" field="price" display="menu"></p-columnFilter>
             </th>
             <th class="text-center">Stock por Color/Talle</th>
             <th pSortableColumn="garmentType" class="text-center">
                 Categoría <p-sortIcon field="garmentType"></p-sortIcon>
+                <p-columnFilter type="text" field="garmentType" display="menu"></p-columnFilter>
             </th>
             <th pSortableColumn="rating" class="text-center">
                 Rating <p-sortIcon field="rating"></p-sortIcon>
+                <p-columnFilter type="numeric" field="rating" display="menu"></p-columnFilter>
             </th>
             <th class="text-center">Estado</th>
             <th class="text-center">Etiquetas</th>
             <th class="text-center">Acciones</th>
-        </tr>
-        <tr>
-            <th class="text-center">
-                <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
-            </th>
-            <th class="text-center">
-                <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
-            </th>
-            <th class="text-center"></th>
-            <th class="text-center">
-                <p-columnFilter type="numeric" field="price" display="menu"></p-columnFilter>
-            </th>
-            <th class="text-center"></th>
-            <th class="text-center">
-                <p-columnFilter type="text" field="garmentType" display="menu"></p-columnFilter>
-            </th>
-            <th class="text-center">
-                <p-columnFilter type="numeric" field="rating" display="menu"></p-columnFilter>
-            </th>
-            <th class="text-center"></th>
-            <th class="text-center"></th>
-            <th class="text-center"></th>
         </tr>
     </ng-template>
 
@@ -409,7 +392,7 @@
         </form>
     </div>
 
-    <ng-template pTemplate="footer">
+    <ng-template #footer>
         <div class="flex justify-content-end gap-2 mt-2">
             <p-button label="Cancelar" (onClick)="showProductDialog = false" [outlined]="true" [rounded]="true" [disabled]="savingProduct"></p-button>
             <p-button [label]="editingProduct ? 'Actualizar' : 'Guardar'" (onClick)="saveProduct()" [disabled]="productForm.invalid || savingProduct" [rounded]="true"

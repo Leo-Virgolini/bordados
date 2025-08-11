@@ -56,7 +56,7 @@
 
 <!-- Orders Management Section -->
 <p-card class="border-round-xl shadow-3 p-3">
-    <ng-template pTemplate="header">
+    <ng-template #header>
         <div class="flex justify-content-between align-items-center">
             <h3 class="text-lg font-semibold m-0">
                 <i class="pi pi-shopping-cart mr-2"></i>Gestión de Pedidos
@@ -69,7 +69,7 @@
     </ng-template>
 
     <p-table [value]="orders" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" class="p-datatable-sm" [sortMode]="'single'">
-        <ng-template pTemplate="header">
+        <ng-template #header>
             <tr>
                 <th pSortableColumn="id" class="text-left">
                     Pedido
@@ -107,7 +107,7 @@
                 <th class="text-left">Acciones</th>
             </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-order>
+        <ng-template #body let-order>
             <tr>
                 <td class="font-semibold text-primary">{{ order.id }}</td>
                 <td>
@@ -204,13 +204,13 @@
                         <i class="pi pi-user"></i>
                     </p-inputgroup-addon>
                     <p-select id="orderCliente" formControlName="customerId" [options]="customers" optionValue="id" placeholder="Seleccionar cliente" class="w-full" [showClear]="true">
-                        <ng-template pTemplate="selectedItem" let-customer>
+                        <ng-template #selectedItem let-customer>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-user"></i>
                                 <div>{{ getCustomerDisplayName(customer) }}</div>
                             </div>
                         </ng-template>
-                        <ng-template pTemplate="item" let-customer>
+                        <ng-template #item let-customer>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-user"></i>
                                 <div>
@@ -227,7 +227,7 @@
 
         <!-- Customer Information (Read-only for Existing Orders) -->
         <p-card class="border-round-xl shadow-2 p-3" *ngIf="editingOrder">
-            <ng-template pTemplate="header">
+            <ng-template #header>
                 <div class="flex align-items-center justify-content-between">
                     <div class="flex align-items-center gap-2">
                         <i class="pi pi-user text-primary text-xl"></i>
@@ -241,7 +241,7 @@
                 <!-- Personal Information -->
                 <div class="col-12 xl:col-6">
                     <p-card class="border-round-lg shadow-1 p-3">
-                        <ng-template pTemplate="header">
+                        <ng-template #header>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-id-card text-primary"></i>
                                 <h4 class="text-lg font-semibold text-primary m-0">Datos Personales</h4>
@@ -299,7 +299,7 @@
                 <!-- Address Information -->
                 <div class="col-12 xl:col-6">
                     <p-card class="border-round-lg shadow-1 p-3">
-                        <ng-template pTemplate="header">
+                        <ng-template #header>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-map-marker text-primary"></i>
                                 <h4 class="text-lg font-semibold text-primary m-0">Dirección de Residencia</h4>
@@ -370,13 +370,13 @@
                             <label class="block mb-2 font-semibold">Producto *</label>
                             <p-select formControlName="product" [options]="allProducts" optionLabel="name" placeholder="Seleccionar producto" class="w-full" (onChange)="onProductChange(i)"
                                 [showClear]="true">
-                                <ng-template pTemplate="selectedItem" let-product>
+                                <ng-template #selectedItem let-product>
                                     <div class="flex align-items-center gap-2">
                                         <i class="pi pi-box"></i>
                                         <div>{{ product.name }}</div>
                                     </div>
                                 </ng-template>
-                                <ng-template pTemplate="item" let-product>
+                                <ng-template #item let-product>
                                     <div class="flex align-items-center gap-2">
                                         <i class="pi pi-box"></i>
                                         <div>
@@ -683,7 +683,7 @@
         </div>
     </form>
 
-    <ng-template pTemplate="footer">
+    <ng-template #footer>
         <div class="flex justify-content-end gap-2 mt-3">
             <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="closeOrderDialog()" [disabled]="orderLoading" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveOrder()" [disabled]="!orderForm.valid || orderLoading" [loading]="orderLoading" />
@@ -731,7 +731,7 @@
 
         <!-- Customer Information -->
         <p-card class="border-round-xl shadow-2 p-3 mb-4">
-            <ng-template pTemplate="header">
+            <ng-template #header>
                 <div class="flex align-items-center justify-content-between">
                     <div class="flex align-items-center gap-2">
                         <i class="pi pi-user text-primary text-xl"></i>
@@ -745,7 +745,7 @@
                 <!-- Personal Information -->
                 <div class="col-12 xl:col-6">
                     <p-card class="border-round-lg shadow-1 p-3">
-                        <ng-template pTemplate="header">
+                        <ng-template #header>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-id-card text-primary"></i>
                                 <h4 class="text-lg font-semibold text-primary m-0">Datos Personales</h4>
@@ -803,7 +803,7 @@
                 <!-- Address Information -->
                 <div class="col-12 xl:col-6">
                     <p-card class="border-round-lg shadow-1 p-3">
-                        <ng-template pTemplate="header">
+                        <ng-template #header>
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-map-marker text-primary"></i>
                                 <h4 class="text-lg font-semibold text-primary m-0">Dirección de Residencia</h4>
@@ -922,7 +922,8 @@
                         <tr *ngFor="let item of selectedOrder?.items; let i = index" class="border-bottom-1 surface-border">
                             <td class="p-3">
                                 <div class="flex align-items-center gap-2">
-                                    <img *ngIf="item.getProductImage()" [src]="item.getProductImage()" alt="Imagen" width="40" height="40" class="border-round shadow-1" />
+                                    <p-image *ngIf="item.getProductImage()" [src]="item.getProductImage()" alt="Imagen" imageClass="w-4rem h-4rem object-cover border-round"
+                                        class="border-round" (onImageError)="onImageError($event, item.getProductName())" />
                                     <div class="flex flex-column">
                                         <span>{{ item.getProductName() }}</span>
                                         <!-- Product Type Tag -->
@@ -1132,7 +1133,7 @@
         </div>
     </div>
 
-    <ng-template pTemplate="footer">
+    <ng-template #footer>
         <div class="flex justify-content-end gap-2 mt-3">
             <p-button label="Descargar Datos Completos" icon="pi pi-download" [outlined]="true" (onClick)="downloadOrderData(selectedOrder!)"
                 pTooltip="Descargar todos los datos del pedido incluyendo imágenes" />

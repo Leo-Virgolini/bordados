@@ -15,6 +15,8 @@ import { RouterLink } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
 import { Image } from 'primeng/image';
+import { ProductCustomizable } from '../../models/product-customizable';
+import { ProductBase } from '../../models/product-base';
 
 @Component({
   selector: 'app-carrito',
@@ -51,7 +53,7 @@ export class CarritoComponent implements OnInit {
       items: this.fb.array(
         this.items.map(item =>
           this.fb.group({
-            id: [item.product.id],
+            id: [item.id],
             cantidad: [item.quantity, [Validators.required, Validators.min(1)]]
           })
         )
@@ -74,7 +76,6 @@ export class CarritoComponent implements OnInit {
   }
 
   actualizarCantidad(item: CartItem, nuevaCantidad: number | string, inputRef: any) {
-
     const cantidad: number = typeof nuevaCantidad === 'string' ? parseInt(nuevaCantidad) : nuevaCantidad;
     const maxStock = this.getMaxStock(item.product);
 
@@ -114,18 +115,15 @@ export class CarritoComponent implements OnInit {
       header: 'Eliminar producto',
       message: '¿Estás seguro de querer eliminar este producto del carrito?',
       icon: 'pi pi-exclamation-circle',
-      rejectButtonProps: {
-        label: 'Cancelar',
-        icon: 'pi pi-times',
-        outlined: true,
-        size: 'small',
-        severity: 'danger'
-      },
+      acceptLabel: 'Confirmar',
+      rejectLabel: 'Cancelar',
+      acceptIcon: 'pi pi-check',
+      rejectIcon: 'pi pi-times',
       acceptButtonProps: {
-        label: 'Confirmar',
-        icon: 'pi pi-check',
-        size: 'small',
         severity: 'primary'
+      },
+      rejectButtonProps: {
+        outlined: true,
       },
       accept: () => {
         this.carritoService.eliminarItem(cartItemId);
@@ -134,8 +132,17 @@ export class CarritoComponent implements OnInit {
     });
   }
 
+  onImageError(event: any, product: ProductBase): void {
+    // Update the image source to show default image
+    const imgElement = event.target as HTMLImageElement;
+    if (imgElement) {
+      imgElement.src = 'sin_imagen.png';
+      imgElement.alt = `${product.name}`;
+    }
+  }
+
   calcularTotal(): number {
-    return this.items.reduce((total, item) => total + item.total, 0);
+    return this.carritoService.getTotalPrice();
   }
 
   calcularTotalOriginal(): number {
@@ -170,10 +177,6 @@ export class CarritoComponent implements OnInit {
     alert('Implementar proceso de pago');
   }
 
-  hasProp(obj: any, prop: string): boolean {
-    return obj && Object.prototype.hasOwnProperty.call(obj, prop);
-  }
-
   getThreadColorName(product: any, colorNumber: number): string {
     if (product.type === 'personalizable') {
       if (colorNumber === 1) {
@@ -189,9 +192,8 @@ export class CarritoComponent implements OnInit {
     return product.type === 'personalizable' && !!product.threadColor2;
   }
 
-  // For cart items from customize flow, product.variants contains only the selected variant and size
   getProductImage(product: any): string | undefined {
-    return product.variants?.[0]?.image;
+    return product.variants?.[0]?.image || 'sin_imagen.png';
   }
 
   getProductColor(product: any): string | undefined {
@@ -207,13 +209,11 @@ export class CarritoComponent implements OnInit {
       return 1; // Default minimum
     }
 
-    // Get the selected variant (color)
     const selectedVariant = product.variants[0];
     if (!selectedVariant.sizes || selectedVariant.sizes.length === 0) {
       return 1; // Default minimum
     }
 
-    // Get the selected size stock
     const selectedSize = this.getProductSize(product);
 
     // If we have a specific size, get its stock
@@ -236,7 +236,10 @@ export class CarritoComponent implements OnInit {
   }
 
   getCustomImage(item: CartItem): string {
-    return (item.product as any).customImage || '';
+    if (item.product.type === 'personalizable') {
+      return (item.product as ProductCustomizable).customImage || 'sin_imagen.png';
+    }
+    return 'sin_imagen.png';
   }
 
   hasCustomText(product: any): boolean {

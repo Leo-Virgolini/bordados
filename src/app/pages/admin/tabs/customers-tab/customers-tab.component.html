@@ -1,6 +1,6 @@
 <!-- Customer Management Card -->
 <p-card class="border-round-xl shadow-3 p-3">
-    <ng-template pTemplate="header">
+    <ng-template #header>
         <div class="flex justify-content-between align-items-center">
             <h3 class="text-lg font-semibold m-0">
                 <i class="pi pi-users mr-2"></i>Gestión de Clientes
@@ -16,74 +16,51 @@
         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes" [rowsPerPageOptions]="[5, 10, 25, 50]" responsiveLayout="scroll"
         [tableStyle]="{'min-width': '50rem'}" (onSort)="onSort($event)">
 
-        <ng-template pTemplate="header">
+        <ng-template #header>
             <tr>
                 <th pSortableColumn="id" class="text-center">
                     ID <p-sortIcon field="id"></p-sortIcon>
+                    <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="name" class="text-center">
                     Nombre <p-sortIcon field="name"></p-sortIcon>
+                    <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="email" class="text-center">
                     Email <p-sortIcon field="email"></p-sortIcon>
+                    <p-columnFilter type="text" field="email" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="phone" class="text-center">
                     Teléfono <p-sortIcon field="phone"></p-sortIcon>
+                    <p-columnFilter type="text" field="phone" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="dni" class="text-center">
                     DNI <p-sortIcon field="dni"></p-sortIcon>
+                    <p-columnFilter type="text" field="dni" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="province" class="text-center">
                     Provincia <p-sortIcon field="province"></p-sortIcon>
+                    <p-columnFilter type="text" field="province" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="city" class="text-center">
                     Localidad <p-sortIcon field="city"></p-sortIcon>
+                    <p-columnFilter type="text" field="city" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="postalCode" class="text-center">
                     CP <p-sortIcon field="postalCode"></p-sortIcon>
+                    <p-columnFilter type="text" field="postalCode" display="menu"></p-columnFilter>
                 </th>
                 <th pSortableColumn="address" class="text-center">
                     Dirección <p-sortIcon field="address"></p-sortIcon>
+                    <p-columnFilter type="text" field="address" display="menu"></p-columnFilter>
                 </th>
                 <th class="text-center">Pedidos</th>
                 <th class="text-center">Total Gastado</th>
                 <th class="text-center">Acciones</th>
             </tr>
-            <tr>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="id" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="email" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="phone" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="dni" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="province" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="city" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="postalCode" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center">
-                    <p-columnFilter type="text" field="address" display="menu"></p-columnFilter>
-                </th>
-                <th class="text-center"></th>
-                <th class="text-center"></th>
-                <th class="text-center"></th>
-            </tr>
         </ng-template>
 
-        <ng-template pTemplate="body" let-customer>
+        <ng-template #body let-customer>
             <tr>
                 <td class="text-center">
                     <span class="font-bold text-primary">{{ customer.id }}</span>
@@ -136,7 +113,7 @@
             </tr>
         </ng-template>
 
-        <ng-template pTemplate="emptymessage">
+        <ng-template #emptymessage>
             <tr>
                 <td colspan="12" class="text-center p-4">
                     <div class="flex flex-column align-items-center">
@@ -159,15 +136,14 @@
         <div class="grid" *ngIf="editingCustomer">
             <div class="col-12 md:col-6">
                 <label for="customerId" class="block mb-2 font-semibold">
-                    ID del Cliente * 
+                    ID del Cliente *
                     <span class="text-xs text-500 font-normal">(Solo lectura)</span>
                 </label>
                 <p-inputgroup>
                     <p-inputgroup-addon>
                         <i class="pi pi-id-card"></i>
                     </p-inputgroup-addon>
-                    <input id="customerId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cliente" 
-                           readonly [class.surface-200]="true" />
+                    <input id="customerId" type="text" pInputText formControlName="id" class="w-full" placeholder="ID del cliente" readonly [class.surface-200]="true" />
                 </p-inputgroup>
                 <app-error-helper [control]="customerForm.get('id')"></app-error-helper>
             </div>
@@ -305,7 +281,7 @@
         </div>
     </form>
 
-    <ng-template pTemplate="footer">
+    <ng-template #footer>
         <div class="flex justify-content-end gap-2">
             <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="showCustomerDialog = false" [disabled]="customerLoading" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveCustomer()" [disabled]="!customerForm.valid || customerLoading" [loading]="customerLoading" />
@@ -317,44 +293,44 @@
 <p-dialog [(visible)]="showCustomerDetailsDialog" [modal]="true" [style]="{width: '50rem'}" [draggable]="false" [resizable]="false" header="Detalles del Cliente" [closable]="true">
 
     <div class="surface-ground p-4" *ngIf="selectedCustomer">
-                 <!-- Customer Information -->
-         <div class="surface-card p-4 border-round mb-4">
-             <h3 class="text-lg font-semibold mb-3 text-primary">
-                 <i class="pi pi-user mr-2"></i>Información Personal
-             </h3>
-             <div class="grid">
-                 <div class="col-12 md:col-6">
-                     <div class="flex flex-column mb-3">
-                         <span class="text-sm text-600 mb-1">ID del Cliente</span>
-                         <span class="font-bold text-primary">{{ selectedCustomer.id }}</span>
-                     </div>
-                 </div>
-                 <div class="col-12 md:col-6">
-                     <div class="flex flex-column mb-3">
-                         <span class="text-sm text-600 mb-1">Nombre Completo</span>
-                         <span class="font-bold text-900">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
-                     </div>
-                 </div>
-                 <div class="col-12 md:col-6">
-                     <div class="flex flex-column mb-3">
-                         <span class="text-sm text-600 mb-1">Email</span>
-                         <span class="text-900">{{ selectedCustomer.email }}</span>
-                     </div>
-                 </div>
-                 <div class="col-12 md:col-6">
-                     <div class="flex flex-column mb-3">
-                         <span class="text-sm text-600 mb-1">Teléfono</span>
-                         <span class="text-900">{{ selectedCustomer.phone }}</span>
-                     </div>
-                 </div>
-                 <div class="col-12 md:col-6">
-                     <div class="flex flex-column mb-3">
-                         <span class="text-sm text-600 mb-1">DNI</span>
-                         <span class="text-900">{{ selectedCustomer.dni }}</span>
-                     </div>
-                 </div>
-             </div>
-         </div>
+        <!-- Customer Information -->
+        <div class="surface-card p-4 border-round mb-4">
+            <h3 class="text-lg font-semibold mb-3 text-primary">
+                <i class="pi pi-user mr-2"></i>Información Personal
+            </h3>
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">ID del Cliente</span>
+                        <span class="font-bold text-primary">{{ selectedCustomer.id }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Nombre Completo</span>
+                        <span class="font-bold text-900">{{ selectedCustomer.name }} {{ selectedCustomer.lastName }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Email</span>
+                        <span class="text-900">{{ selectedCustomer.email }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">Teléfono</span>
+                        <span class="text-900">{{ selectedCustomer.phone }}</span>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column mb-3">
+                        <span class="text-sm text-600 mb-1">DNI</span>
+                        <span class="text-900">{{ selectedCustomer.dni }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Address Information -->
         <div class="surface-card p-4 border-round mb-4">
@@ -436,7 +412,7 @@
             <p-table [value]="getCustomerOrders(selectedCustomer.id)" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pedidos" [tableStyle]="{'min-width': '40rem'}" class="p-datatable-sm">
 
-                <ng-template pTemplate="header">
+                <ng-template #header>
                     <tr>
                         <th class="text-center">ID Pedido</th>
                         <th class="text-center">Fecha</th>
@@ -447,7 +423,7 @@
                     </tr>
                 </ng-template>
 
-                <ng-template pTemplate="body" let-order>
+                <ng-template #body let-order>
                     <tr>
                         <td class="text-center">
                             <span class="font-bold text-primary">{{ order.id }}</span>
@@ -475,7 +451,7 @@
                     </tr>
                 </ng-template>
 
-                <ng-template pTemplate="emptymessage">
+                <ng-template #emptymessage>
                     <tr>
                         <td colspan="6" class="text-center p-4">
                             <div class="flex flex-column align-items-center">
@@ -498,7 +474,7 @@
         </div>
     </div>
 
-    <ng-template pTemplate="footer">
+    <ng-template #footer>
         <div class="flex justify-content-end gap-2 mt-3">
             <p-button label="Editar Cliente" icon="pi pi-pencil" [outlined]="true" (onClick)="editCustomer(selectedCustomer!)" />
             <p-button label="Cerrar" icon="pi pi-times" (onClick)="showCustomerDetailsDialog = false" />

@@ -6,6 +6,7 @@
     "secondColorPrice": 3000,
     "customTextPrice": 3500,
     "maxTextLength": 20,
+    "discountPercentage": 10,
     "facebookUrl": "http://localhost:4200/admin",
     "instagramUrl": "http://localhost:4200/admin",
     "tiktokUrl": "http://localhost:4200/admin"
@@ -120,7 +121,7 @@
       "variants": [
         {
           "color": "Blanco",
-          "image": "/uploads/embroidery_lineart_bw.png",
+          "image": "",
           "sizes": [
             {
               "size": "S",
@@ -375,7 +376,7 @@
         },
         {
           "color": "Gris",
-          "image": "/prendas/buzo_frisa_negro.webp",
+          "image": "/prendas/buzo_frisa_gris.webp",
           "sizes": [
             {
               "size": "M",
@@ -781,6 +782,13 @@
               "size": "M",
               "image": "/prendas/remera_blanca.webp"
             }
+          },
+          "customization": {
+            "threadColor1": "3",
+            "threadColor2": "5",
+            "customText": "Equipo XYZ",
+            "customTextColor": "1",
+            "customImage": "/productos/imagen2.png"
           },
           "quantity": 2,
           "subtotal": 24000

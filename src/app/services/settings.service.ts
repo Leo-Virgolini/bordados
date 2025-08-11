@@ -15,6 +15,7 @@ export interface AppSettings {
     instagramUrl: string;
     twitterUrl: string;
     tiktokUrl: string;
+    discountPercentage: number;
 }
 
 @Injectable({
@@ -103,6 +104,18 @@ export class SettingsService {
     updateMaxTextLength(length: number): Observable<number> {
         return this.updateSettings({ maxTextLength: length }).pipe(
             map(settings => settings.maxTextLength)
+        );
+    }
+
+    getDiscountPercentage(): Observable<number> {
+        return this.getSettings().pipe(
+            map(settings => settings.discountPercentage)
+        );
+    }
+
+    updateDiscountPercentage(percentage: number): Observable<number> {
+        return this.updateSettings({ discountPercentage: percentage }).pipe(
+            map(settings => settings.discountPercentage)
         );
     }
 

@@ -34,6 +34,7 @@ import { OrdersService } from '../../../../services/orders.service';
 import { CustomersService } from '../../../../services/customers.service';
 import { ProductsService } from '../../../../services/products.service';
 import { CouponsService } from '../../../../services/coupons.service';
+import { ProductBase } from '../../../../models/product-base';
 
 @Component({
     selector: 'app-orders-tab',
@@ -278,6 +279,15 @@ export class OrdersTabComponent implements OnInit {
                 });
             }
         });
+    }
+
+    onImageError(event: any, productName: string): void {
+        // Update the image source to show default image
+        const imgElement = event.target as HTMLImageElement;
+        if (imgElement) {
+            imgElement.src = 'sin_imagen.png';
+            imgElement.alt = `${productName}`;
+        }
     }
 
     // Getters for sales summary
