@@ -45,7 +45,7 @@ import { Badge } from 'primeng/badge';
 export class CustomizeComponent implements OnInit {
 
   formulario!: FormGroup;
-  imageURL: string | undefined;
+  imageURL: string | undefined; // base64
   imageFile: File | undefined;
   isLoading: boolean = false;
   showSizeGuide: boolean = false;
@@ -67,7 +67,7 @@ export class CustomizeComponent implements OnInit {
   coloresHilado: ThreadColor[] = [];
 
   // Size guide data similar to MercadoLibre
-  sizeGuide = {
+  readonly sizeGuide = {
     title: 'Guía de Talles',
     description: 'Medí tu prenda favorita y compará con nuestra tabla de talles',
     instructions: [
@@ -442,7 +442,7 @@ export class CustomizeComponent implements OnInit {
     const selectedSize: string = datos.talle;
     const baseProduct: ProductCustomizable | undefined = this.baseProducts.find(p => p.id === selectedProductTypeId);
     const variant: ProductVariant | undefined = baseProduct?.variants.find(v => v.color === selectedColor);
-    const image = variant?.image || this.imageURL;
+    const image = variant?.image;
 
     const productoCustomizable = new ProductCustomizable({
       id: Date.now(), // Generate unique ID for customizable product
@@ -460,11 +460,13 @@ export class CustomizeComponent implements OnInit {
           ]
         }
       ],
-      threadColor1: threadColor1!,
-      threadColor2: threadColor2,
-      customImage: this.imageURL!,
-      customText: datos.usarTextoPersonalizado ? datos.textoPersonalizado : undefined,
-      customTextColor: customTextColor
+      customization: {
+        threadColor1: threadColor1?.name || '',
+        threadColor2: threadColor2?.name || '',
+        customImage: this.imageURL || undefined,
+        customText: datos.usarTextoPersonalizado ? datos.textoPersonalizado : undefined,
+        customTextColor: customTextColor?.name
+      }
     });
 
     const nuevoItem = new CartItem({
@@ -475,11 +477,6 @@ export class CustomizeComponent implements OnInit {
     return this.carritoService.agregarItem(nuevoItem);
   }
 
-  /**
-   * Gets the product image with fallback to default image if not found
-   * @param product The product to get image for
-   * @returns The image URL or default image URL
-   */
   getProductImage(product: ProductCustomizable): string {
     // Try to get the first variant's image
     const firstVariant: ProductVariant = product.variants?.[0];
@@ -491,11 +488,6 @@ export class CustomizeComponent implements OnInit {
     return 'sin_imagen.png';
   }
 
-  /**
-   * Handles image loading errors by logging the error and providing fallback
-   * @param event The error event
-   * @param product The product that had the image error
-   */
   onImageError(event: any, product: ProductCustomizable): void {
     // Update the product's image to use the default image when loading fails
     const firstVariant: ProductVariant = product.variants?.[0];

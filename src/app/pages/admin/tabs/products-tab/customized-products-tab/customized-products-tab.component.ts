@@ -463,13 +463,15 @@ export class CustomizedProductsTabComponent implements OnInit {
         }
     }
 
-    clearImage(fieldName: string): void {
-        this.customizableProductForm.get(fieldName)?.setValue('');
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Imagen eliminada',
-            detail: 'La imagen ha sido eliminada'
-        });
+    getFileNameFromPath(filePath: string): string {
+        if (!filePath) return '';
+        const parts = filePath.split('/');
+        return parts[parts.length - 1] || '';
+    }
+
+    getVariantImagePath(variantIndex: number): string {
+        const variantControl = this.customizableVariantsArray.at(variantIndex);
+        return variantControl?.get('image')?.value || '';
     }
 
     clearVariantImage(variantIndex: number): void {
@@ -480,6 +482,15 @@ export class CustomizedProductsTabComponent implements OnInit {
             summary: 'Imagen eliminada',
             detail: 'La imagen de la variante ha sido eliminada'
         });
+    }
+
+    onImageError(event: any, product: ProductCustomizable | undefined): void {
+        // Update the image source to show default image
+        const imgElement = event.target as HTMLImageElement;
+        if (imgElement) {
+            imgElement.src = 'sin_imagen.png';
+            imgElement.alt = `${product?.name || ''}`;
+        }
     }
 
 } 

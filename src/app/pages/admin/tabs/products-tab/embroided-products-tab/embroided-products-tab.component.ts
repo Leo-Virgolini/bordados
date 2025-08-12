@@ -443,8 +443,6 @@ export class EmbroidedProductsTabComponent implements OnInit {
         }
     }
 
-
-
     clearVariantImage(variantIndex: number): void {
         this.variantsArray.at(variantIndex).get('image')?.setValue('');
         delete this.selectedVariantImageNames[variantIndex];
@@ -454,4 +452,14 @@ export class EmbroidedProductsTabComponent implements OnInit {
             detail: 'La imagen de la variante ha sido eliminada'
         });
     }
+
+    onImageError(event: any, product: ProductEmbroided | undefined): void {
+        // Update the image source to show default image
+        const imgElement = event.target as HTMLImageElement;
+        if (imgElement) {
+            imgElement.src = 'sin_imagen.png';
+            imgElement.alt = `${product?.name || ''}`;
+        }
+    }
+
 }

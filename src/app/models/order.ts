@@ -1,5 +1,6 @@
 import { Customer } from './customer';
 import { Coupon } from './coupon';
+import { CustomizationData } from './product-customizable';
 
 export interface ProductSnapshot {
     name: string;
@@ -26,14 +27,6 @@ export interface CustomerSnapshot {
     postalCode: string;
     address: string;
     floorApartment?: string;
-}
-
-export interface CustomizationData {
-    threadColor1: string;
-    threadColor2?: string;
-    customText?: string;
-    customTextColor?: string;
-    customImage: string;
 }
 
 export class OrderItem {
@@ -63,7 +56,7 @@ export class OrderItem {
         this.quantity = init?.quantity || 0;
         this.subtotal = init?.subtotal || 0;
         this.customization = init?.customization;
-        
+
         // Log image URLs for debugging
         console.log(`Creating OrderItem for product: ${this.productSnapshot.name}`);
         console.log(`Variant image: ${this.productSnapshot.variant.image}`);
@@ -121,19 +114,7 @@ export class OrderItem {
     }
 
     getProductImage(): string {
-        // Prioritize custom image from customization data
-        if (this.customization?.customImage && this.customization.customImage.trim() !== '') {
-            return this.customization.customImage;
-        }
-        
-        // Fallback to product snapshot variant image
-        const variantImage = this.productSnapshot?.variant?.image;
-        if (variantImage && variantImage.trim() !== '') {
-            return variantImage;
-        }
-        
-        // Final fallback to default image
-        return 'sin_imagen.png';
+        return this.productSnapshot?.variant?.image || 'sin_imagen.png';
     }
 
     getProductType(): string {
@@ -149,20 +130,8 @@ export class OrderItem {
         return this.customization?.threadColor2 || '';
     }
 
-    getCustomImage(): string {
-        const customImage = this.customization?.customImage;
-        if (customImage && customImage.trim() !== '') {
-            return customImage;
-        }
-        
-        // Fallback to product snapshot variant image if no custom image
-        const variantImage = this.productSnapshot?.variant?.image;
-        if (variantImage && variantImage.trim() !== '') {
-            return variantImage;
-        }
-        
-        // Final fallback to default image
-        return 'sin_imagen.png';
+    getCustomImage(): string | undefined {
+        return this.customization?.customImage;
     }
 
     // Get custom text information
@@ -178,20 +147,6 @@ export class OrderItem {
         return this.getCustomText().length > 0;
     }
 
-    /**
-     * Get comprehensive image information for debugging
-     */
-    getImageSummary(): { variantImage: string; customImage?: string; finalImage: string } {
-        const variantImage = this.productSnapshot?.variant?.image || '';
-        const customImage = this.customization?.customImage || '';
-        const finalImage = this.getProductImage();
-        
-        return {
-            variantImage,
-            customImage,
-            finalImage
-        };
-    }
 }
 
 export class Order {
@@ -414,38 +369,6 @@ export class Order {
         const city = this.customerSnapshot?.city || '';
         const province = this.customerSnapshot?.province || '';
         return city && province ? `${city}, ${province}` : city || province || '';
-    }
-
-    /**
-     * Get comprehensive image information for all order items
-     */
-    getOrderImagesSummary(): Array<{ productName: string; imageInfo: any }> {
-        return this.items.map(item => ({
-            productName: item.getProductName(),
-            imageInfo: item.getImageSummary()
-        }));
-    }
-
-    // Factory method to create order with customer
-    static createFromCustomer(customer: Customer, items: OrderItem[] = []): Order {
-        const customerSnapshot: CustomerSnapshot = {
-            name: customer.name,
-            lastName: customer.lastName,
-            email: customer.email,
-            phone: customer.phone,
-            dni: customer.dni,
-            province: customer.province,
-            city: customer.city,
-            postalCode: customer.postalCode,
-            address: customer.address,
-            floorApartment: customer.floorApartment
-        };
-
-        return new Order({
-            customerId: customer.id,
-            customerSnapshot,
-            items
-        });
     }
 
 } 

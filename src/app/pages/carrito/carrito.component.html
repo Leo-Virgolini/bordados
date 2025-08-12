@@ -81,7 +81,7 @@
                                                                 <div class="flex align-items-center gap-2">
                                                                     <i class="pi pi-image text-primary"></i>
                                                                     <span class="text-600">Imagen:</span>
-                                                                    <p-image [src]="getCustomImage(item)" [alt]="'Imagen subida'"
+                                                                    <p-image [src]="getCustomImage(item.product)" alt="Imagen subida" (onImageError)="onImageError($event, item.product)"
                                                                         imageClass="w-4rem h-4rem object-cover border-round border-1 border-secondary-300" class="border-round"
                                                                         [preview]="true" />
                                                                 </div>

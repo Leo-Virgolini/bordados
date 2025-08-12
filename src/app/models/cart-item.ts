@@ -91,23 +91,23 @@ export class CartItem {
     // For customizable products
     getThreadColor1(): string {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).threadColor1?.name || '';
+            return (this.product as ProductCustomizable).customization?.threadColor1 || '';
         }
         return '';
     }
 
     getThreadColor2(): string {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).threadColor2?.name || '';
+            return (this.product as ProductCustomizable).customization?.threadColor2 || '';
         }
         return '';
     }
 
-    getCustomImage(): string {
+    getCustomImage(): string | undefined {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).customImage || 'sin_imagen.png';
+            return (this.product as ProductCustomizable).customization?.customImage;
         }
-        return 'sin_imagen.png';
+        return undefined;
     }
 
     // Get selected variant color and size
@@ -122,14 +122,14 @@ export class CartItem {
     // Get custom text information
     getCustomText(): string {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).customText || '';
+            return (this.product as ProductCustomizable).customization?.customText || '';
         }
         return '';
     }
 
     getCustomTextColor(): string {
         if (this.product?.type === 'personalizable') {
-            return (this.product as ProductCustomizable).customTextColor?.name || '';
+            return (this.product as ProductCustomizable).customization?.customTextColor || '';
         }
         return '';
     }

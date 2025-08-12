@@ -177,34 +177,19 @@ export class CarritoComponent implements OnInit {
     alert('Implementar proceso de pago');
   }
 
-  getThreadColorName(product: any, colorNumber: number): string {
-    if (product.type === 'personalizable') {
-      if (colorNumber === 1) {
-        return product.threadColor1?.name || '-';
-      } else if (colorNumber === 2) {
-        return product.threadColor2?.name || '-';
-      }
-    }
-    return '-';
-  }
-
-  hasSecondThreadColor(product: any): boolean {
-    return product.type === 'personalizable' && !!product.threadColor2;
-  }
-
-  getProductImage(product: any): string | undefined {
+  getProductImage(product: ProductBase): string | undefined {
     return product.variants?.[0]?.image || 'sin_imagen.png';
   }
 
-  getProductColor(product: any): string | undefined {
+  getProductColor(product: ProductBase): string | undefined {
     return product.variants?.[0]?.color;
   }
 
-  getProductSize(product: any): string | undefined {
+  getProductSize(product: ProductBase): string | undefined {
     return product.variants?.[0]?.sizes?.[0]?.size;
   }
 
-  getMaxStock(product: any): number {
+  getMaxStock(product: ProductBase): number {
     if (!product.variants || product.variants.length === 0) {
       return 1; // Default minimum
     }
@@ -235,23 +220,38 @@ export class CarritoComponent implements OnInit {
     return maxStock > 0 ? maxStock : 1; // Return at least 1
   }
 
-  getCustomImage(item: CartItem): string {
-    if (item.product.type === 'personalizable') {
-      return (item.product as ProductCustomizable).customImage || 'sin_imagen.png';
+  getCustomImage(product: ProductCustomizable): string | undefined {
+    if (product.type === 'personalizable') {
+      return product.customization?.customImage || 'sin_imagen.png';
     }
     return 'sin_imagen.png';
   }
 
-  hasCustomText(product: any): boolean {
-    return product.type === 'personalizable' && !!product.customText;
+  getThreadColorName(product: ProductCustomizable, colorNumber: number): string {
+    if (product.type === 'personalizable') {
+      if (colorNumber === 1) {
+        return product.customization?.threadColor1 || '-';
+      } else if (colorNumber === 2) {
+        return product.customization?.threadColor2 || '-';
+      }
+    }
+    return '-';
   }
 
-  getCustomText(product: any): string {
-    return product.type === 'personalizable' ? product.customText || '' : '';
+  hasSecondThreadColor(product: ProductCustomizable): boolean {
+    return product.type === 'personalizable' && !!product.customization?.threadColor2;
   }
 
-  getCustomTextColorName(product: any): string {
-    return product.type === 'personalizable' && product.customTextColor ? product.customTextColor.name || '-' : '-';
+  hasCustomText(product: ProductCustomizable): boolean {
+    return product.type === 'personalizable' && !!product.customization?.customText;
+  }
+
+  getCustomText(product: ProductCustomizable): string {
+    return product.type === 'personalizable' ? product.customization?.customText || '' : '';
+  }
+
+  getCustomTextColorName(product: ProductCustomizable): string {
+    return product.type === 'personalizable' && product.customization?.customTextColor ? product.customization?.customTextColor || '-' : '-';
   }
 
 }

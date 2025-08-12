@@ -1057,9 +1057,9 @@ export class OrdersTabComponent implements OnInit {
 
 
     // Get custom image for personalizable products
-    getProductCustomImage(index: number): string {
+    getProductCustomImage(index: number): string | undefined {
         const originalOrderItem = this.editingOrder?.items[index];
-        return originalOrderItem?.customization?.customImage || '';
+        return originalOrderItem?.customization?.customImage;
     }
 
     // Download custom image
