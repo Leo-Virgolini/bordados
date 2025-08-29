@@ -306,7 +306,7 @@
             </p-panel>
 
             <!-- Order Notes -->
-            <p-panel class="border-round-xl shadow-3 bg-surface-0 mt-4">
+            <!-- <p-panel class="border-round-xl shadow-3 bg-surface-0 mt-4">
                 <ng-template #header>
                     <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center text-gray-700"><i class="pi pi-comment mr-2" style="font-size: 1.2rem"></i>
                         Notas del Pedido</h1>
@@ -326,7 +326,7 @@
                         </div>
                     </div>
                 </div>
-            </p-panel>
+            </p-panel> -->
 
             <!-- Payment Method -->
             <p-panel class="border-round-xl shadow-3 bg-surface-0 mt-4">
@@ -433,133 +433,192 @@
         <!-- Order Summary -->
         <aside class="col-12 md:col-4">
             <div class="sticky" style="top: 7rem;">
-                <p-panel class="border-round-xl shadow-3 bg-surface-0 p-2">
+                <p-panel class="border-round-2xl shadow-4 bg-surface-0">
                     <ng-template #header>
-                        <h1 class="text-xl font-bold text-center flex justify-content-center align-items-center"><i class="pi pi-receipt mr-2" style="font-size: 1.2rem"></i> Resumen del
-                            pedido</h1>
+                        <div class="flex align-items-center justify-content-center p-3 border-surface-200">
+                            <i class="pi pi-receipt text-primary text-2xl"></i>
+                            <h2 class="text-xl font-bold text-900 m-0">Resumen del Pedido</h2>
+                        </div>
                     </ng-template>
-                    <div class="flex flex-column gap-2">
+
+                    <div class="p-3">
                         <!-- Order Items -->
-                        <div *ngFor="let item of cartItems" class="flex align-items-center gap-3 p-3 border-1 border-round bg-surface-50 order-item">
-                            <p-image [src]="getProductImage(item.product)" [alt]="item.product.name" imageClass="w-4rem h-4rem object-cover border-round" class="border-round"
-                                (onImageError)="onImageError($event, item.product)" />
-                            <div class="flex-1">
-                                <div class="font-semibold">{{ item.product.name }}</div>
-                                <div class="flex align-items-center gap-2 mb-1">
-                                    <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
-                                        [severity]="item.product.type === 'personalizable' ? 'warn' : 'success'" [rounded]="true" />
-                                    <p-tag *ngIf="item.hasDiscount" [value]="'-' + item.discountPercentage + '%'" severity="danger" [rounded]="true" />
+                        <div class="flex flex-column gap-3 mb-2">
+                            <h3 class="text-lg font-semibold text-700 mb-3 mt-0">Productos</h3>
+
+                            <div *ngFor="let item of cartItems; let last = last" class="flex align-items-start gap-3 p-3 border-round-xl surface-100 border-1 border-surface-200">
+
+                                <!-- Product Image -->
+                                <div class="flex-shrink-0">
+                                    <p-image [src]="getProductImage(item.product)" [alt]="item.product.name"
+                                        imageClass="w-4rem h-4rem object-cover border-round-lg border-1 border-surface-200" class="border-round-lg"
+                                        (onImageError)="onImageError($event, item.product)" />
                                 </div>
-                                <div class="text-sm text-color-secondary">Cantidad: {{ item.quantity }}</div>
-                                <div class="text-sm text-color-secondary">
-                                    {{ item.unitPriceFormatted }} c/u
+
+                                <!-- Product Details -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-900 text-sm line-height-2 mb-1">{{ item.product.name }}</div>
+
+                                    <!-- Product Tags -->
+                                    <div class="flex align-items-center gap-2 mb-2">
+                                        <p-tag [value]="item.product.type === 'personalizable' ? 'Personalizable' : 'Bordado Listo'"
+                                            [severity]="item.product.type === 'personalizable' ? 'warning' : 'success'" [rounded]="true" size="small" />
+                                        <p-tag *ngIf="item.hasDiscount" [value]="'-' + item.discountPercentage + '%'" severity="danger" [rounded]="true" size="small" />
+                                    </div>
+
+                                    <!-- Quantity and Price -->
+                                    <div class="flex align-items-center justify-content-between">
+                                        <div class="text-xs text-600">
+                                            Cantidad: <span class="font-semibold text-700">{{ item.quantity }}</span>
+                                        </div>
+                                        <div class="text-xs text-600">
+                                            {{ item.unitPriceFormatted }} <span class="text-500">c/u</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Total Price -->
+                                <div class="flex-shrink-0 text-right">
+                                    <div class="font-bold text-primary text-lg">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
                                 </div>
                             </div>
-                            <div class="font-bold text-primary">{{ item.total | currency:'ARS':'symbol':'1.0-0' }}</div>
                         </div>
 
-                        <p-divider></p-divider>
+                        <!-- Divider -->
+                        <p-divider class="my-4"></p-divider>
 
                         <!-- Coupon Section -->
-                        <div class="border-1 border-round p-3 bg-surface-50">
-                            <div class="flex align-items-center justify-content-between mb-2">
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-ticket text-primary"></i>
-                                    <span class="font-semibold">Cupón de Descuento</span>
-                                </div>
-                                <p-button *ngIf="!selectedCoupon" [label]="showCouponInput ? 'Ocultar' : 'Agregar Cupón'" [icon]="showCouponInput ? 'pi pi-chevron-up' : 'pi pi-plus'"
-                                    [outlined]="true" size="small" (onClick)="toggleCouponInput()" />
-                            </div>
+                        <div class="flex flex-column gap-3 mb-2">
+                            <h3 class="text-lg font-semibold text-700 mb-3 mt-0">Cupón de Descuento</h3>
 
-                            <div *ngIf="!selectedCoupon && showCouponInput" class="flex gap-2">
-                                <p-inputgroup class="flex-1">
-                                    <p-inputgroup-addon>
-                                        <i class="pi pi-ticket"></i>
-                                    </p-inputgroup-addon>
-                                    <input type="text" pInputText formControlName="couponCode" class="w-full" placeholder="Ingresá tu código"
-                                        [invalid]="checkoutForm.get('couponCode')?.invalid && checkoutForm.get('couponCode')?.touched" />
-                                </p-inputgroup>
-                                <p-button icon="pi pi-check" (onClick)="validateAndApplyCoupon()" [loading]="couponLoading" [disabled]="!checkoutForm.get('couponCode')?.value"
-                                    [outlined]="true" />
-                            </div>
-
-                            <div *ngIf="selectedCoupon" class="flex flex-column gap-2">
-                                <div class="flex align-items-center justify-content-between">
+                            <div class="border-1 border-round-xl p-3 bg-surface-50">
+                                <div class="flex align-items-center justify-content-between mb-3">
                                     <div class="flex align-items-center gap-2">
-                                        <p-tag [value]="selectedCoupon.code" severity="success" [rounded]="true" />
-                                        <span class="font-semibold text-green-600">
-                                            {{ selectedCoupon.discountType === 'percentage' ? selectedCoupon.discountValue + '%' : '$' +
-                                            selectedCoupon.discountValue.toLocaleString('es-AR') }}
-                                        </span>
+                                        <i class="pi pi-ticket text-primary"></i>
+                                        <span class="font-semibold text-700">Aplicar Cupón</span>
                                     </div>
-                                    <p-button icon="pi pi-times" (onClick)="clearCoupon()" [outlined]="true" severity="danger" size="small" />
+                                    <p-button *ngIf="!selectedCoupon" [label]="showCouponInput ? 'Ocultar' : 'Agregar Cupón'" [icon]="showCouponInput ? 'pi pi-chevron-up' : 'pi pi-plus'"
+                                        [outlined]="true" size="small" (onClick)="toggleCouponInput()" />
                                 </div>
-                                <div *ngIf="selectedCoupon.description" class="text-sm text-color-secondary">
-                                    {{ selectedCoupon.description }}
+
+                                <div *ngIf="!selectedCoupon && showCouponInput" class="flex gap-2">
+                                    <p-inputgroup class="flex-1">
+                                        <p-inputgroup-addon>
+                                            <i class="pi pi-ticket"></i>
+                                        </p-inputgroup-addon>
+                                        <input type="text" pInputText formControlName="couponCode" class="w-full" placeholder="Ingresá tu código"
+                                            [invalid]="checkoutForm.get('couponCode')?.invalid && checkoutForm.get('couponCode')?.touched" />
+                                    </p-inputgroup>
+                                    <p-button icon="pi pi-check" (onClick)="validateAndApplyCoupon()" [loading]="couponLoading" [disabled]="!checkoutForm.get('couponCode')?.value"
+                                        [outlined]="true" />
+                                </div>
+
+                                <div *ngIf="selectedCoupon" class="flex flex-column gap-2">
+                                    <div class="flex align-items-center justify-content-between">
+                                        <div class="flex align-items-center gap-2">
+                                            <p-tag [value]="selectedCoupon.code" severity="success" [rounded]="true" />
+                                            <span class="font-semibold text-green-600">
+                                                {{ selectedCoupon.discountType === 'percentage' ? selectedCoupon.discountValue + '%' : '$' +
+                                                selectedCoupon.discountValue.toLocaleString('es-AR') }}
+                                            </span>
+                                        </div>
+                                        <p-button icon="pi pi-times" (onClick)="clearCoupon()" [outlined]="true" severity="danger" size="small" />
+                                    </div>
+                                    <div *ngIf="selectedCoupon.description" class="text-sm text-600">
+                                        {{ selectedCoupon.description }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Totals -->
-                        <div class="flex justify-content-between align-items-center">
-                            <span class="text-color-secondary">Subtotal</span>
-                            <span class="font-semibold">{{ subtotal | currency:'ARS':'symbol':'1.0-0' }}</span>
-                        </div>
+                        <!-- Price Breakdown -->
+                        <div class="flex flex-column gap-3 mb-4">
+                            <h3 class="text-lg font-semibold text-700 mb-3">Desglose de Precios</h3>
 
-                        <div class="flex justify-content-between align-items-center">
-                            <small class="text-color-secondary">Precio sin IVA <p-tag [value]="'- ' + ivaPercentage * 100 + '%'" severity="warn" class="font-semibold text-xs"
-                                    [rounded]="true" /></small>
-                            <small class="font-semibold text-color-secondary">{{ subtotal / (1 + ivaPercentage) | currency:'ARS':'symbol':'1.0-0' }}</small>
-                        </div>
+                            <!-- Subtotal -->
+                            <div class="flex justify-content-between align-items-center p-3 surface-100 border-round-lg">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-shopping-bag text-primary"></i>
+                                    <span class="text-700 font-medium">Subtotal ({{ cartItems.length }} item{{ cartItems.length > 1 ? 's' : '' }})</span>
+                                </div>
+                                <span class="font-semibold text-900">{{ subtotal | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </div>
 
-                        <div *ngIf="checkoutForm.get('selectedPaymentMethod')?.value === 'transfer'" class="flex justify-content-between align-items-center">
-                            <span class="text-color-secondary">Descuento por transferencia <p-tag [value]="'- ' + cashDiscountPercentage * 100 + '%'" severity="success"
-                                    class="font-semibold" [rounded]="true" /></span>
-                            <span class="font-semibold text-green-500">-{{ discount | currency:'ARS':'symbol':'1.0-0' }}</span>
-                        </div>
+                            <!-- Precio sin IVA -->
+                            <div class="flex justify-content-between align-items-center p-2">
+                                <div class="flex align-items-center gap-2">
+                                    <span class="text-600 text-sm">Precio sin IVA</span>
+                                    <p-tag [value]="'- ' + (ivaPercentage * 100) + '%'" severity="warning" [rounded]="true" size="small" />
+                                </div>
+                                <span class="text-600 text-sm font-medium">{{ subtotal / (1 + ivaPercentage) | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </div>
 
-                        <div *ngIf="selectedCoupon" class="flex justify-content-between align-items-center">
-                            <span class="text-color-secondary">Cupón <p-tag [value]="selectedCoupon.code" severity="success" class="font-semibold" [rounded]="true" /></span>
-                            <span class="font-semibold text-green-500">-{{ couponDiscount | currency:'ARS':'symbol':'1.0-0' }}</span>
-                        </div>
+                            <!-- Transfer Discount -->
+                            <div *ngIf="checkoutForm.get('selectedPaymentMethod')?.value === 'transfer'"
+                                class="flex justify-content-between align-items-center p-3 surface-100 border-round-lg border-left-3 border-green-500">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-money-bill text-green-600"></i>
+                                    <span class="text-700 font-medium">Descuento por transferencia</span>
+                                    <p-tag [value]="'- ' + (cashDiscountPercentage * 100) + '%'" severity="success" [rounded]="true" size="small" />
+                                </div>
+                                <span class="font-semibold text-green-600">-{{ discount | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </div>
 
-                        <div class="flex justify-content-between align-items-center">
-                            <span class="text-color-secondary">Envío</span>
-                            <p-tag [value]="getShippingText()" [icon]="getShippingIcon()" [severity]="getShippingSeverity()"
-                                [class]="isShippingFree() ? 'text-green-500 font-semibold' : 'text-blue-500 font-semibold'" [rounded]="true" style="margin-right: -0.5rem;" />
+                            <!-- Coupon Discount -->
+                            <div *ngIf="selectedCoupon" class="flex justify-content-between align-items-center p-3 surface-100 border-round-lg border-left-3 border-blue-500">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-ticket text-blue-600"></i>
+                                    <span class="text-700 font-medium">Cupón</span>
+                                    <p-tag [value]="selectedCoupon.code" severity="info" [rounded]="true" size="small" />
+                                </div>
+                                <span class="font-semibold text-blue-600">-{{ couponDiscount | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </div>
+
+                            <!-- Shipping -->
+                            <div class="flex justify-content-between align-items-center p-3 surface-100 border-round-lg">
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-truck text-primary"></i>
+                                    <span class="text-700 font-medium">Envío</span>
+                                </div>
+                                <p-tag [value]="getShippingText()" [icon]="getShippingIcon()" [severity]="getShippingSeverity()"
+                                    [class]="isShippingFree() ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-100 text-blue-700 border-blue-200'" [rounded]="true" />
+                            </div>
                         </div>
 
                         <p-divider></p-divider>
 
-                        <div class="flex justify-content-between align-items-center">
-                            <span class="text-xl font-bold">Total con IVA</span>
-                            <span class="text-2xl font-bold text-primary">{{ total | currency:'ARS':'symbol':'1.0-0' }}</span>
-                        </div>
-
-                        <div *ngIf="getDiscountPercentage() > 0" class="flex justify-content-center mt-2">
-                            <p-tag [value]="'Descuento total: ' + getDiscountPercentage() + '%'" severity="success" [rounded]="true" class="font-semibold" />
+                        <!-- Total -->
+                        <div class="bg-primary-50 border-round-xl p-4 mb-4">
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-xl font-bold text-primary-900">Total con IVA</span>
+                                <span class="text-2xl font-bold text-primary-900">{{ total | currency:'ARS':'symbol':'1.0-0' }}</span>
+                            </div>
                         </div>
 
                         <!-- Terms and Conditions -->
-                        <div class="flex align-items-start gap-2 mt-3">
-                            <p-checkbox formControlName="acceptTerms" [binary]="true" [inputId]="'terms'" />
-                            <label for="terms" class="text-sm cursor-pointer">
+                        <div class="flex align-items-center gap-3 p-2 surface-100 border-round-lg mb-4">
+                            <p-checkbox formControlName="acceptTerms" [binary]="true" [inputId]="'terms'" class="mt-1" />
+                            <label for="terms" class="text-sm text-700 line-height-2 cursor-pointer m-0">
                                 Acepto los
-                                <a href="javascript:void(0)" (click)="openTermsDialog()" class="text-primary cursor-pointer">términos y condiciones</a>
+                                <a href="javascript:void(0)" (click)="openTermsDialog()" class="text-primary cursor-pointer font-medium">términos y condiciones</a>
                                 y la
-                                <a href="javascript:void(0)" (click)="openPrivacyDialog()" class="text-primary cursor-pointer">política de privacidad</a>
+                                <a href="javascript:void(0)" (click)="openPrivacyDialog()" class="text-primary cursor-pointer font-medium">política de privacidad</a>
                             </label>
                         </div>
 
                         <!-- Pay Button -->
-                        <div class="flex justify-content-center mt-3">
+                        <div class="flex justify-content-center mb-3">
                             <p-button label="Pagar Ahora" [icon]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value ? 'pi pi-lock' : 'pi pi-wallet'" [raised]="true"
-                                size="large" [disabled]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value" (onClick)="processPayment()" [loading]="isProcessing" />
+                                size="large" [disabled]="!checkoutForm.valid || !checkoutForm.get('acceptTerms')?.value" (onClick)="processPayment()" [loading]="isProcessing"
+                                class="w-full" />
                         </div>
 
-                        <small class="text-center text-color-secondary">
-                            <i class="pi pi-shield text-green-500 mr-1"></i>
-                            Tu información está protegida con encriptación SSL
-                        </small>
+                        <!-- Security Notice -->
+                        <div class="text-center p-3 surface-50 border-round-lg">
+                            <div class="flex align-items-center justify-content-center gap-2 text-xs text-600">
+                                <i class="pi pi-shield text-green-600"></i>
+                                <span>Tu información está protegida con encriptación SSL</span>
+                            </div>
+                        </div>
                     </div>
                 </p-panel>
             </div>

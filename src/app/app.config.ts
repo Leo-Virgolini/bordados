@@ -7,6 +7,11 @@ import { providePrimeNG } from 'primeng/config';
 import { MyPreset } from './custom-theme';
 import { provideHttpClient } from '@angular/common/http';
 import { es } from './es.json';
+import localeEsAr from '@angular/common/locales/es-AR';
+import { registerLocaleData } from '@angular/common';
+
+// Configuración de locale
+registerLocaleData(localeEsAr);
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -180,8 +180,8 @@
                         <!-- Product Images -->
                         <ng-template #header>
                             <!-- Galleria for Multiple Images -->
-                            <p-galleria [value]="getProductImagesForGalleria(product)" [showIndicators]="true" [showThumbnails]="false"
-                                [showItemNavigators]="getProductImagesForGalleria(product).length > 1">
+                            <p-galleria [value]="getProductImagesForGalleria(product)" [showIndicators]="true" [showThumbnails]="false" [circular]="true"
+                                [changeItemOnIndicatorHover]="true" [showItemNavigators]="getProductImagesForGalleria(product).length > 1" [containerStyle]="{ 'max-width': '640px' }">
                                 <ng-template #item let-item>
                                     <p-image [src]="item.src" imageClass="w-full border-round-top-xl" class="border-round-top-xl" [preview]="false"
                                         (onImageError)="onImageError($event, product)" />
@@ -214,9 +214,7 @@
                                         </div>
                                     </div>
                                 </ng-template>
-                                <!-- <ng-template #thumbnail let-item>
-                                            <img [src]="item.src" style="display: block;" />
-                                        </ng-template> -->
+
                             </p-galleria>
                         </ng-template>
 
@@ -232,7 +230,7 @@
                                 </div>
                                 <!-- Title -->
                                 <div>
-                                    <h3 class="text-lg font-bold mb-2 line-height-1-2">{{ product.name }}</h3>
+                                    <h3 class="text-lg font-bold mb-0">{{ product.name }}</h3>
                                     <!-- <div class="flex align-items-center gap-2 mb-2">
                                     <i class="pi pi-star-fill text-yellow-500"></i>
                                     <span class="font-semibold">{{ product.rating }}</span>
@@ -240,10 +238,10 @@
                                 </div>
 
                                 <!-- Description -->
-                                <p class="text-color-secondary text-sm line-height-1-4">{{ product.description }}</p>
+                                <p class="text-color-secondary text-sm">{{ product.description }}</p>
 
                                 <!-- Product Specifications -->
-                                <div class="flex flex-column gap-2 mb-3">
+                                <div class="flex flex-column gap-2 mb-2">
                                     <div class="flex align-items-center gap-2">
                                         <i class="pi pi-box text-primary text-sm"></i>
                                         <span class="text-600 text-sm">Tipo: <span class="font-semibold text-900">{{ product.garmentType | titlecase }}</span></span>
